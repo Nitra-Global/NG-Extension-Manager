@@ -1,0 +1,316 @@
+@font-face {
+    font-family: InterVariable;
+    font-style: normal;
+    font-weight: 100 900;
+    font-display: swap;
+    src: url("fonts/InterVariable.woff2") format("woff2");
+  }
+  @font-face {
+    font-family: InterVariable;
+    font-style: italic;
+    font-weight: 100 900;
+    font-display: swap;
+    src: url("fonts/InterVariable-Italic.woff2") format("woff2");
+  }
+  
+  /* static fonts */
+  @font-face { font-family: "Inter"; font-style: normal; font-weight: 100; font-display: swap; src: url("fonts/Inter-Thin.woff2") format("woff2"); }
+  @font-face { font-family: "Inter"; font-style: italic; font-weight: 100; font-display: swap; src: url("fonts/Inter-ThinItalic.woff2") format("woff2"); }
+  @font-face { font-family: "Inter"; font-style: normal; font-weight: 200; font-display: swap; src: url("fonts/Inter-ExtraLight.woff2") format("woff2"); }
+  @font-face { font-family: "Inter"; font-style: italic; font-weight: 200; font-display: swap; src: url("fonts/Inter-ExtraLightItalic.woff2") format("woff2"); }
+  @font-face { font-family: "Inter"; font-style: normal; font-weight: 300; font-display: swap; src: url("fonts/Inter-Light.woff2") format("woff2"); }
+  @font-face { font-family: "Inter"; font-style: italic; font-weight: 300; font-display: swap; src: url("fonts/Inter-LightItalic.woff2") format("woff2"); }
+  @font-face { font-family: "Inter"; font-style: normal; font-weight: 400; font-display: swap; src: url("fonts/Inter-Regular.woff2") format("woff2"); }
+  @font-face { font-family: "Inter"; font-style: italic; font-weight: 400; font-display: swap; src: url("fonts/Inter-Italic.woff2") format("woff2"); }
+  @font-face { font-family: "Inter"; font-style: normal; font-weight: 500; font-display: swap; src: url("fonts/Inter-Medium.woff2") format("woff2"); }
+  @font-face { font-family: "Inter"; font-style: italic; font-weight: 500; font-display: swap; src: url("fonts/Inter-MediumItalic.woff2") format("woff2"); }
+  @font-face { font-family: "Inter"; font-style: normal; font-weight: 600; font-display: swap; src: url("fonts/Inter-SemiBold.woff2") format("woff2"); }
+  @font-face { font-family: "Inter"; font-style: italic; font-weight: 600; font-display: swap; src: url("fonts/Inter-SemiBoldItalic.woff2") format("woff2"); }
+  @font-face { font-family: "Inter"; font-style: normal; font-weight: 700; font-display: swap; src: url("fonts/Inter-Bold.woff2") format("woff2"); }
+  @font-face { font-family: "Inter"; font-style: italic; font-weight: 700; font-display: swap; src: url("fonts/Inter-BoldItalic.woff2") format("woff2"); }
+  @font-face { font-family: "Inter"; font-style: normal; font-weight: 800; font-display: swap; src: url("fonts/Inter-ExtraBold.woff2") format("woff2"); }
+  @font-face { font-family: "Inter"; font-style: italic; font-weight: 800; font-display: swap; src: url("fonts/Inter-ExtraBoldItalic.woff2") format("woff2"); }
+  @font-face { font-family: "Inter"; font-style: normal; font-weight: 900; font-display: swap; src: url("fonts/Inter-Black.woff2") format("woff2"); }
+  @font-face { font-family: "Inter"; font-style: italic; font-weight: 900; font-display: swap; src: url("fonts/Inter-BlackItalic.woff2") format("woff2"); }
+  
+
+  
+/* Basic reset */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html, body {
+    width: 100%;
+    height: 100%;
+    overflow: hidden; /* Prevents page overflow */
+}
+
+body {
+    font-family: 'Inter', sans-serif;
+    background: #f4f7f6; /* Light background for readability */
+    color: #333;
+    display: flex;
+    flex-direction: column;
+    height: 100%; /* Uses the full viewport height */
+    margin: 0;
+    transition: background-color 0.5s ease, color 0.5s ease;
+}
+
+body.dark-mode {
+    background: #000; /* Dark mode background */
+    color: #f4f7f6;
+}
+
+.container {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between; /* Aligns content to edges */
+    align-items: center;
+    background: #fff; /* White background for the container */
+    border-radius: 12px; /* Slight rounding for a soft feel */
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1); /* Subtle shadow for depth */
+    width: 100%;
+    height: 100%;
+    padding: 20px;
+    text-align: center;
+    overflow: hidden; /* Prevents scrolling */
+    transition: background 0.5s, color 0.5s;
+}
+
+body.dark-mode .container {
+    background: #121212; /* Dark mode container */
+}
+
+header {
+    margin-bottom: 24px; /* Increased margin for separation */
+}
+
+header h1 {
+    font-size: 36px; /* Increase title size for prominence */
+    color: #1e90ff; /* Bright blue color */
+}
+
+.version-info {
+    margin: 16px 0;
+    font-size: 18px; /* Keep consistent font sizing */
+    color: #666; /* Slightly muted color for secondary text */
+}
+
+.changelog-grid {
+    display: flex;
+    flex: 1; /* Uses available space */
+    flex-direction: column;
+    width: 100%;
+    overflow-y: auto; /* Enables scrolling for releases */
+    gap: 16px; /* Increased gap for better spacing */
+    padding: 12px;
+    margin: 12px 0; /* Added margin for separation */
+}
+
+.grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); /* Larger min width for cards */
+    gap: 16px; /* Consistent spacing */
+}
+
+.release-card {
+    background-color: #1e90ff; /* Card background color */
+    color: #fff;
+    padding: 16px; /* Increased padding for touch targets */
+    border-radius: 12px; /* Rounded corners */
+    cursor: pointer;
+    text-align: center;
+    transition: transform 0.3s ease, background 0.3s, box-shadow 0.3s; /* Smooth transitions */
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+}
+
+.release-card:hover {
+    transform: translateY(-6px); /* Enhanced lift effect */
+    background-color: #166bb8; /* Darker hover state */
+}
+
+body.dark-mode .release-card {
+    background-color: #0056b3; /* Dark mode card bg */
+}
+
+body.dark-mode .release-card:hover {
+    background-color: #004494; /* Dark mode hover state */
+    box-shadow: 0 6px 20px rgba(255, 255, 255, 0.1); /* Subtle effect on hover */
+}
+
+#refresh-btn,
+#theme-toggle {
+    font-family: 'Inter', sans-serif;
+    background-color: #1e90ff; /* Button background */
+    color: #fff;
+    border: none;
+    padding: 12px 24px; /* Adequate padding */
+    font-size: 16px;
+    border-radius: 10px; /* Rounded buttons */
+    cursor: pointer;
+    transition: background 0.3s, transform 0.3s; /* Smooth hover effect */
+}
+
+#refresh-btn:hover:not(:disabled),
+#theme-toggle:hover {
+    background-color: #1a7ccf; /* Hover effect */
+    transform: scale(1.05); /* Slight scaling on hover */
+}
+
+#search-input {
+    font-family: 'Inter', sans-serif;
+    margin-bottom: 16px; /* Space below the input */
+    padding: 12px; /* Adequate inner spacing */
+    border-radius: 10px; /* Soft corners */
+    border: 1px solid #ccc; /* Neutral border */
+    width: calc(100% - 32px); /* Full width with padding */
+    background-color: #fff; /* Input bg */
+    color: #333;
+    transition: border-color 0.3s, background-color 0.3s, color 0.3s; /* Smooth transitions */
+}
+
+#search-input:focus {
+    border-color: #1e90ff; /* Highlight on focus */
+    outline: none; /* Remove outline */
+}
+
+body.dark-mode #search-input {
+    background-color: #333; /* Dark mode input bg */
+    color: #f4f7f6; /* Light text color */
+    border: 1px solid #555; /* Dark border */
+}
+
+body.dark-mode #search-input:focus {
+    border-color: #1e90ff; /* Highlight on focus in dark mode */
+}
+
+footer {
+    margin-top: 24px; /* Adequate space above footer */
+    font-size: 14px;
+    color: #888; /* Muted color for footer */
+}
+
+/* Bottom Sheet */
+.bottom-sheet {
+    position: fixed;
+    bottom: -100%;
+    left: 0;
+    width: 100%;
+    background-color: #fff; /* Bottom sheet background */
+    box-shadow: 0 -6px 20px rgba(0, 0, 0, 0.2); /* Shadow for depth */
+    border-top-left-radius: 18px; /* Rounded corners for top */
+    border-top-right-radius: 18px;
+    transition: bottom 0.5s ease-in-out, background 0.3s; /* Smooth transitions */
+    max-height: 80%;
+    overflow-y: auto; /* Enable scrolling */
+    padding: 24px; /* Adequate padding */
+    box-sizing: border-box; 
+}
+
+.bottom-sheet.open {
+    bottom: 0; /* Slide in on open */
+}
+
+body.dark-mode .bottom-sheet {
+    background: #121212; /* Dark mode for bottom sheet */
+    box-shadow: 0 -6px 20px rgba(255, 255, 255, 0.1); /* Light shadow */
+}
+
+.close-btn {
+    background: none;
+    border: none;
+    font-size: 24px; /* Increased size for ease of use */
+    color: #333; /* Default button color */
+    float: right;
+    cursor: pointer;
+    transition: color 0.3s; /* Smooth color change */
+}
+
+body.dark-mode .close-btn {
+    color: #f4f7f6; /* Light color for dark mode */
+}
+
+.close-btn:hover {
+    color: #1e90ff; /* Bright color on hover */
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    header h1 {
+        font-size: 30px; /* Maintain readability on smaller screens */
+    }
+    .grid {
+        grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); /* Adjust grid for smaller screens */
+    }
+}
+
+@media (max-width: 480px) {
+    header h1 {
+        font-size: 26px; /* Smaller size for mobile */
+    }
+    #refresh-btn,
+    #theme-toggle {
+        font-size: 14px; /* Adjust button size */
+        padding: 10px 16px; /* Adjust padding */
+    }
+    #search-input {
+        padding: 10px; /* Adjust input padding */
+    }
+    .release-card {
+        padding: 12px; /* Adjust card padding */
+        font-size: 14px; /* Consistent font size */
+    }
+}
+
+
+/* Link Styles */
+a {
+    color: #1a73e8; /* Primäre Akzentfarbe */
+    text-decoration: none;
+    font-weight: 500;
+    position: relative;
+    display: inline-block;
+    padding: 2px 2px;
+    border-radius: 20px;
+    transition: background-color 0.2s ease, color 0.2s ease;
+  }
+  
+  a:hover {
+    background-color: #004a77; /* Dunkler blauer Hintergrund beim Hover */
+    color: #ffffff; /* Weißer Text beim Hover */
+  }
+
+  /* Scrollbar Styles */
+::-webkit-scrollbar {
+    width: 6px;
+  }
+  
+  ::-webkit-scrollbar-track {
+    border-radius: 10px;
+    background: #1b1b1b; /* Anpassung an den Body-Hintergrund */
+  }
+  
+  ::-webkit-scrollbar-thumb {
+    background: #555555;
+    border-radius: 10px;
+    transition: background 0.3s ease;
+  }
+  
+  ::-webkit-scrollbar-thumb:hover {
+    background: #777777;
+  }
+  
+  ::selection {
+    background: #004a77; /* Primäre Akzentfarbe für ausgewählten Text */
+    color: #ffffff;
+    border-radius: 5px;
+  }
+  
+  ::-moz-selection {
+    background: #004a77;
+    color: #ffffff;
+    text-shadow: none;
+  }

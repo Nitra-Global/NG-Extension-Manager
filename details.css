@@ -1,0 +1,496 @@
+@font-face {
+  font-family: InterVariable;
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url("fonts/InterVariable.woff2") format("woff2");
+}
+@font-face {
+  font-family: InterVariable;
+  font-style: italic;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url("fonts/InterVariable-Italic.woff2") format("woff2");
+}
+
+/* static fonts */
+@font-face { font-family: "Inter"; font-style: normal; font-weight: 100; font-display: swap; src: url("fonts/Inter-Thin.woff2") format("woff2"); }
+@font-face { font-family: "Inter"; font-style: italic; font-weight: 100; font-display: swap; src: url("fonts/Inter-ThinItalic.woff2") format("woff2"); }
+@font-face { font-family: "Inter"; font-style: normal; font-weight: 200; font-display: swap; src: url("fonts/Inter-ExtraLight.woff2") format("woff2"); }
+@font-face { font-family: "Inter"; font-style: italic; font-weight: 200; font-display: swap; src: url("fonts/Inter-ExtraLightItalic.woff2") format("woff2"); }
+@font-face { font-family: "Inter"; font-style: normal; font-weight: 300; font-display: swap; src: url("fonts/Inter-Light.woff2") format("woff2"); }
+@font-face { font-family: "Inter"; font-style: italic; font-weight: 300; font-display: swap; src: url("fonts/Inter-LightItalic.woff2") format("woff2"); }
+@font-face { font-family: "Inter"; font-style: normal; font-weight: 400; font-display: swap; src: url("fonts/Inter-Regular.woff2") format("woff2"); }
+@font-face { font-family: "Inter"; font-style: italic; font-weight: 400; font-display: swap; src: url("fonts/Inter-Italic.woff2") format("woff2"); }
+@font-face { font-family: "Inter"; font-style: normal; font-weight: 500; font-display: swap; src: url("fonts/Inter-Medium.woff2") format("woff2"); }
+@font-face { font-family: "Inter"; font-style: italic; font-weight: 500; font-display: swap; src: url("fonts/Inter-MediumItalic.woff2") format("woff2"); }
+@font-face { font-family: "Inter"; font-style: normal; font-weight: 600; font-display: swap; src: url("fonts/Inter-SemiBold.woff2") format("woff2"); }
+@font-face { font-family: "Inter"; font-style: italic; font-weight: 600; font-display: swap; src: url("fonts/Inter-SemiBoldItalic.woff2") format("woff2"); }
+@font-face { font-family: "Inter"; font-style: normal; font-weight: 700; font-display: swap; src: url("fonts/Inter-Bold.woff2") format("woff2"); }
+@font-face { font-family: "Inter"; font-style: italic; font-weight: 700; font-display: swap; src: url("fonts/Inter-BoldItalic.woff2") format("woff2"); }
+@font-face { font-family: "Inter"; font-style: normal; font-weight: 800; font-display: swap; src: url("fonts/Inter-ExtraBold.woff2") format("woff2"); }
+@font-face { font-family: "Inter"; font-style: italic; font-weight: 800; font-display: swap; src: url("fonts/Inter-ExtraBoldItalic.woff2") format("woff2"); }
+@font-face { font-family: "Inter"; font-style: normal; font-weight: 900; font-display: swap; src: url("fonts/Inter-Black.woff2") format("woff2"); }
+@font-face { font-family: "Inter"; font-style: italic; font-weight: 900; font-display: swap; src: url("fonts/Inter-BlackItalic.woff2") format("woff2"); }
+
+
+/* Body Styles */
+body {
+  font-family: 'Inter', sans-serif;
+  background-color: #131314; /* Dunkler Hintergrund */
+  color: #ffffff; /* Weißer Text für Kontrast */
+  margin: 0;
+  padding: 0;
+  overflow-y: scroll;
+  -webkit-overflow-scrolling: touch;
+  position: relative;
+  border-radius: 18px;
+  scroll-behavior: smooth;
+  transform-origin: center;
+}
+
+/* Font Smoothing */
+* {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Details Container */
+.details-container {
+  max-width: 1200px;
+  margin: 60px auto;
+  padding: 48px;
+  background-color: #1b1b1b; /* Dunklerer Hintergrund */
+  color: #ffffff; /* Weißer Text */
+  border-radius: 20px; /* Sanfte abgerundete Ecken */
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.6); /* Tiefere Schatten */
+  line-height: 1.6; /* Verbesserung der Lesbarkeit */
+}
+
+/* Headings */
+.details-container h2 {
+  font-size: 32px;
+  margin-bottom: 24px;
+  font-weight: 700;
+  color: #ffffff; /* Weißer Text */
+}
+
+.details-container h3 {
+  font-size: 24px;
+  margin-bottom: 20px;
+  font-weight: 600;
+  color: #cccccc; /* Etwas hellerer Grauton für visuelle Hierarchie */
+}
+
+/* Paragraphs and Lists */
+.details-container p,
+.details-container ul {
+  font-size: 18px;
+  margin-bottom: 24px;
+  color: #ffffff; /* Weißer Text */
+}
+
+.details-container ul {
+  list-style-type: disc;
+  margin-left: 20px; /* Anpassung für einen kompakteren Look */
+  padding-left: 20px; /* Einheitlicher Abstand */
+  color: #ffffff;
+}
+
+.details-container ul li {
+  margin-bottom: 16px;
+  padding-left: 10px; /* Geringerer Innenabstand für eine bessere Optik */
+  position: relative;
+  color: #ffffff;
+}
+
+/* Scrollbar Styles */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  border-radius: 10px;
+  background: #1b1b1b; /* Anpassung an den Body-Hintergrund */
+}
+
+::-webkit-scrollbar-thumb {
+  background: #555555;
+  border-radius: 10px;
+  transition: background 0.3s ease;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #777777;
+}
+
+::selection {
+  background: #004a77; /* Primäre Akzentfarbe für ausgewählten Text */
+  color: #ffffff;
+  border-radius: 5px;
+}
+
+::-moz-selection {
+  background: #004a77;
+  color: #ffffff;
+  text-shadow: none;
+}
+
+/* Link Styles */
+a {
+  color: #1a73e8; /* Primäre Akzentfarbe */
+  text-decoration: none;
+  font-weight: 500;
+  position: relative;
+  display: inline-block;
+  padding: 2px 2px;
+  border-radius: 20px;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+a:hover {
+  background-color: #004a77; /* Dunkler blauer Hintergrund beim Hover */
+  color: #ffffff; /* Weißer Text beim Hover */
+}
+
+/* Permissions Box */
+.permissions-box {
+  border-radius: 18px;
+  padding: 24px;
+  margin-top: 32px;
+  background-color: #1b1b1b; /* Dunkler Hintergrund */
+  color: #ffffff; /* Weißer Text */
+  font-family: 'Inter', sans-serif;
+}
+
+.permissions-box h3 {
+  margin-top: 0;
+  font-size: 24px;
+  font-weight: 700;
+  color: #ffffff;
+}
+
+/* Grid Layout for Permissions */
+.permissions-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 20px;
+  margin-top: 20px;
+}
+
+.permission-item {
+  background-color: #131314; /* Sehr dunkler Hintergrund */
+  border-radius: 20px;
+  padding: 20px;
+  transition: background-color 0.3s ease, transform 0.3s ease;
+}
+
+.permission-item:hover {
+  background-color: #004a77; /* Akzentfarbe beim Hover */
+  transform: translateY(-2px);
+}
+
+.permission-item h4 {
+  margin-top: 0;
+  font-size: 20px;
+  font-weight: 600;
+  color: #ffffff; /* Weißer Text */
+}
+
+.permission-item p {
+  margin: 10px 0 0 0;
+  font-size: 16px;
+  color: #ffffff; /* Weißer Text */
+}
+
+
+/* Alert Popup Styles */
+.alert-popup {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background-color: #ffffff;
+  padding: 32px 40px;
+  border-radius: 18px;
+  z-index: 1000;
+  text-align: center;
+  color: #000000;
+  max-width: 500px;
+  width: 90%;
+}
+
+.alert-popup h3 {
+  margin: 0 0 20px;
+  color: #1a73e8;
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.alert-popup p {
+  margin: 0 0 28px;
+  color: #000000;
+  font-size: 16px;
+  line-height: 1.6;
+}
+
+.alert-popup button {
+  padding: 14px 28px;
+  border: none;
+  background-color: #1a73e8;
+  color: #ffffff;
+  border-radius: 18px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  font-size: 17px;
+}
+
+.alert-popup button:hover {
+  background-color: #1558c7;
+}
+
+/* Badge Styling */
+.badge {
+  display: inline-block;
+  background-color: #1a73e8;
+  color: #ffffff;
+  padding: 10px 20px;
+  border-radius: 18px;
+  font-size: 16px;
+  font-weight: 500;
+  text-transform: none;
+  margin-top: 12px;
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.3s ease;
+}
+
+.badge:hover {
+  background-color: #1558c7;
+  transform: scale(1.05);
+}
+
+/* Badge Content */
+.badge-content {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+
+.badge-content .material-icons {
+  font-size: 18px;
+}
+
+/* Info Message Styling - Dark Mode */
+.info-message {
+  margin-top: 16px;
+  padding: 20px 24px;
+  background-color: #1e1e1e; /* Dunkler Hintergrund für den Dunkelmodus */
+  border-left: 4px solid #8ab4f8; /* Heller Akzent für den linken Rand */
+  border-radius: 18px;
+  font-size: 16px;
+  line-height: 1.6;
+  color: #e8eaed; /* Helle Textfarbe für gute Lesbarkeit */
+  font-family: 'Inter', sans-serif;
+  transition: background-color 0.3s ease, border-left-color 0.3s ease;
+}
+
+.info-message p {
+  margin: 0;
+  text-align: left;
+  font-weight: 600;
+  color: #ffffff; /* Klarere Textfarbe für Absätze */
+}
+
+.info-message:hover {
+  background-color: #2a2a2a; /* Dezente Aufhellung des Hintergrunds beim Hover */
+  border-left-color: #669df6; /* Intensiverer Akzent beim Hover */
+}
+
+/* General Button Styles */
+button {
+  font-family: 'Inter', sans-serif;
+  padding: 14px 28px;
+  border: none;
+  border-radius: 18px;
+  background-color: #1a73e8;
+  color: #ffffff;
+  font-size: 17px;
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+  margin-right: 12px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+button:hover {
+  background-color: #1558c7;
+  transform: translateY(-2px);
+}
+
+button:active {
+  transform: scale(0.97);
+}
+
+button:disabled {
+  background-color: #bbbbbb;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+/* Button Icon */
+button .material-icons {
+  font-size: 20px;
+  margin-right: 10px;
+  transition: transform 0.2s ease;
+}
+
+button:hover .material-icons {
+  transform: translateX(2px);
+}
+
+/* Select Element */
+select {
+  background-color: #1a73e8;
+  color: #ffffff;
+  border: none;
+  border-radius: 18px;
+  padding: 10px 16px;
+  font-family: 'Inter', sans-serif;
+  font-size: 16px;
+  cursor: pointer;
+  transition: background-color 0.3s ease, border-color 0.3s ease;
+}
+
+select:hover {
+  background-color: #1558c7;
+}
+
+select:focus {
+  outline: none;
+  border: 2px solid #1a73e8;
+}
+
+/* Color Picker Input */
+input[type="color"] {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  background-color: #1a73e8;
+  border: none;
+  border-radius: 18px;
+  padding: 10px;
+  cursor: pointer;
+  width: 44px;
+  height: 44px;
+  transition: background-color 0.3s ease;
+}
+
+input[type="color"]:hover {
+  background-color: #1558c7;
+}
+
+input[type="color"]:focus {
+  outline: none;
+  border: 2px solid #1a73e8;
+}
+
+/* General Input Fields */
+input[type="text"] {
+  font-family: 'Inter', sans-serif;
+  width: 100%;
+  padding: 14px 24px;
+  margin: 12px 0;
+  border: none; /* Keine Ränder */
+  border-radius: 18px;
+  background-color: #f0f8ff; /* Hellblauer Hintergrund für Eingabefelder */
+  font-size: 18px;
+  box-sizing: border-box;
+  transition: background-color 0.3s ease;
+}
+
+input[type="text"]:focus {
+  background-color: #e0f0ff; /* Etwas dunkler beim Fokus */
+  outline: none;
+}
+
+input[type="text"]::placeholder {
+  color: #777777;
+  opacity: 1;
+}
+
+
+/* Release Grid and Filter Styles */
+.releases-container {
+  display: flex;
+  flex-direction: column;
+}
+
+.filter-controls {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 15px;
+  align-items: center;
+}
+
+.search-container {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+#search-input {
+  flex-grow: 1;
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+.filter-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+#results-count {
+  color: #666;
+  font-size: 0.9em;
+  margin-left: 10px;
+}
+
+/* Release Card Styles */
+.release-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.pre-release-tag, 
+.stable-release-tag {
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 0.8em;
+  font-weight: bold;
+}
+
+.pre-release-tag {
+  background-color: #ffd700;
+  color: #000;
+}
+
+.stable-release-tag {
+  background-color: #4caf50;
+  color: #fff;
+}
+
+/* Pre-release filter styles */
+.filter-container {
+  display: flex;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.filter-container label {
+  margin-left: 5px;
+}

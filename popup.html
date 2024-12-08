@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NG Extension Manager</title>
+  <link rel="stylesheet" href="styles.css">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+</head>
+<body>
+  <div class="popup-container">
+    <h1>NG Extension Manager</h1>
+
+    <a href="https://sites.google.com/view/nitraglobal/apps/extensions/ng-extension-manager" target="_blank" class="faq-link" aria-label="FAQ">
+      <i class="material-icons">help_outline</i> <!-- FAQ Icon -->
+    </a>
+    <a href="history.html" target="_blank" class="chrome-extensions-link" aria-label="Chrome Extensions History">
+      <i class="material-icons">history</i> <!-- Chrome Extensions Icon -->
+    </a>        
+
+    <input type="text" id="search-input" placeholder="Search for extensions, themes, or apps">
+
+    
+
+    <div id="filters" class="filters-row">
+        <select id="type-filter" aria-label="Filter by Type">
+            <option value="all">All Types</option>
+            <option value="extension">Extensions</option>
+            <option value="theme">Themes</option>
+            <option value="app">Apps</option>
+        </select>
+        <select id="status-filter" aria-label="Filter by Status">
+            <option value="all">All Statuses</option>
+            <option value="enabled">Enabled</option>
+            <option value="disabled">Disabled</option>
+        </select>
+    </div>
+
+    <div id="extension-list"></div>
+    <div id="pagination-container">
+        <button id="prev-page" disabled>Previous</button>
+        <span id="current-page">1</span> / <span id="total-pages">1</span>
+        <button id="next-page" disabled>Next</button>
+    </div>
+
+    <!-- Loading Indicator -->
+    <div id="loading-indicator" class="loading" style="display: none;">
+        <i class="material-icons">autorenew</i> Loading...
+    </div>
+
+    <!-- Fehlernachricht -->
+    <div id="error-message" class="error-message" style="display: none;"></div>
+</div>
+
+<script src="js/popup.js"></script>
+</body>
+</html>

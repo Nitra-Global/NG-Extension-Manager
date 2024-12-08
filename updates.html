@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NG Extension Manager</title>
+    <link rel="stylesheet" href="updates.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>NG Extension Manager</h1>
+            <p>Current Version: <span id="installed-version"></span></p>
+            <p>Latest Version: <span id="latest-version"></span></p>
+            <p id="status-message"></p>
+        </header>
+        <div class="version-info">
+            <input type="text" id="search-input" placeholder="Search Releases..." aria-label="Search Releases">
+            <!-- Add this near your search input -->
+<div class="filter-container">
+    <input type="checkbox" id="pre-release-filter">
+    <label for="pre-release-filter">Show Pre-Releases Only</label>
+</div>
+        </div>
+        <div class="changelog-grid">
+            <div id="releases-grid" class="grid"></div>
+        </div>
+        <div id="bottom-sheet" class="bottom-sheet">
+            <button id="close-sheet" class="close-btn">×</button>
+            <div id="release-details"></div>
+
+        </div>
+        
+        <iframe 
+  src="https://notral.instatus.com/embed-status/989720b8/dark-lg" 
+  width="245" 
+  height="61" 
+  frameBorder="0" 
+  scrolling="no" 
+  style="border: none;"
+>
+</iframe>
+        <footer>
+            <p>Created by Nitra Global</p>
+            <button id="theme-toggle" title="Toggle Dark/Light Theme">Toggle Theme</button>
+
+        </footer>
+    </div>
+    <script src="js/markdowns.js"></script>
+    <script src="js/updates.js"></script>
+    <script src="js/rightClickProtection.js"></script>
+<script src="js/link.js"></script>
+<script src="js/custom-alert.js"></script>
+<script src="js/offline.js"></script>
+</body>
+</html>

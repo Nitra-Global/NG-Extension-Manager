@@ -1,0 +1,64 @@
+{
+  "manifest_version": 3,
+  "name": "NG Extension Manager",
+  "version": "2.2.5",
+  "description": "Your browser’s new best friend. Manage your extensions with ease and say goodbye to clutter!",
+  "homepage_url": "https://nitraglobal.wixsite.com/nitra-global/ng-extension-manager",
+  "author": "NG Team",
+  "permissions": [
+    "storage",
+    "history",
+    "management",
+    "activeTab",
+    "tabs",
+    "commands",
+    "contextMenus",
+    "notifications",
+    "scripting"
+    ],
+  "host_permissions": [
+    "https://notral.instatus.com/*"
+  ],
+  "action": {
+    "default_popup": "popup.html",
+    "default_icon": {
+      "48": "icons/48x48.png",
+      "128": "icons/128x128.png"
+    }
+  },
+  "icons": {
+    "16": "icons/ng.png",
+    "48": "icons/48x48.png",
+    "128": "icons/128x128.png"
+  },
+  "background": {
+    "service_worker": "js/background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["js/content.js"]
+    }
+  ],
+  "options_ui": {
+    "page": "options.html",
+    "open_in_tab": true
+  },
+  "commands": {
+    "toggle_extension": {
+      "suggested_key": {
+        "default": "Ctrl+Shift+E"
+      },
+      "description": "Switch NG Extension Manager on or off with a hotkey!"
+    }
+  },
+  "web_accessible_resources": [
+    {
+      "resources": ["js/dynamic_loader.js"],
+      "matches": ["<all_urls>"]
+    }
+  ],
+  "content_security_policy": {
+    "extension_pages": "script-src 'self'; object-src 'self'"
+  }
+}
