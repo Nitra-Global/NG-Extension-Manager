@@ -456,21 +456,21 @@
         return !unsafeProtocols.test(url);
     };
 
-    // Fetch Safe Domains from Link.json
-    const fetchSafeDomains = async () => {
-        try {
-            const response = await fetch(chrome.runtime.getURL('js/json/link.json'));
-            if (!response.ok) {
-                throw new Error('Failed to load Link.json');
-            }
-            const data = await response.json();
-            // Assume Link.json contains an array of domains
-            return data.domains || [];
-        } catch (error) {
-            console.error('Error fetching safe domains:', error);
-            return [];
+    // Fetch Safe Domains from a public API
+const fetchSafeDomains = async () => {
+    try {
+        const response = await fetch('https://api.jsonsilo.com/public/9739f42d-9634-4592-8251-e5c989a46310');
+        if (!response.ok) {
+            throw new Error('Failed to fetch data from the API');
         }
-    };
+        const data = await response.json();
+        // Assume the API response contains an array of domains under 'domains'
+        return data.domains || [];
+    } catch (error) {
+        console.error('Error fetching safe domains:', error);
+        return [];
+    }
+};
 
     // Get User-Saved Safe Domains from Local Storage
     const getUserSafeDomains = () => {
