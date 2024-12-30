@@ -39,21 +39,21 @@
 
 
 
-/* Farbpalette definieren */
 :root {
-  --color-primary: #1a73e8;        /* Primärfarbe bleibt unverändert */
-  --color-secondary: #004a77;      /* Dunklere Sekundärfarbe für bessere Sichtbarkeit */
-  --color-text: #ffffff;           /* Weißer Text für Kontrast */
-  --color-background: #131314;     /* Dunkler Hintergrund */
-  --color-surface: #1b1b1b;        /* Dunkle Oberflächenfarbe */
-  --color-neutral: #555555;        /* Neutrale Farbe für Grenzen und Hover */
-  --color-hover: #005ea1;          /* Hover-Farbe für Aktionen */
-  --color-disabled: #3a3a3a;       /* Farbe für deaktivierte Buttons */
-  --color-delete: #b00020;         /* Farbe für Delete-Aktionen */
-  --color-delete-hover: #c51162;   /* Hellere Rotnuance bei Hover */
-  --color-error: #d32f2f;          /* Fehlerfarbe */
-  --color-success: #388e3c;        /* Erfolgsfarbe */
+  --color-primary: #0a84ff;        /* Vibrant blue for primary actions */
+  --color-secondary: #0054d2;     /* Slightly darker blue for secondary actions */
+  --color-text: #e0e0e0;          /* Light grey for reduced eye strain */
+  --color-background: #000000;    /* True black background */
+  --color-surface: #121212;       /* Deep dark grey for surfaces */
+  --color-neutral: #424242;       /* Neutral grey for borders and hover */
+  --color-hover: #0a84ff;         /* Bright blue hover color */
+  --color-disabled: #2c2c2c;      /* Dim grey for disabled elements */
+  --color-delete: #ff453a;        /* Vivid red for delete actions */
+  --color-delete-hover: #ff6659;  /* Slightly brighter red for hover */
+  --color-error: #ff3b30;         /* Red for errors */
+  --color-success: #30d158;       /* Green for success messages */
 }
+
 
 /* Body Styles */
 body {
@@ -73,14 +73,14 @@ body {
 
 /* Popup Styles */
 .popup-container {
-  padding: 20px 30px;
+  padding: 24px 36px;
   position: relative;
   max-width: 100%;
   max-height: 100%;
   overflow: auto;
-  border-radius: 16px; /* Reduzierte Abrundung für modernes Design */
-  background: var(--color-surface); /* Dunkle Oberfläche */
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.6); /* Tiefere Schatten für dunklen Modus */
+  border-radius: 20px; /* Softer, premium curves */
+  background: var(--color-surface);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.8); /* Deeper shadows for dimension */
 }
 
 /* Zentralisierte Suchleiste */
@@ -105,8 +105,10 @@ body {
 
 #search-input:focus {
   border-color: var(--color-primary);
-  box-shadow: 0 0 8px rgba(26, 115, 232, 0.4);
+  background-color: #1a1a1a; /* Slightly lighter for focus contrast */
+  color: var(--color-text);
 }
+
 
 /* Controls Row */
 .controls-row {
@@ -162,8 +164,9 @@ body {
   margin-right: auto;
 }
 
+/* Hover Animations */
 .extension-item:hover {
-  background: #333b44; /* Dunklerer Ton für Hover-Effekt */
+  background: #1c1c1c; /* Deep black hover effect */
 }
 
 /* Erweiterungssymbol */
@@ -187,12 +190,12 @@ body {
 .delete-button {
   font-family: 'Inter', sans-serif;
   color: #ffffff;
-  padding: 6px 12px;
+  padding: 8px 16px;
   cursor: pointer;
   border: none;
   border-radius: 20px;
-  transition: background-color 0.3s ease, transform 0.2s ease;
   font-size: 14px;
+  transition: background-color 0.2s ease, transform 0.1s ease-in-out;
   flex-shrink: 0;
 }
 
@@ -201,11 +204,11 @@ body {
 }
 
 .toggle-button:hover {
-  background-color: var(--color-hover);
+  background-color: #1469d2; /* Slightly darker primary color */
 }
 
 .toggle-button:active {
-  transform: scale(0.98);
+  transform: scale(0.97);
 }
 
 .details-button {
@@ -213,7 +216,7 @@ body {
 }
 
 .details-button:hover {
-  background-color: #005ea1;
+  background-color: #003a6e; /* Darker secondary color */
 }
 
 .delete-button {
@@ -222,10 +225,6 @@ body {
 
 .delete-button:hover {
   background-color: var(--color-delete-hover);
-}
-
-.delete-button:active {
-  transform: scale(0.98);
 }
 
 /* Pagination Container */
@@ -237,36 +236,43 @@ body {
   margin: 20px 0;
 }
 
+/* Pagination Container */
 #pagination-container button {
-  padding: 6px 12px;
+  font-family: 'Inter', sans-serif;
+  padding: 8px 16px; /* Slightly larger padding for a comfortable feel */
   font-size: 14px;
-  border-radius: 4px;
+  border-radius: 20px; /* Rounded shape for a modern look */
   background-color: var(--color-primary);
   color: #ffffff;
   border: none;
   cursor: pointer;
-  transition: background-color 0.3s ease, transform 0.2s ease;
+  transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
 }
 
 #pagination-container button:disabled {
   background-color: var(--color-disabled);
   cursor: not-allowed;
+  opacity: 0.6; /* Subtle transparency for disabled state */
 }
 
 #pagination-container button:hover:not(:disabled) {
-  background-color: var(--color-hover);
-  transform: scale(1.05);
+  background-color: var(--color-hover); /* Smooth color transition */
+  transform: translateY(-2px); /* Slight upward movement */
+  box-shadow: 0 4px 10px rgba(26, 115, 232, 0.3); /* Glow effect for hover */
 }
 
 #pagination-container button:active:not(:disabled) {
-  transform: scale(0.98);
+  transform: scale(0.96); /* Subtle shrinking for click feedback */
+  box-shadow: 0 2px 6px rgba(26, 115, 232, 0.2); /* Reduced shadow on active */
 }
 
 #current-page,
 #total-pages {
   font-size: 14px;
   color: var(--color-text);
+  margin: 0 10px; /* Added spacing for better layout */
 }
+
 
 /* Loading Indicator */
 .loading {
@@ -320,6 +326,7 @@ body {
   background: #777777;
 }
 
+
 /* Material Icons */
 .material-icons {
   font-family: 'Material Icons';
@@ -362,13 +369,14 @@ body {
 
 .faq-link:hover,
 .chrome-extensions-link:hover {
-  color: var(--color-hover);
+  color: #0a84ff;
 }
 
-/* Animation für Hover-Effekt der Icons */
+/* Hover Animation for Icons */
 .faq-link:hover .material-icons,
 .chrome-extensions-link:hover .material-icons {
-  animation: icon-bounce 0.6s ease;
+  animation: icon-bounce 0.4s ease-out; /* Slightly faster animation */
+  color: var(--color-hover); /* Matches hover color for consistency */
 }
 
 @keyframes icon-bounce {
@@ -376,18 +384,34 @@ body {
     transform: translateY(0);
   }
   50% {
-    transform: translateY(-4px);
+    transform: translateY(-6px); /* Slightly more pronounced bounce */
   }
   100% {
     transform: translateY(0);
   }
 }
 
-/* Fehlernachricht */
+
+/* Error Message */
 .no-extensions-message {
   font-size: 16px;
   color: #bbbbbb;
   text-align: center;
   margin-top: 20px;
+  padding: 12px;
+  background-color: #1c1c1c; /* Slightly lighter background for visibility */
+  border: 1px solid var(--color-neutral); /* Subtle border for structure */
+  border-radius: 8px; /* Soft corners for a modern look */
+  animation: fade-in 0.5s ease-in-out; /* Smooth appearance animation */
 }
 
+@keyframes fade-in {
+  0% {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
