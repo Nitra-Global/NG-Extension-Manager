@@ -309,23 +309,35 @@ body {
 
 /* Scrollbar Styles */
 ::-webkit-scrollbar {
-  width: 8px;
+  width: 6px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #333333;
-  border-radius: 4px;
+  border-radius: 10px;
+  background: #1b1b1b; /* Anpassung an den Body-Hintergrund */
 }
 
 ::-webkit-scrollbar-thumb {
-  background: var(--color-neutral);
-  border-radius: 4px;
+  background: #555555;
+  border-radius: 10px;
+  transition: background 0.3s ease;
 }
 
 ::-webkit-scrollbar-thumb:hover {
   background: #777777;
 }
 
+::selection {
+  background: #004a77; /* Primäre Akzentfarbe für ausgewählten Text */
+  color: #ffffff;
+  border-radius: 5px;
+}
+
+::-moz-selection {
+  background: #004a77;
+  color: #ffffff;
+  text-shadow: none;
+}
 
 /* Material Icons */
 .material-icons {
