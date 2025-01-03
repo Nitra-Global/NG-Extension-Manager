@@ -4,7 +4,7 @@ class ExtensionVerificationModal {
     constructor() {
         // Configuration
         this.COOLDOWN_TIME = 10000; // 10-second cooldown between API requests
-        this.VERIFIED_API_URL = 'https://api.jsonsilo.com/public/9739f42d-9634-4592-8251-e5c989a46310';
+        this.VERIFIED_API_URL = 'https://raw.githubusercontent.com/Nitra-Global/api/refs/heads/main/NG%20Extension%20Manager%20/extDetails.json';
         
         // State tracking
         this.lastApiRequestTime = 0;
