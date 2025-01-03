@@ -1,4 +1,4 @@
-const versionAPI = "https://api.jsonsilo.com/public/9739f42d-9634-4592-8251-e5c989a46310";
+const versionAPI = "https://raw.githubusercontent.com/Nitra-Global/api/refs/heads/main/NG%20Extension%20Manager%20/version.json";
 const changelogAPI = "https://api.github.com/repos/nitra-global/NG-Extension-Manager/releases";
 const manifestData = chrome.runtime.getManifest();
 const installedVersion = manifestData.version;
