@@ -61,7 +61,7 @@ body {
 
 body.dark-mode {
     background: #000; /* Dark mode background */
-    color: #f4f7f6;
+    color: #e0e0e0;
 }
 
 .container {
@@ -117,10 +117,10 @@ header h1 {
 }
 
 .release-card {
-    background-color: #1e90ff; /* Card background color */
+    background-color: #0a84ff; /* Card background color */
     color: #fff;
     padding: 16px; /* Increased padding for touch targets */
-    border-radius: 12px; /* Rounded corners */
+    border-radius: 20px; /* Rounded corners */
     cursor: pointer;
     text-align: center;
     transition: transform 0.3s ease, background 0.3s, box-shadow 0.3s; /* Smooth transitions */
@@ -129,11 +129,11 @@ header h1 {
 
 .release-card:hover {
     transform: translateY(-6px); /* Enhanced lift effect */
-    background-color: #166bb8; /* Darker hover state */
+    background-color: #0a84ff; /* Darker hover state */
 }
 
 body.dark-mode .release-card {
-    background-color: #0056b3; /* Dark mode card bg */
+    background-color: #0054d2; /* Dark mode card bg */
 }
 
 body.dark-mode .release-card:hover {
@@ -144,7 +144,7 @@ body.dark-mode .release-card:hover {
 #refresh-btn,
 #theme-toggle {
     font-family: 'Inter', sans-serif;
-    background-color: #1e90ff; /* Button background */
+    background-color: #0054d2; /* Button background */
     color: #fff;
     border: none;
     padding: 12px 24px; /* Adequate padding */
@@ -160,31 +160,28 @@ body.dark-mode .release-card:hover {
     transform: scale(1.05); /* Slight scaling on hover */
 }
 
-#search-input {
-    font-family: 'Inter', sans-serif;
-    margin-bottom: 16px; /* Space below the input */
-    padding: 12px; /* Adequate inner spacing */
-    border-radius: 10px; /* Soft corners */
-    border: 1px solid #ccc; /* Neutral border */
-    width: calc(100% - 32px); /* Full width with padding */
-    background-color: #fff; /* Input bg */
-    color: #333;
-    transition: border-color 0.3s, background-color 0.3s, color 0.3s; /* Smooth transitions */
+.search-sort-container {
+    display: flex;
+    align-items: center;
+    gap: 10px; /* Space between search input and sort options */
+    margin-bottom: 10px; /* Margin below the container */
 }
 
-#search-input:focus {
-    border-color: #1e90ff; /* Highlight on focus */
-    outline: none; /* Remove outline */
+#search-input, #sort-options {
+    font-family: 'Inter', sans-serif; /* Use Inter font */
+    padding: 8px; /* Padding for better click area */
+    font-size: 16px; /* Font size for readability */
+    border: 1px solid #ccc; /* Border for definition */
+    border-radius: 20px; /* Rounded corners */
+    background-color: #fff; /* Background color */
+    color: #333; /* Text color */
+    transition: background-color 0.3s, color 0.3s; /* Smooth transitions */
 }
 
-body.dark-mode #search-input {
-    background-color: #333; /* Dark mode input bg */
-    color: #f4f7f6; /* Light text color */
-    border: 1px solid #555; /* Dark border */
-}
-
-body.dark-mode #search-input:focus {
-    border-color: #1e90ff; /* Highlight on focus in dark mode */
+body.dark-mode #search-input, body.dark-mode #sort-options {
+    background-color: #333; /* Dark mode background */
+    color: #f4f7f6; /* Light text color for dark mode */
+    border: 1px solid #555; /* Dark mode border */
 }
 
 footer {
@@ -265,7 +262,6 @@ body.dark-mode .close-btn {
     }
 }
 
-
 /* Link Styles */
 a {
     color: #1a73e8; /* Primäre Akzentfarbe */
@@ -276,41 +272,134 @@ a {
     padding: 2px 2px;
     border-radius: 20px;
     transition: background-color 0.2s ease, color 0.2s ease;
-  }
-  
-  a:hover {
+}
+
+a:hover {
     background-color: #004a77; /* Dunkler blauer Hintergrund beim Hover */
     color: #ffffff; /* Weißer Text beim Hover */
-  }
+}
 
-  /* Scrollbar Styles */
+/* Scrollbar Styles */
 ::-webkit-scrollbar {
     width: 6px;
-  }
-  
-  ::-webkit-scrollbar-track {
+}
+
+::-webkit-scrollbar-track {
     border-radius: 10px;
     background: #1b1b1b; /* Anpassung an den Body-Hintergrund */
-  }
-  
-  ::-webkit-scrollbar-thumb {
+}
+
+::-webkit-scrollbar-thumb {
     background: #555555;
     border-radius: 10px;
     transition: background 0.3s ease;
-  }
-  
-  ::-webkit-scrollbar-thumb:hover {
+}
+
+::-webkit-scrollbar-thumb:hover {
     background: #777777;
-  }
-  
-  ::selection {
+}
+
+::selection {
     background: #004a77; /* Primäre Akzentfarbe für ausgewählten Text */
     color: #ffffff;
     border-radius: 5px;
-  }
-  
-  ::-moz-selection {
+}
+
+::-moz-selection {
     background: #004a77;
     color: #ffffff;
     text-shadow: none;
-  }
+}
+
+
+
+/* Clear Cache Button */
+#clear-cache-button {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background: transparent; /* No intrusive background */
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+    padding: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    transition: transform 0.3s ease, background 0.3s ease;
+}
+
+#clear-cache-button:hover {
+    transform: scale(1.1);
+}
+
+/* Default Icon Styling */
+#clear-cache-button svg {
+    width: 20px;
+    height: 20px;
+    fill: black; /* Default to black for light mode */
+}
+
+/* Toast Notification */
+.toast-notification {
+    position: fixed;
+    bottom: 70px;
+    right: 20px;
+    background: rgba(0, 0, 0, 0.8);
+    color: white;
+    padding: 10px 15px;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    font-size: 14px;
+    animation: fadeInOut 3s ease;
+    z-index: 1000;
+}
+
+@keyframes fadeInOut {
+    0% {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    10% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+    90% {
+        opacity: 1;
+    }
+    100% {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+}
+
+
+/* Tooltip styling */
+.tooltip {
+    position: absolute;
+    background: rgba(0, 0, 0, 0.85);
+    color: white;
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-size: 12px;
+    white-space: nowrap;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    transition: opacity 0.2s ease, visibility 0.2s ease;
+    opacity: 0;
+    visibility: hidden;
+    z-index: 1000;
+    pointer-events: none; /* Prevent blocking other interactions */
+}
+
+/* Tooltip arrow */
+.tooltip::after {
+    content: '';
+    position: absolute;
+    bottom: -5px; /* Position below tooltip box */
+    left: 50%;
+    transform: translateX(-50%);
+    border-width: 5px;
+    border-style: solid;
+    border-color: rgba(0, 0, 0, 0.85) transparent transparent transparent;
+}
