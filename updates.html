@@ -15,12 +15,16 @@
             <p id="status-message"></p>
         </header>
         <div class="version-info">
-            <input type="text" id="search-input" placeholder="Search Releases..." aria-label="Search Releases">
-            <!-- Add this near your search input -->
-<div class="filter-container">
-    <input type="checkbox" id="pre-release-filter">
-    <label for="pre-release-filter">Show Pre-Releases Only</label>
-</div>
+            <div class="search-sort-container">
+                <input type="text" id="search-input" placeholder="Search releases...">
+                <select id="sort-options">
+                    <option value="date">Sort by Date</option>
+                    <option value="name">Sort by Name</option>
+                    <option value="type">Sort by Type</option>
+                </select>
+            </div>
+            <div class="filter-container">
+                <label for="pre-release-filter"></label></div>
         </div>
         <div class="changelog-grid">
             <div id="releases-grid" class="grid"></div>
@@ -39,12 +43,19 @@
   scrolling="no" 
   style="border: none;"
 >
+
 </iframe>
+<button id="clear-cache-button">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="24" height="24">
+        <path d="M20 10h24l3-6h-30l3 6zm14 36c-4.97 0-9 4.03-9 9h18c0-4.97-4.03-9-9-9zm-1-2h2V18h-2v26zM26 48h12c0-6.63-5.37-12-12-12s-12 5.37-12 12h12zM8 60h48v-2H8v2z" />
+    </svg>
+</button>
         <footer>
-            <p>Created by Nitra Global</p>
-            <button id="theme-toggle" title="Toggle Dark/Light Theme">Toggle Theme</button>
+            <p>© 2024 Nitra Global</p>
+            <button id="theme-toggle" title="Toggle Dark/Light Theme">Toggle Theme</button>      
 
         </footer>
+    
     </div>
     <script src="js/markdowns.js"></script>
     <script src="js/updates.js"></script>
