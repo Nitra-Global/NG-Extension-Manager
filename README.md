@@ -2,10 +2,6 @@
 
 **NG Extension Manager** is a secure browser extension open-sourced on **September 24, 2024** by **Nitra Global**, designed to manage your browser extensions with privacy, ease, and efficiency. 
 
-## 🛑 **Important Announcement**: Archive Status
-
-As of **January 2025**, **NG Extension Manager** has been discontinued. No new major features or active development will be implemented going forward. However, we will continue to provide **essential maintenance** and **security patches** as needed.
-
 ## 🚀 Base Features
 
 ### 🔹 Extension Details Page
