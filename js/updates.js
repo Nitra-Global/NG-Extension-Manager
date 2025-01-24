@@ -90,15 +90,22 @@ function closeBottomSheet() {
     document.getElementById("bottom-sheet").classList.remove("open");
 }
 
-function filterReleases() {
-    const query = document.getElementById("search-input").value.toLowerCase();
-    const releaseCards = document.querySelectorAll(".release-card");
+let debounceTimer;
 
-    releaseCards.forEach(card => {
-        const text = card.textContent.toLowerCase();
-        card.style.display = text.includes(query) ? "block" : "none";
-    });
+function filterReleases() {
+    clearTimeout(debounceTimer);
+
+    debounceTimer = setTimeout(() => {
+        const query = document.getElementById("search-input").value.trim().toLowerCase();
+        const releaseCards = document.querySelectorAll(".release-card");
+
+        releaseCards.forEach(card => {
+            const text = card.textContent.toLowerCase();
+            card.style.display = text.includes(query) ? "block" : "none";
+        });
+    }, 300); // Adjust the debounce delay (in ms) as needed
 }
+
 
 function showNewVersionMessage(latestVersion) {
     const statusMessage = document.getElementById("status-message");
@@ -148,8 +155,34 @@ function sortReleases(releases, sortOption) {
         case "type":
             releases.sort((a, b) => a.prerelease - b.prerelease);
             break;
+        case "version":
+            releases.sort((a, b) => compareVersions(b.tag_name, a.tag_name));
+            break;
+        case "size":
+            releases.sort((a, b) => b.assets.reduce((sum, asset) => sum + asset.size, 0) - a.assets.reduce((sum, asset) => sum + asset.size, 0));
+            break;
+        case "draft":
+            releases.sort((a, b) => b.draft - a.draft);  // Prioritize non-draft releases
+            break;
+        default:
+            break;
     }
 }
+
+// Helper function to compare version numbers
+function compareVersions(a, b) {
+    const aParts = a.split('.').map(Number);
+    const bParts = b.split('.').map(Number);
+
+    for (let i = 0; i < Math.max(aParts.length, bParts.length); i++) {
+        const aPart = aParts[i] || 0;
+        const bPart = bParts[i] || 0;
+        if (aPart > bPart) return 1;
+        if (aPart < bPart) return -1;
+    }
+    return 0;
+}
+
 
 function updateReleasesGrid(releases) {
     const releasesGrid = document.getElementById("releases-grid");
