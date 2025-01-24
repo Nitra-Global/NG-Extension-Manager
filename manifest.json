@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "NG Extension Manager",
-  "version": "2.2.5",
+  "version": "2.2.6",
   "description": "Your browser’s new best friend. Manage your extensions with ease and say goodbye to clutter!",
   "homepage_url": "https://nitraglobal.wixsite.com/nitra-global/ng-extension-manager",
   "author": "NG Team",
@@ -27,7 +27,6 @@
     }
   },
   "icons": {
-    "16": "icons/ng.png",
     "48": "icons/48x48.png",
     "128": "icons/128x128.png"
   },
@@ -41,7 +40,7 @@
     }
   ],
   "options_ui": {
-    "page": "options.html",
+    "page": "updates.html",
     "open_in_tab": true
   },
   "commands": {
