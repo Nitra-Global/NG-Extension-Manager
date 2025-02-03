@@ -3,25 +3,9 @@ const changelogAPI = "https://api.github.com/repos/nitra-global/NG-Extension-Man
 const manifestData = chrome.runtime.getManifest();
 const installedVersion = manifestData.version;
 
-function toggleTheme() {
-    const isDarkMode = document.body.classList.toggle('dark-mode');
-    localStorage.setItem('theme', isDarkMode ? 'dark' : 'light');
-}
-
-function applySavedTheme() {
-    const savedTheme = localStorage.getItem('theme');
-    if (savedTheme === 'dark') {
-        document.body.classList.add('dark-mode');
-    } else {
-        document.body.classList.remove('dark-mode');
-    }
-}
-
 document.addEventListener("DOMContentLoaded", () => {
-    applySavedTheme(); // Apply theme when the page loads
     document.getElementById("installed-version").textContent = installedVersion;
     document.getElementById("close-sheet").addEventListener("click", closeBottomSheet);
-    document.getElementById("theme-toggle").addEventListener("click", toggleTheme);
     document.getElementById("search-input").addEventListener("input", filterReleases);
 
     fetchData();
@@ -274,20 +258,6 @@ function checkNetworkConnection() {
     return true;
 }
 
-function updateCacheButtonColor() {
-    const button = document.getElementById("clear-cache-button");
-    const svg = button.querySelector("svg");
-
-    // Toggle icon color based on the dark mode status
-    if (document.body.classList.contains("dark-mode")) {
-        svg.style.fill = "white"; // Light color for dark mode
-    } else {
-        svg.style.fill = "black"; // Dark color for light mode
-    }
-}
-
-// Automatically update icon color when the theme changes
-document.getElementById("theme-toggle").addEventListener("click", updateCacheButtonColor);
 
 // Handle cache clearing and show toast
 document.getElementById("clear-cache-button").addEventListener("click", () => {
@@ -306,7 +276,6 @@ document.getElementById("clear-cache-button").addEventListener("click", () => {
     setTimeout(() => location.reload(), 500);
 });
 
-document.addEventListener("DOMContentLoaded", updateCacheButtonColor);
 document.addEventListener("DOMContentLoaded", () => {
     const button = document.getElementById("clear-cache-button");
     const tooltip = document.createElement("div");
