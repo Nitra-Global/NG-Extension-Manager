@@ -50,144 +50,101 @@ html, body {
 
 body {
     font-family: 'Inter', sans-serif;
-    background: #f4f7f6; /* Light background for readability */
-    color: #333;
+    background: #000;
+    color: #e0e0e0;
     display: flex;
     flex-direction: column;
-    height: 100%; /* Uses the full viewport height */
+    min-height: 100vh;
     margin: 0;
     transition: background-color 0.5s ease, color 0.5s ease;
-}
-
-body.dark-mode {
-    background: #000; /* Dark mode background */
-    color: #e0e0e0;
 }
 
 .container {
     display: flex;
     flex-direction: column;
-    justify-content: space-between; /* Aligns content to edges */
-    align-items: center;
-    background: #fff; /* White background for the container */
-    border-radius: 12px; /* Slight rounding for a soft feel */
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1); /* Subtle shadow for depth */
-    width: 100%;
-    height: 100%;
+    flex: 1;
+    background: #121212;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    width: clamp(300px, 90%, 900px);
+    margin: 20px auto;
     padding: 20px;
     text-align: center;
-    overflow: hidden; /* Prevents scrolling */
+    overflow: hidden;
     transition: background 0.5s, color 0.5s;
 }
 
-body.dark-mode .container {
-    background: #121212; /* Dark mode container */
-}
-
 header {
-    margin-bottom: 24px; /* Increased margin for separation */
+    margin-bottom: 24px;
 }
 
 header h1 {
-    font-size: 36px; /* Increase title size for prominence */
-    color: #1e90ff; /* Bright blue color */
-}
-
-.version-info {
-    margin: 16px 0;
-    font-size: 18px; /* Keep consistent font sizing */
-    color: #666; /* Slightly muted color for secondary text */
+    font-size: 36px;
+    color: #1e90ff;
 }
 
 .changelog-grid {
-    display: flex;
-    flex: 1; /* Uses available space */
-    flex-direction: column;
+    flex: 1;
     width: 100%;
-    overflow-y: auto; /* Enables scrolling for releases */
-    gap: 16px; /* Increased gap for better spacing */
+    overflow-y: auto;
+    gap: 16px;
     padding: 12px;
-    margin: 12px 0; /* Added margin for separation */
+    margin: 12px 0;
 }
 
 .grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); /* Larger min width for cards */
-    gap: 16px; /* Consistent spacing */
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 16px;
 }
 
 .release-card {
-    background-color: #0a84ff; /* Card background color */
+    background-color: #0054d2;
     color: #fff;
-    padding: 16px; /* Increased padding for touch targets */
-    border-radius: 20px; /* Rounded corners */
+    padding: 16px;
+    border-radius: 20px;
     cursor: pointer;
     text-align: center;
-    transition: transform 0.3s ease, background 0.3s, box-shadow 0.3s; /* Smooth transitions */
+    transition: transform 0.3s ease, background 0.3s, box-shadow 0.3s;
     box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
 }
 
 .release-card:hover {
-    transform: translateY(-6px); /* Enhanced lift effect */
-    background-color: #0a84ff; /* Darker hover state */
-}
-
-body.dark-mode .release-card {
-    background-color: #0054d2; /* Dark mode card bg */
-}
-
-body.dark-mode .release-card:hover {
-    background-color: #004494; /* Dark mode hover state */
-    box-shadow: 0 6px 20px rgba(255, 255, 255, 0.1); /* Subtle effect on hover */
-}
-
-#refresh-btn,
-#theme-toggle {
-    font-family: 'Inter', sans-serif;
-    background-color: #0054d2; /* Button background */
-    color: #fff;
-    border: none;
-    padding: 12px 24px; /* Adequate padding */
-    font-size: 16px;
-    border-radius: 10px; /* Rounded buttons */
-    cursor: pointer;
-    transition: background 0.3s, transform 0.3s; /* Smooth hover effect */
-}
-
-#refresh-btn:hover:not(:disabled),
-#theme-toggle:hover {
-    background-color: #1a7ccf; /* Hover effect */
-    transform: scale(1.05); /* Slight scaling on hover */
+    background-color: #004494;
+    box-shadow: 0 6px 20px rgba(255, 255, 255, 0.1);
+    transform: translateY(-2px);
 }
 
 .search-sort-container {
     display: flex;
     align-items: center;
-    gap: 10px; /* Space between search input and sort options */
-    margin-bottom: 10px; /* Margin below the container */
-}
-
-#search-input, #sort-options {
-    font-family: 'Inter', sans-serif; /* Use Inter font */
-    padding: 8px; /* Padding for better click area */
-    font-size: 16px; /* Font size for readability */
-    border: 1px solid #ccc; /* Border for definition */
-    border-radius: 20px; /* Rounded corners */
-    background-color: #fff; /* Background color */
-    color: #333; /* Text color */
-    transition: background-color 0.3s, color 0.3s; /* Smooth transitions */
-}
-
-body.dark-mode #search-input, body.dark-mode #sort-options {
-    background-color: #333; /* Dark mode background */
-    color: #f4f7f6; /* Light text color for dark mode */
-    border: 1px solid #555; /* Dark mode border */
-}
+    gap: 10px;
+    margin-bottom: 10px;
+  }
+  
+  #search-input,
+  #sort-options {
+    font-family: "Inter", sans-serif;
+    padding: 8px;
+    font-size: 16px;
+    border: 1px solid #555;
+    border-radius: 20px;
+    background-color: #333;
+    color: #f4f7f6;
+    transition: background-color 0.3s, color 0.3s;
+  }
+  
+  #search-input:focus,
+  #sort-options:focus {
+    outline: none;
+    border-color: #1e90ff;
+    box-shadow: 0 0 5px #1e90ff;
+  }
 
 footer {
-    margin-top: 24px; /* Adequate space above footer */
+    margin-top: 24px;
     font-size: 14px;
-    color: #888; /* Muted color for footer */
+    color: #888;
 }
 
 /* Bottom Sheet */
@@ -196,42 +153,33 @@ footer {
     bottom: -100%;
     left: 0;
     width: 100%;
-    background-color: #fff; /* Bottom sheet background */
-    box-shadow: 0 -6px 20px rgba(0, 0, 0, 0.2); /* Shadow for depth */
-    border-top-left-radius: 18px; /* Rounded corners for top */
+    background: #121212;
+    box-shadow: 0 -6px 20px rgba(255, 255, 255, 0.1);
+    border-top-left-radius: 18px;
     border-top-right-radius: 18px;
-    transition: bottom 0.5s ease-in-out, background 0.3s; /* Smooth transitions */
+    transition: bottom 0.5s ease-in-out, background 0.3s;
     max-height: 80%;
-    overflow-y: auto; /* Enable scrolling */
-    padding: 24px; /* Adequate padding */
-    box-sizing: border-box; 
+    overflow-y: auto;
+    padding: 24px;
+    box-sizing: border-box;
 }
 
 .bottom-sheet.open {
-    bottom: 0; /* Slide in on open */
-}
-
-body.dark-mode .bottom-sheet {
-    background: #121212; /* Dark mode for bottom sheet */
-    box-shadow: 0 -6px 20px rgba(255, 255, 255, 0.1); /* Light shadow */
+    bottom: 0;
 }
 
 .close-btn {
     background: none;
     border: none;
-    font-size: 24px; /* Increased size for ease of use */
-    color: #333; /* Default button color */
+    font-size: 24px;
+    color: #f4f7f6;
     float: right;
     cursor: pointer;
-    transition: color 0.3s; /* Smooth color change */
-}
-
-body.dark-mode .close-btn {
-    color: #f4f7f6; /* Light color for dark mode */
+    transition: color 0.3s;
 }
 
 .close-btn:hover {
-    color: #1e90ff; /* Bright color on hover */
+    color: #1e90ff;
 }
 
 /* Responsive Design */
@@ -264,7 +212,7 @@ body.dark-mode .close-btn {
 
 /* Link Styles */
 a {
-    color: #1a73e8; /* Primäre Akzentfarbe */
+    color: #ffffff; /* Primäre Akzentfarbe */
     text-decoration: none;
     font-weight: 500;
     position: relative;
@@ -275,7 +223,7 @@ a {
 }
 
 a:hover {
-    background-color: #004a77; /* Dunkler blauer Hintergrund beim Hover */
+    background-color: #333; /* Dunkler blauer Hintergrund beim Hover */
     color: #ffffff; /* Weißer Text beim Hover */
 }
 
@@ -318,7 +266,7 @@ a:hover {
     position: fixed;
     bottom: 20px;
     right: 20px;
-    background: transparent; /* No intrusive background */
+    background: #333; /* No intrusive background */
     border: none;
     border-radius: 50%;
     cursor: pointer;
@@ -338,7 +286,7 @@ a:hover {
 #clear-cache-button svg {
     width: 20px;
     height: 20px;
-    fill: black; /* Default to black for light mode */
+    fill: rgb(255, 255, 255);
 }
 
 /* Toast Notification */
