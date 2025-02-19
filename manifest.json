@@ -1,20 +1,16 @@
 {
   "manifest_version": 3,
   "name": "NG Extension Manager",
-  "version": "2.3.0",
+  "version": "2.3.1",
   "description": "Your browser’s new best friend. Manage your extensions with ease and say goodbye to clutter!",
   "homepage_url": "https://nitraglobal.wixsite.com/nitra-global/ng-extension-manager",
   "author": "NG Team",
   "permissions": [
     "storage",
-    "history",
     "management",
     "activeTab",
-    "tabs",
-    "commands",
     "contextMenus",
-    "notifications",
-    "scripting"
+    "notifications"
     ],
   "host_permissions": [
     "https://notral.instatus.com/*"
@@ -42,14 +38,7 @@
   "options_ui": {
     "page": "updates.html",
     "open_in_tab": true
-  },
-  "commands": {
-    "toggle_extension": {
-      "suggested_key": {
-        "default": "Ctrl+Shift+E"
-      },
-      "description": "Switch NG Extension Manager on or off with a hotkey!"
-    }
+  
   },
   "web_accessible_resources": [
     {
