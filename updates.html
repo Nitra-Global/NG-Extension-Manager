@@ -3,65 +3,71 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NG Extension Manager</title>
+    <title>Updates | NG Extension Manager</title>
     <link rel="stylesheet" href="updates.css">
-    <link rel="stylesheet" type="text/css" href="fonts/fonts.css">
+    <link rel="stylesheet" href="fonts/fonts.css">
 </head>
 <body>
     <div class="container">
         <header>
-            <h1>NG Extension Manager</h1>
-            <p>Current Version: <span id="installed-version"></span></p>
-            <p>Latest Version: <span id="latest-version"></span></p>
-            <p id="status-message"></p>
+            <h1 id="extension-title">NG Extension Manager</h1>
         </header>
-        <div class="version-info">
-            <div class="search-sort-container">
-                <input type="text" id="search-input" placeholder="Search releases...">
-                    <select id="sort-options">
-                    <option value="date">Sort by Date</option>
-                    <option value="name">Sort by Name</option>
-                    <option value="type">Sort by Type</option>
-                    <option value="version">Sort by Version</option>
-                    <option value="size">Sort by Size</option>
-                    <option value="draft">Sort by Draft Status</option>
-                </select>
-            </div>
-            
-            <div class="filter-container">
-                <label for="pre-release-filter"></label></div>
-        </div>
-        <div class="changelog-grid">
-            <div id="releases-grid" class="grid"></div>
-        </div>
-        <div id="bottom-sheet" class="bottom-sheet">
-            <button id="close-sheet" class="close-btn">×</button>
-            <div id="release-details"></div>
-
-        </div>
         
-        <iframe 
-  src="https://notral.instatus.com/embed-status/989720b8/dark-lg" 
-  width="255" 
-  height="61" 
-  frameBorder="0" 
-  scrolling="no" 
-  style="border: none;"
->
-
-</iframe>
-<button id="clear-cache-button" aria-label="Clear cache"> <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="24" height="24">
-        <path d="M20 10h24l3-6h-30l3 6zm14 36c-4.97 0-9 4.03-9 9h18c0-4.97-4.03-9-9-9zm-1-2h2V18h-2v26zM26 48h12c0-6.63-5.37-12-12-12s-12 5.37-12 12h12zM8 60h48v-2H8v2z" />
-    </svg>
-</button>
-        <footer>
-            <p>Copyright © 2025 Nitra Global. All Rights Reserved.</p>
-        </footer>
-    
+        <main>
+            <div class="status-card">
+                <div class="status-header">
+                    <div class="status-indicator">
+                        <span id="status-icon" class="loading"></span>
+                        <span id="status-message">Checking for updates...</span>
+                    </div>
+                </div>
+                
+                <div class="version-info">
+                    <div class="version-item">
+                        <span class="version-label">Installed Version:</span>
+                        <span id="installed-version" class="version-value">0.0.0</span>
+                    </div>
+                    <div class="version-item">
+                        <span class="version-label">Latest Version:</span>
+                        <span id="latest-version" class="version-value">0.0.0</span>
+                    </div>
+                </div>
+                
+                <div class="actions">
+                    <button id="release-notes-btn" class="btn primary">Release Notes</button>
+                    <button id="clear-cache-btn" class="btn secondary">Clear Cache</button>
+                </div>
+            </div>
+        </main>
+        
+        <!-- Release Notes Modal -->
+        <div id="release-modal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2>Release Notes</h2>
+                    <button id="close-modal" class="close-btn">&times;</button>
+                </div>
+                
+                <div class="modal-filters">
+                    <input type="text" id="search-input" placeholder="Search releases...">
+                    <select id="sort-options">
+                        <option value="date">Sort by Date (newest first)</option>
+                        <option value="version">Sort by Version</option>
+                        <option value="name">Sort by Name</option>
+                        <option value="type">Sort by Type</option>
+                    </select>
+                </div>
+                
+                <div id="releases-container" class="releases-container">
+                    <!-- Release items will be inserted here dynamically -->
+                </div>
+            </div>
+        </div>
     </div>
+    
     <script src="js/markdowns.js"></script>
     <script src="js/updates.js"></script>
-<script src="js/link.js"></script>
-<script src="js/offline.js"></script>
+    <script src="js/link.js"></script>
+    <script src="js/offline.js"></script>
 </body>
 </html>
