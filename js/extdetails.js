@@ -1,13 +1,9 @@
-// Enhanced Extension Verification Modal
+// Enhanced Extension Verification Modal without Progress Bar
 
 class ExtensionVerificationModal {
     constructor() {
         // Configuration
-        this.COOLDOWN_TIME = 10000; // 10-second cooldown between API requests
         this.VERIFIED_API_URL = 'https://raw.githubusercontent.com/Nitra-Global/api/refs/heads/main/NG%20Extension%20Manager%20/extDetails.json';
-        
-        // State tracking
-        this.lastApiRequestTime = 0;
         
         // Bind methods to maintain correct context
         this.init = this.init.bind(this);
@@ -51,21 +47,6 @@ class ExtensionVerificationModal {
                 display: flex;
                 flex-direction: column;
                 gap: 16px;
-            }
-
-            #extensionModal .loading-bar {
-                width: 100%;
-                height: 4px;
-                background-color: var(--bg-darker);
-                border-radius: 20px;
-                overflow: hidden;
-            }
-
-            #extensionModal .loading-progress {
-                width: 0%;
-                height: 100%;
-                background-color: var(--accent-color);
-                transition: width 0.3s ease;
             }
 
             #extensionModal .btn {
@@ -125,7 +106,6 @@ class ExtensionVerificationModal {
 
     // Setup additional mobile responsiveness
     setupMobileResponsiveness() {
-        // Adjust for mobile devices
         window.addEventListener('resize', () => {
             if (this.modal) {
                 const width = window.innerWidth;
@@ -157,15 +137,11 @@ class ExtensionVerificationModal {
                 <div id="verificationStatus" 
                      class="status-message" 
                      aria-live="polite">
-                    Waiting for verification...
-                </div>
-                
-                <div id="loadingBar" class="loading-bar" style="display: none;">
-                    <div id="loadingProgress" class="loading-progress"></div>
+                    Click "Verify Extension" to start verification.
                 </div>
                 
                 <div id="actionContainer" class="action-container">
-                    <button id="confirmButton" class="btn btn-primary" style="display: none;">Verify Extension</button>
+                    <button id="confirmButton" class="btn btn-primary">Verify Extension</button>
                     <button id="closeModalBtn" class="btn btn-secondary">Close</button>
                 </div>
                 
@@ -177,7 +153,6 @@ class ExtensionVerificationModal {
                     <ul>
                         <li>Ensure you have a stable internet connection</li>
                         <li>Check that the extension ID is correct</li>
-                        <li>Wait 10 seconds between verification attempts</li>
                     </ul>
                 </div>
 
@@ -264,8 +239,6 @@ class ExtensionVerificationModal {
         button.appendChild(icon);
         document.body.appendChild(button);
 
-        // Ensure multiple event listeners aren't added
-        button.removeEventListener('click', this.handleMeatballClick);
         button.addEventListener('click', this.handleMeatballClick.bind(this));
 
         // Add hover and click animations
@@ -283,7 +256,6 @@ class ExtensionVerificationModal {
         if (extensionId) {
             this.openModal(extensionId);
         } else {
-            // Fallback if no extension ID is found
             this.showErrorMessage('No extension ID found in the URL.');
         }
     }
@@ -291,100 +263,25 @@ class ExtensionVerificationModal {
     // Open the modal with improved error handling
     openModal(extensionId) {
         const statusElement = this.modal.querySelector('#verificationStatus');
-        const loadingBar = this.modal.querySelector('#loadingBar');
-        const loadingProgress = this.modal.querySelector('#loadingProgress');
-        const confirmButton = this.modal.querySelector('#confirmButton');
-
+        
         // Reset modal state
         this.modal.style.display = 'block';
-        loadingBar.style.display = 'block';
-        loadingProgress.style.width = '0%';
-        confirmButton.style.display = 'none';
         statusElement.style.color = '';
         statusElement.textContent = 'Preparing verification...';
 
-        // Cooldown check
-        const currentTime = Date.now();
-        if (currentTime - this.lastApiRequestTime < this.COOLDOWN_TIME) {
-            this.handleCooldown(currentTime);
-            return;
-        }
-
-        // Prepare for verification
-        this.lastApiRequestTime = currentTime;
-        this.prepareForVerification(extensionId);
-    }
-
-    // Prepare for verification with better UX
-    prepareForVerification(extensionId) {
-        const statusElement = this.modal.querySelector('#verificationStatus');
-        const loadingBar = this.modal.querySelector('#loadingBar');
-        const loadingProgress = this.modal.querySelector('#loadingProgress');
-        const confirmButton = this.modal.querySelector('#confirmButton');
-
-        // Check online status
-        if (!navigator.onLine) {
-            this.showErrorMessage('You are offline. Check your internet connection.');
-            return;
-        }
-
-        // Simulate initial loading
-        loadingProgress.style.width = '30%';
-        statusElement.textContent = 'Initializing verification...';
-
-        // Start verification after a short delay to show loading state
-        setTimeout(() => {
-            this.verifyExtension(extensionId);
-        }, 500);
-    }
-
-    // Handle cooldown period with countdown
-    handleCooldown(currentTime) {
-        const statusElement = this.modal.querySelector('#verificationStatus');
-        const loadingBar = this.modal.querySelector('#loadingBar');
-        const loadingProgress = this.modal.querySelector('#loadingProgress');
-        const confirmButton = this.modal.querySelector('#confirmButton');
-
-        let remainingTime = Math.ceil((this.COOLDOWN_TIME - (currentTime - this.lastApiRequestTime)) / 1000);
-        
-        statusElement.textContent = `Please wait ${remainingTime} seconds before sending another request.`;
-        statusElement.style.color = 'var(--error-color)';
-        loadingProgress.style.width = '100%';
-        confirmButton.style.display = 'block';
-
-        const countdownInterval = setInterval(() => {
-            remainingTime--;
-            statusElement.textContent = remainingTime > 0 
-                ? `Please wait ${remainingTime} seconds before sending another request.`
-                : 'Click "Verify Extension" to continue.';
-            
-            if (remainingTime <= 0) {
-                clearInterval(countdownInterval);
-                loadingBar.style.display = 'none';
-            }
-        }, 1000);
+        // Immediately verify the extension
+        this.verifyExtension(extensionId);
     }
 
     // Verify extension with improved error handling and UX
     async verifyExtension(extensionId) {
         const statusElement = this.modal.querySelector('#verificationStatus');
-        const loadingBar = this.modal.querySelector('#loadingBar');
-        const loadingProgress = this.modal.querySelector('#loadingProgress');
-        const confirmButton = this.modal.querySelector('#confirmButton');
 
         try {
-            // Show loading progress
-            loadingBar.style.display = 'block';
-            loadingProgress.style.width = '50%';
             statusElement.textContent = 'Verifying extension...';
-            confirmButton.style.display = 'none';
-
-            // Simulate some loading time
-            await new Promise(resolve => setTimeout(resolve, 500));
 
             // Fetch verification data
             const response = await fetch(this.VERIFIED_API_URL);
-            loadingProgress.style.width = '100%';
 
             if (!response.ok) {
                 throw new Error('Error retrieving verification data');
@@ -407,27 +304,19 @@ class ExtensionVerificationModal {
         } catch (error) {
             // Comprehensive error handling
             this.showErrorMessage(error.message);
-        } finally {
-            loadingBar.style.display = 'none';
         }
     }
 
     // Centralized error message display
     showErrorMessage(message) {
         const statusElement = this.modal.querySelector('#verificationStatus');
-        const loadingBar = this.modal.querySelector('#loadingBar');
-        const confirmButton = this.modal.querySelector('#confirmButton');
-
         statusElement.textContent = `Error: ${message}`;
         statusElement.style.color = 'var(--error-color)';
-        loadingBar.style.display = 'none';
-        confirmButton.style.display = 'block';
     }
 
     // Close modal and reset state
     closeModal() {
         this.modal.style.display = 'none';
-              this.modal.style.pointerEvents = 'auto';
     }
 
     // Extract extension ID from URL
