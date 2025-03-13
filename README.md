@@ -39,11 +39,6 @@ To install the NG Extension Manager, follow these steps:
 1. **Download** the latest version from the [Releases page](https://github.com/Nitra-Global/NG-Extension-Manager/releases).
 2. **Add** the extension to your browser following the instructions for your specific browser.
 
-## 📄 Roadmap
-While **no new features** will be added, we are maintaining:
-- **Security patches** and **bug fixes**.
-- **Compatibility updates** for the latest browser versions.
-
 ## 🤝 Contributing
 
 We welcome contributions! If you'd like to help us improve the extension or report issues, please:
@@ -53,7 +48,7 @@ We welcome contributions! If you'd like to help us improve the extension or repo
 3. **Submit a pull request** with a clear description of your modifications.
 
 ## 📄 License
-This project is licensed under the **Nitra Global License Agreement**. For details, please see the [LICENSE](License) file.
+This project is licensed under the **Nitra Global License Agreement**. For details, please see the [LICENSE](LICENSE) file.
 
 ## 🏷️ Contact
 For any inquiries, please contact us at [NGDE@WEB.DE](mailto:NGDE@WEB.DE).
