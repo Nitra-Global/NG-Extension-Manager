@@ -1,5 +1,5 @@
 # NG Extension Manager  
-**NG Extension Manager** is a **secure**, **privacy-focused**, and **open-source** browser extension that simplifies managing your browser extensions. Developed and maintained by [Nitra Global](https://www.nitraglobal.com), it offers advanced features while ensuring **zero data collection**.
+**NG Extension Manager** is a **secure**, **privacy-focused**, and **open-source** browser extension that simplifies managing your browser extensions. Developed and maintained by [Nitra Global](https://github.com/Nitra-Global), it offers advanced features while ensuring **zero data collection**.
 
 ---
 
@@ -96,8 +96,8 @@ For questions, feedback, or collaboration inquiries, reach out via **email**:
 
 ## 🏢 About Nitra Global  
 
-[Nitra Global](https://www.nitraglobal.com) is committed to building **privacy-focused**, **secure**, and **high-performance** software solutions. Discover more of our projects on our [Github page](https://github.com/Nitra-Global).  
+[Nitra Global](https://github.com/Nitra-Global) is committed to building **privacy-focused**, **secure**, and **high-performance** software solutions. Discover more of our projects on our [Github page](https://github.com/Nitra-Global).  
 
 ---
 
-✨ **Developed & Maintained by [Nitra Global](https://www.nitraglobal.com).**
+✨ **Developed & Maintained by [Nitra Global](https://github.com/Nitra-Global).**
