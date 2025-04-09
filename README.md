@@ -77,7 +77,7 @@ We welcome community contributions! Here’s how you can help:
 1. **Fork** the repository on GitHub.  
 2. **Create a new branch** for your changes.  
 3. **Submit a Pull Request** with a **detailed explanation** of your improvements.  
-4. Check our [CONTRIBUTING.md](CONTRIBUTING.md) for detailed contribution guidelines.  
+4. Check our [CONTRIBUTING.md](contributing.md) for detailed contribution guidelines.  
 
 ---
 
