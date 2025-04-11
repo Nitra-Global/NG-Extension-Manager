@@ -33,43 +33,23 @@
                     </div>
                 </div>
                 <div class="actions">
-                    <button id="release-notes-btn" class="btn primary">Release Notes</button>
-                    <button id="clear-cache-btn" class="btn secondary">Clear Cache</button>
+                    <a href="https://github.com/Nitra-Global/NG-Extension-Manager/releases" target="_blank">
+                        <button class="btn secondary">All Releases</button>
+                    </a>
                     <a href="https://github.com/Nitra-Global/NG-Extension-Manager/releases" target="_blank">
                         <button id="download" class="btn secondary">Download</button>
-                      </a>
-                      <div>
-                </div>
-             </div>
-        </main>
-        
-        <!-- Release Notes Modal -->
-        <div id="release-modal" class="modal">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h2>Release Notes</h2>
-                    <button id="close-modal" class="close-btn">&times;</button>
-                </div>
-                
-                <div class="modal-filters">
-                    <input type="text" id="search-input" placeholder="Search releases...">
-                    <select id="sort-options">
-                        <option value="date">Sort by Date (newest first)</option>
-                        <option value="version">Sort by Version</option>
-                        <option value="name">Sort by Name</option>
-                        <option value="type">Sort by Type</option>
-                    </select>
-                </div>
-                
-                <div id="releases-container" class="releases-container">
-                    <!-- Release items will be inserted here dynamically -->
+                    </a>
                 </div>
             </div>
-        </div>
+            <div id="latest-changelog" class="changelog">
+            </div>
+        </main>
     </div>
-    
+    <div class="infobox">
+        <p>Updates for plugins can be checked and applied manually through the plugins page.</p>
+    </div>
+
     <script src="js/updates.js"></script>
-    <script src="js/link.js"></script>
     <script src="js/offline.js"></script>
 </body>
 </html>
