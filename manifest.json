@@ -1,19 +1,14 @@
 {
   "manifest_version": 3,
   "name": "NG Extension Manager",
-  "version": "2.3.4",
+  "version": "2.3.5",
   "description": "Your browser’s new best friend. Manage your extensions with ease and say goodbye to clutter!",
-  "homepage_url": "https://nitraglobal.wixsite.com/nitra-global/ng-extension-manager",
-  "author": "NG Team",
+  "homepage_url": "https://github.com/Nitra-Global/NG-Extension-Manager",
+  "author": "UNBOUND LABEL",
   "permissions": [
     "storage",
     "management",
-    "activeTab",
-    "contextMenus",
-    "notifications"
-    ],
-  "host_permissions": [
-    "https://notral.instatus.com/*"
+    "activeTab"
   ],
   "action": {
     "default_popup": "popup.html",
@@ -26,9 +21,6 @@
     "48": "icons/48x48.png",
     "128": "icons/128x128.png"
   },
-  "background": {
-    "service_worker": "js/background.js"
-  },
   "content_scripts": [
     {
       "matches": ["<all_urls>"],
@@ -38,15 +30,14 @@
   "options_ui": {
     "page": "updates.html",
     "open_in_tab": true
-  
   },
-  "web_accessible_resources": [
-    {
-      "resources": ["js/dynamic_loader.js"],
-      "matches": ["<all_urls>"]
-    }
-  ],
   "content_security_policy": {
     "extension_pages": "script-src 'self'; object-src 'self'"
+  },
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "ngde@web.de",
+      "strict_min_version": "42.0"
+    }
   }
 }
