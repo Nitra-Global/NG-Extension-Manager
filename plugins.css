@@ -1,0 +1,269 @@
+:root {
+    /* Light theme (default) */
+    --bg: #f8f9fa;
+    --text: #333;
+    --primary: #0070f3;
+    --primary-darker: #0056b3;
+    --card: white;
+    --border: #e4e7eb;
+    --button-text: white;
+    --button-bg: #0070f3;
+    --button-hover-bg: #0056b3;
+    --button-hover-text: white;
+    --shadow: rgba(0, 0, 0, 0.08);
+    --font: 'Inter', sans-serif;
+    --spacing: 1rem;
+}
+
+/* Dark theme */
+@media (prefers-color-scheme: dark) {
+    :root {
+        --bg: #121212;
+        --text: #e4e7eb;
+        --card: #1e1e1e;
+        --border: #333;
+        --shadow: rgba(0, 0, 0, 0.25);
+    }
+}
+
+body {
+    font-family: var(--font);
+    margin: 0;
+    display: grid;
+    grid-template-rows: auto 1fr auto;
+    min-height: 100vh;
+    background-color: var(--bg);
+    color: var(--text);
+    transition: background-color 0.3s, color 0.3s;
+}
+
+header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--spacing) calc(var(--spacing) * 2);
+    border-bottom: 1px solid var(--border);
+}
+
+header h1 {
+    margin: 0;
+    font-size: 1.8em;
+}
+
+#controls {
+    display: flex;
+    align-items: center;
+}
+
+#search-input {
+    font-family: var(--font);
+    padding: calc(var(--spacing) * 0.75);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    margin-right: var(--spacing);
+    width: 250px;
+    font-size: 1em;
+    transition: border-color 0.3s;
+    background-color: var(--card);
+    color: var(--text);
+}
+
+#search-input:focus {
+    border-color: var(--primary);
+    outline: none;
+    box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+}
+
+#refresh-button {
+    padding: calc(var(--spacing) * 0.75) var(--spacing);
+    background-color: var(--button-bg);
+    color: var(--button-text);
+    border: 2px solid var(--primary);
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 1em;
+    font-weight: 500;
+    transition: background-color 0.3s, color 0.3s;
+}
+
+#refresh-button:hover {
+    background-color: var(--button-hover-bg);
+    color: var(--button-hover-text);
+}
+
+main {
+    padding: calc(var(--spacing) * 2);
+    box-sizing: border-box;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+#plugin-list {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(150px, 1fr)); /* 3 columns min 150px */
+    gap: 15px; /* Adjusted gap value */
+    padding: 10px; /* added padding */
+}
+
+#plugin-list div {
+    border: 1px solid var(--border);
+    padding: 1.5rem;
+    border-radius: 12px;
+    background-color: var(--card);
+    box-shadow: 0 4px 12px var(--shadow);
+    transition: transform 0.2s, box-shadow 0.2s;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    min-height: 140px;
+}
+
+#plugin-list div:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 10px 25px var(--shadow);
+}
+
+#pagination {
+    margin-top: calc(var(--spacing) * 2);
+    text-align: center;
+}
+
+footer {
+    background-color: var(--card);
+    padding: var(--spacing) calc(var(--spacing) * 2);
+    text-align: center;
+    border-top: 1px solid var(--border);
+    font-size: 0.9em;
+    display: flex;
+    justify-content: space-between; 
+    align-items: center;
+}
+
+footer a {
+    color: var(--primary);
+    text-decoration: none;
+    margin: 0 calc(var(--spacing) * 0.75);
+    transition: color 0.3s;
+}
+
+footer a:hover {
+    color: var(--primary-darker);
+}
+
+.footer-links {
+    display: flex;
+    text-align: right; /* Align links to the right */
+}
+
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0, 0, 0, 0.4);
+}
+
+.modal-content {
+    background-color: var(--card);
+    margin: 10% auto;
+    padding: calc(var(--spacing) * 2);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    width: 70%;
+    max-width: 600px;
+    position: relative;
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.2);
+}
+
+.close-button {
+    color: #aaa;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.close-button:hover {
+    color: var(--text);
+}
+
+[aria-label],
+[role="button"],
+[role="link"] {
+    cursor: pointer;
+}
+
+[aria-label]:focus,
+[role="button"]:focus,
+[role="link"]:focus {
+    outline: 2px solid var(--primary);
+}
+
+@media (max-width: 768px) {
+    #search-input {
+        width: 100%;
+    }
+
+    .modal-content {
+        width: 90%;
+    }
+}
+
+button {
+    padding: 0.75rem 1.25rem;
+    font-family: var(--font);
+    background-color: var(--button-bg);
+    color: var(--button-text);
+    border: none;
+    border-radius: 8px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.2s, transform 0.1s;
+}
+
+button:hover {
+    background-color: var(--button-hover-bg);
+}
+
+button:active {
+    transform: scale(0.98);
+}
+
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+#plugin-list div {
+    animation: fadeIn 0.3s ease-out;
+}
+
+input, button {
+    transition: all 0.2s ease;
+}
+
+input:focus {
+    transform: scale(1.01);
+}
+
+:focus {
+    outline: 2px solid var(--primary);
+    outline-offset: 2px;
+}
+
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border-width: 0;
+}
