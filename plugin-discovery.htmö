@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Plugins</title>
+    <link rel="stylesheet" href="plugins.css">
+    <link rel="stylesheet" href="fonts/fonts.css">
+</head>
+<body>
+    <header>
+        <h1>Discover Plugins</h1>
+        <div id="controls">
+            <input type="text" id="search-input" placeholder="Search plugins..." aria-label="Search plugins">
+            <button id="refresh-button">Refresh</button>
+        </div>
+    </header>
+
+    <main role="main">
+        <div id="plugin-list" aria-live="polite"></div>
+        <div id="pagination" aria-label="Pagination"></div>
+
+        <div id="instruction-modal" class="modal">
+            <div class="modal-content">
+                <span class="close-button">&times;</span>
+                <h2>Installation Instructions</h2>
+                <p>To install this plugin, please follow these steps:</p>
+                <ol>
+                    <li><strong>Open Your Files:</strong>
+                        <ul>
+                            <li>First, you need to find where your NG Extension Manager is saved on your computer.</li>
+                            <li>If you're using Windows, open "File Explorer." If you're using a Mac, open "Finder."</li>
+                            <li>Then, go to the folder where you keep the NG Extension Manager.</li>
+                        </ul>
+                    </li>
+                    <li><strong>Find the Plugins Folder:</strong>
+                        <ul>
+                            <li>Inside the NG Extension Manager folder, look for a folder named "plugins." Open it!</li>
+                        </ul>
+                    </li>
+                    <li><strong>Make a New Plugin Folder:</strong>
+                        <ul>
+                            <li>This is important! In the "plugins" folder, create a brand new folder.</li>
+                            <li>You can name this folder anything you like, but make sure it's different from the names of any other folders already in there. For example, if the plugin is called "Awesome Features," you could name the folder "awesome-features."</li>
+                        </ul>
+                    </li>
+                    <li><strong>Get the Plugin Files:</strong>
+                        <ul>
+                            <li>Click the "Go to Plugin" button below. This will take you to the plugin's page on GitHub.</li>
+                            <li>On the GitHub page, you'll see two files: "plugin.json" and "plugin.js."</li>
+                            <li>Download both of these files.</li>
+                        </ul>
+                    </li>
+                    <li><strong>Put the Files in Your New Folder:</strong>
+                        <ul>
+                            <li>Move the "plugin.json" and "plugin.js" files you just downloaded into the new folder you created in the "plugins" folder.</li>
+                        </ul>
+                    </li>
+                    <li><strong>Reload the NG Extension Manager:</strong>
+                        <ul>
+                            <li>Close and reopen the NG Extension Manager. This will make it recognize the new plugin.</li>
+                        </ul>
+                    </li>
+                </ol>
+                <p><strong>If You Need More Help:</strong></p>
+                <ul>
+                    <li>If you're having trouble finding the NG Extension Manager folder, try searching your computer for it.</li>
+                    <li>If the plugin is still not showing up, make sure that the plugin.json file has the correct information, and that the plugin.js file has no errors.</li>
+                    <li>If you're still stuck, don't worry! You can ask for help in the NG Extension Manager's community forums or check out the online help resources.</li>
+                </ul>
+                <button id="go-to-plugin-button">Go to Plugin</button>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <p>Version: <span id="extension-version">Loading...</span></p>
+        <p>
+            <a href="https://github.com/Nitra-Global/plugins/issues/new" target="_blank">Report an Issue</a> |
+            <a href="updates.html" target="_blank">Check for Updates</a> |
+            <a href="https://github.com/Nitra-Global/NG-Extension-Manager/discussions" target="_blank">Community Forums</a>
+        </p>
+    </footer>
+
+    <script src="js/plugin-discovery.js"></script>
+    <script src="js/offline.js"></script>
+</body>
+</html>
