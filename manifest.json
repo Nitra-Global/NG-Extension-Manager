@@ -1,14 +1,15 @@
 {
   "manifest_version": 3,
   "name": "NG Extension Manager",
-  "version": "2.3.5",
+  "version": "2.3.6",
   "description": "Your browser’s new best friend. Manage your extensions with ease and say goodbye to clutter!",
   "homepage_url": "https://github.com/Nitra-Global/NG-Extension-Manager",
   "author": "UNBOUND LABEL",
   "permissions": [
     "storage",
     "management",
-    "activeTab"
+    "activeTab",
+    "downloads"
   ],
   "action": {
     "default_popup": "popup.html",
