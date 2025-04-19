@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Add-on Store</title>
+    <link rel="stylesheet" href="../css/addon_store.css">
+    <link rel="stylesheet" href="../../public/fonts/fonts.css">
+    </head>
+<body>
+    <div id="error-notification" class="error-notification" style="display: none;">
+        <span id="error-notification-message"></span>
+        <button class="error-close-button" aria-label="Dismiss error message">&times;</button>
+    </div>
+
+    <header>
+        <h1>Add-on Store</h1>
+        <div id="controls">
+            <input type="text" id="search-input" placeholder="Search add-ons..." aria-label="Search add-ons">
+            <button id="refresh-button">Refresh</button> </div>
+    </header>
+
+    <main role="main">
+        <div id="service-status-overlay" class="service-status-overlay" style="display: none;">
+            <h2 id="service-status-title">Status</h2>
+            <p id="service-status-message">Message</p>
+            </div>
+        <div id="addon-list" aria-live="polite">
+            </div>
+        <div id="pagination" aria-label="Pagination">
+            </div>
+            <div id="changelog-modal" class="modal">
+                <div class="modal-content">
+                    <span class="close-button" aria-label="Close modal">&times;</span>
+                    <h2>Changelog for <span id="changelog-modal-addon-name">[Add-on Name]</span></h2>
+                    <div id="changelog-content" class="changelog-container">
+                        <p>Loading changelog...</p>
+                    </div>
+                </div>
+            </div>
+
+        <div id="instruction-modal" class="modal">
+            <div class="modal-content">
+                <span class="close-button" aria-label="Close modal">&times;</span>
+                <h2>Installation Instructions for <span id="modal-addon-name">[Add-on Name]</span></h2>
+                <p>To install this add-on, please follow these steps:</p>
+                <ol>
+                    <li><strong>Open Your Files:</strong>
+                        <ul>
+                            <li>Navigate to your NG Extension Manager installation folder using File Explorer (Windows) or Finder (Mac).</li>
+                        </ul>
+                    </li>
+                    <li><strong>Find the Add-ons Folder:</strong>
+                        <ul>
+                            <li>Inside the NG Extension Manager folder, locate and open the "addons" folder (or it might still be named "plugins" depending on the manager version - look for where other add-ons are).</li>
+                            <li>*If an "addons" folder doesn't exist, you might need to create it.*</li>
+                        </ul>
+                    </li>
+                    <li><strong>Make a New Add-on Folder:</strong>
+                        <ul>
+                            <li>Inside the "addons" (or "plugins") folder, create a new, uniquely named folder for this add-on (e.g., `my-cool-addon`).</li>
+                        </ul>
+                    </li>
+                    <li><strong>Get the Add-on Files:</strong>
+                        <ul>
+                            <li>Click the "Go to Add-on" button below to open its GitHub page.</li>
+                            <li>On the GitHub page, find and download the `addon.json` and `addon.js` (or similar `.js`) files.</li>
+                             <li>*Note: File names might vary slightly, but look for a `.json` configuration file and the main JavaScript file.*</li>
+                        </ul>
+                    </li>
+                    <li><strong>Put the Files in Your New Folder:</strong>
+                        <ul>
+                            <li>Move the downloaded `addon.json` and `.js` files into the new folder you created (e.g., into `my-cool-addon`).</li>
+                        </ul>
+                    </li>
+                    <li><strong>Reload the NG Extension Manager:</strong>
+                        <ul>
+                            <li>Close and reopen the NG Extension Manager application to load the new add-on.</li>
+                        </ul>
+                    </li>
+                </ol>
+                <p><strong>Troubleshooting:</strong></p>
+                <ul>
+                    <li>If the add-on doesn't appear, double-check the folder name is unique and that both the `addon.json` and `.js` files are correctly placed inside it.</li>
+                    <li>Ensure the `addon.json` file has the correct format and the `.js` file is not corrupted.</li>
+                    <li>Check the NG Extension Manager's documentation or community forums for further assistance.</li>
+                </ul>
+                <button id="go-to-addon-button">Go to Add-on on GitHub</button> </div>
+        </div>
+    </main>
+
+    <footer>
+        <p>Version: <span id="extension-version">Loading...</span></p>
+        <p>
+            <a href="https://github.com/Nitra-Global/addons/issues/new" target="_blank" rel="noopener noreferrer">Report an Issue</a> |
+            <a href="updates.html" target="_blank">Check for Updates</a> |
+            <a href="https://github.com/Nitra-Global/NG-Extension-Manager/discussions" target="_blank" rel="noopener noreferrer">Community Forums</a>
+        </p>
+    </footer>
+
+    <script src="../js/addon_store.js"></script>
+    </body>
+</html>
