@@ -1,0 +1,516 @@
+/* --- Base Styles & Variables --- */
+:root {
+    --primary-color: #0d6efd; /* Consistent blue */
+    --primary-hover-color: #0b5ed7;
+    --secondary-color: #6c757d; /* Consistent gray */
+    --secondary-hover-color: #5c636a;
+    --danger-color: #dc3545; /* Consistent red */
+    --danger-hover-color: #bb2d3b;
+    --success-color: #198754; /* Consistent green */
+    --success-hover-color: #157347;
+    --warning-color: #ffc107; /* Consistent warning yellow */
+    --warning-hover-color: #d39e00;
+    --error-color: var(--danger-color); /* Use danger color for errors */
+
+    --background-color: #f8f9fa; /* Light background */
+    --card-background-color: #ffffff; /* White cards */
+    --text-primary: #212529; /* Dark primary text */
+    --text-secondary: #6c757d; /* Gray secondary text */
+    --text-muted: #adb5bd; /* Light gray muted text */
+    --border-color: #dee2e6; /* Light border color */
+    --input-bg: #ffffff;
+    --code-bg: #e9ecef; /* For code/version values if needed */
+
+    --font-family-sans-serif: Inter, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", "Noto Sans", "Liberation Sans", Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji"; /* Consistent font stack */
+    --font-family-monospace: SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+
+    --border-radius: 0.375rem; /* 6px - Consistent radius */
+    --spacing-unit: 1rem; /* 16px - Consistent spacing unit */
+    --transition-speed: 0.15s; /* Consistent transition speed */
+
+    /* Consistent Shadows (subtler than original dark theme) */
+    --box-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+    --box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    --box-shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.15);
+
+    /* Focus Ring */
+    --focus-ring: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+
+    /* Selection */
+    --selection-background: rgba(13, 110, 253, 0.25);
+    --selection-text: inherit;
+
+    /* Scrollbar - Light theme */
+    --scrollbar-bg: transparent; /* Match body background */
+    --scrollbar-track: #f1f1f1;
+    --scrollbar-thumb: #cccccc;
+    --scrollbar-thumb-hover: #aaaaaa;
+}
+
+@media (prefers-color-scheme: dark) {
+    :root {
+        --primary-color: #0d6efd; /* Consistent blue */
+        --primary-hover-color: #0b5ed7;
+        --secondary-color: #6c757d; /* Consistent gray */
+        --secondary-hover-color: #5c636a;
+        --danger-color: #dc3545; /* Consistent red */
+        --danger-hover-color: #bb2d3b;
+        --success-color: #198754; /* Consistent green */
+        --success-hover-color: #157347;
+        --warning-color: #ffc107; /* Consistent warning yellow */
+        --warning-hover-color: #d39e00;
+        --error-color: var(--danger-color); /* Use danger color for errors */
+
+        --background-color: #121212; /* True dark background */
+        --card-background-color: #1e1e1e; /* Dark gray cards */
+        --text-primary: #e0e0e0; /* Light primary text */
+        --text-secondary: #b0b0b0; /* Soft gray secondary text */
+        --text-muted: #888888; /* Dimmed muted text */
+        --border-color: #333333; /* Dark border color */
+        --input-bg: #1e1e1e;
+        --code-bg: #2b2b2b; /* Dark background for code blocks */
+
+        --font-family-sans-serif: Inter, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", "Noto Sans", "Liberation Sans", Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+        --font-family-monospace: SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+
+        --border-radius: 0.375rem; /* 6px - Consistent radius */
+        --spacing-unit: 1rem; /* 16px - Consistent spacing unit */
+        --transition-speed: 0.15s; /* Consistent transition speed */
+
+        /* Consistent Shadows (subtler than original dark theme) */
+        --box-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.2);
+        --box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+        --box-shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.4);
+
+        /* Focus Ring */
+        --focus-ring: 0 0 0 0.2rem rgba(13, 110, 253, 0.4);
+
+        /* Selection */
+        --selection-background: rgba(13, 110, 253, 0.4);
+        --selection-text: #ffffff;
+
+        /* Scrollbar - Dark theme */
+        --scrollbar-bg: transparent; /* Match body background */
+        --scrollbar-track: #2a2a2a;
+        --scrollbar-thumb: #555555;
+        --scrollbar-thumb-hover: #777777;
+    }
+}
+
+::selection {
+    background: var(--selection-background);
+    color: var(--selection-text);
+}
+
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--scrollbar-track);
+    /* border-radius: var(--border-radius); Removed for cleaner look */
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--scrollbar-thumb);
+    border-radius: 4px;
+    transition: background var(--transition-speed);
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--scrollbar-thumb-hover);
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: var(--font-family-sans-serif);
+    background-color: var(--background-color);
+    color: var(--text-primary);
+    line-height: 1.5; /* Adjusted from 1.6 for standard feel */
+    font-size: 1rem; /* Match details page base size */
+}
+
+/* Consistent Container Style */
+.container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: calc(var(--spacing-unit) * 1.5); /* Consistent padding */
+}
+
+header {
+    margin-bottom: calc(var(--spacing-unit) * 2); /* Consistent spacing */
+    text-align: center;
+    position: relative;
+}
+
+header h1 {
+    font-size: 1.75rem; /* Match h2 size from details */
+    font-weight: 600; /* Slightly less heavy */
+    color: var(--text-primary);
+    letter-spacing: normal; /* Removed negative spacing */
+    margin-bottom: calc(var(--spacing-unit) * 0.5);
+}
+
+header p {
+    color: var(--text-secondary);
+    font-size: 1rem;
+}
+
+/* Consistent Card Styling */
+.status-card,
+.changelog,
+.infobox {
+    background: var(--card-background-color);
+    border-radius: var(--border-radius);
+    padding: calc(var(--spacing-unit) * 1.5); /* Consistent padding */
+    margin-bottom: var(--spacing-unit); /* Consistent spacing */
+    transition: box-shadow var(--transition-speed);
+    border: 1px solid var(--border-color); /* Use standard border */
+    box-shadow: var(--box-shadow-sm); /* Subtle shadow */
+    position: relative;
+    overflow: hidden; /* Keep overflow hidden */
+}
+
+.status-card:hover,
+.changelog:hover {
+    box-shadow: var(--box-shadow); /* Slightly enhance shadow on hover */
+}
+
+/* Keep colored left border for status indication */
+.status-card {
+    border-left: 4px solid var(--secondary-color); /* Default border color */
+}
+.status-card.up-to-date {
+    border-left-color: var(--success-color);
+}
+.status-card.outdated {
+    border-left-color: var(--warning-color);
+}
+.status-card.error {
+    border-left-color: var(--error-color);
+}
+.status-card.loading {
+    border-left-color: var(--primary-color);
+}
+
+.status-header {
+    margin-bottom: var(--spacing-unit); /* Consistent spacing */
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.status-indicator {
+    display: flex;
+    align-items: center;
+    font-size: 1rem; /* Adjusted size */
+}
+
+/* Status Icon Styling */
+#status-icon {
+    width: 16px; /* Slightly smaller */
+    height: 16px;
+    border-radius: 50%;
+    margin-right: calc(var(--spacing-unit) * 0.5); /* Consistent spacing */
+    position: relative;
+    transition: all 0.3s ease;
+    border: none; /* Remove default border */
+    box-shadow: none; /* Remove default shadow */
+}
+
+/* Spinner for Loading (works on light bg) */
+#status-icon.loading {
+    background-color: transparent; /* Remove background */
+    width: 18px; /* Slightly larger for border */
+    height: 18px;
+    border: 3px solid rgba(13, 110, 253, 0.2); /* Light blue border */
+    border-top-color: var(--primary-color); /* Primary color for spinner part */
+    animation: spinner 1s linear infinite; /* Adjusted speed */
+}
+
+#status-icon.up-to-date { background-color: var(--success-color); }
+#status-icon.outdated { background-color: var(--warning-color); }
+#status-icon.error { background-color: var(--error-color); }
+
+#status-message {
+    font-weight: 600;
+    letter-spacing: normal; /* Removed spacing */
+    color: var(--text-primary);
+}
+
+/* Version Info Grid */
+.version-info {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); /* Responsive grid */
+    gap: var(--spacing-unit);
+    margin-bottom: calc(var(--spacing-unit) * 1.5); /* Consistent spacing */
+}
+
+.version-item {
+    display: flex;
+    flex-direction: column;
+    padding: var(--spacing-unit);
+    background-color: var(--background-color); /* Use main bg for subtle difference */
+    border: 1px solid var(--border-color);
+    border-radius: calc(var(--border-radius) * 0.8); /* Slightly smaller radius */
+    transition: transform var(--transition-speed), box-shadow var(--transition-speed);
+    transform: none; /* Reset transform */
+    box-shadow: none; /* Reset shadow */
+}
+
+.version-item:hover {
+     background-color: var(--card-background-color);
+     box-shadow: var(--box-shadow-sm);
+     transform: translateY(-2px);
+}
+
+.version-label {
+    font-size: 0.8rem; /* Smaller label */
+    color: var(--text-secondary);
+    margin-bottom: calc(var(--spacing-unit) * 0.25);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-weight: 500;
+}
+
+.version-value {
+    font-size: 1rem; /* Standard text size */
+    font-weight: 600;
+    font-family: var(--font-family-monospace); /* Consistent monospace font */
+    color: var(--text-primary);
+    word-break: break-all; /* Prevent long versions overflowing */
+}
+
+.last-checked {
+    font-size: 0.8rem; /* Smaller text */
+    color: var(--text-muted); /* Muted color */
+    margin-top: calc(var(--spacing-unit) * 0.5);
+    text-align: right; /* Align to the right if desired */
+}
+
+/* Consistent Button Styles */
+.actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: calc(var(--spacing-unit) * 0.75); /* Consistent gap */
+    margin-top: var(--spacing-unit); /* Consistent spacing */
+    border-top: 1px solid var(--border-color); /* Add separator line */
+    padding-top: calc(var(--spacing-unit) * 1.5);
+}
+
+/* Remove old .btn style, adopt button style from details.css */
+button.btn { /* Use button tag if possible, or keep .btn class */
+    font-family: var(--font-family-sans-serif);
+    padding: 0.5rem 1rem; /* Consistent padding */
+    font-size: 0.9rem; /* Consistent font size */
+    font-weight: 500;
+    border-radius: var(--border-radius);
+    border: 1px solid transparent;
+    cursor: pointer;
+    transition: background-color var(--transition-speed) ease-in-out, border-color var(--transition-speed) ease-in-out, color var(--transition-speed) ease-in-out, transform var(--transition-speed) ease-in-out;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+    transform: none; /* Reset transform */
+}
+
+button.btn::after { /* Remove ripple effect */
+    content: none;
+}
+
+button.btn:disabled {
+    opacity: 0.65;
+    cursor: not-allowed;
+}
+
+button.btn:focus { /* Use consistent focus ring */
+    outline: none;
+    box-shadow: var(--focus-ring);
+}
+
+/* Primary Button */
+button.btn.primary {
+    color: #fff;
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
+}
+button.btn.primary:not(:disabled):hover {
+    background-color: var(--primary-hover-color);
+    border-color: var(--primary-hover-color);
+    /* transform: translateY(-1px); Optional subtle lift */
+}
+
+/* Secondary Button (Outlined style for consistency) */
+button.btn.secondary {
+    color: var(--primary-color);
+    background-color: transparent;
+    border-color: var(--primary-color);
+}
+button.btn.secondary:not(:disabled):hover {
+    color: #fff;
+    background-color: var(--primary-hover-color);
+    border-color: var(--primary-hover-color);
+    /* transform: translateY(-1px); Optional subtle lift */
+}
+
+/* Changelog Styling */
+.changelog h2 {
+    font-size: 1.25rem; /* Match h3 size from details */
+    color: var(--text-primary);
+    font-weight: 600;
+    margin-bottom: var(--spacing-unit); /* Consistent spacing */
+    padding-bottom: calc(var(--spacing-unit) * 0.5); /* Add padding below */
+    border-bottom: 1px solid var(--border-color); /* Add separator */
+}
+
+.changelog p,
+.changelog li {
+    font-size: 0.95rem; /* Slightly smaller than body text */
+    line-height: 1.6;
+    color: var(--text-secondary); /* Use secondary text color */
+}
+.changelog a {
+    font-size: 0.95rem;
+    color: var(--primary-color); /* Consistent link color */
+}
+.changelog a:hover {
+    color: var(--primary-hover-color);
+}
+
+
+.changelog ul {
+    margin-left: calc(var(--spacing-unit) * 1.25); /* Standard list indent */
+    list-style-type: disc;
+    margin-top: calc(var(--spacing-unit) * 0.5);
+}
+
+.changelog li {
+    margin-bottom: calc(var(--spacing-unit) * 0.5);
+}
+
+
+#download {
+    display: none; /* Keep hidden */
+}
+
+/* Toast Notification - Light Theme */
+.toast {
+    position: fixed;
+    bottom: var(--spacing-unit);
+    right: var(--spacing-unit);
+    background-color: var(--card-background-color);
+    color: var(--text-primary);
+    padding: 0.75rem 1.25rem; /* Adjusted padding */
+    border-radius: var(--border-radius);
+    font-size: 0.9rem;
+    z-index: 2000;
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity 0.3s ease, transform 0.3s ease; /* Smooth transition */
+    box-shadow: var(--box-shadow); /* Consistent shadow */
+    border: 1px solid var(--border-color); /* Add main border */
+    border-left: 4px solid var(--primary-color); /* Default left border */
+    max-width: 320px; /* Slightly wider max width */
+    display: flex; /* Allow icon + text */
+    align-items: center;
+}
+
+/* Optional: Add icon to toast */
+/* .toast::before {
+    content: ''; // Add icon here
+    margin-right: 0.5rem;
+    font-size: 1.2rem;
+} */
+
+.toast.show {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.toast.success { border-left-color: var(--success-color); }
+.toast.error { border-left-color: var(--error-color); }
+.toast.warning { border-left-color: var(--warning-color); }
+
+/* Info Box */
+.infobox {
+    text-align: center;
+    padding: var(--spacing-unit); /* Reduced padding */
+    margin: var(--spacing-unit) auto; /* Add vertical margin */
+    background-color: var(--code-bg); /* Use code background for subtle difference */
+    border: 1px solid var(--border-color);
+}
+.infobox p {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    margin: 0;
+}
+
+/* Highlight */
+.highlighted {
+    background-color: rgba(255, 193, 7, 0.3); /* Lighter yellow highlight */
+    padding: 1px 3px;
+    border-radius: 3px;
+    color: var(--text-primary); /* Ensure text is readable */
+}
+
+/* Animations */
+@keyframes spinner {
+    to { transform: rotate(360deg); }
+}
+
+/* Remove unused/dark-theme specific animations if not needed */
+/* @keyframes modalFadeIn { ... } */
+/* @keyframes pulse { ... } */
+
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+    .container {
+        padding: var(--spacing-unit); /* Reduce padding on smaller screens */
+    }
+
+    /* Version info already adapts well with auto-fit */
+}
+
+@media (max-width: 600px) {
+    .actions {
+        flex-direction: column; /* Stack buttons */
+    }
+
+    button.btn {
+        width: 100%; /* Full width buttons */
+    }
+
+    .status-card, .changelog, .infobox {
+        padding: var(--spacing-unit); /* Reduce card padding */
+    }
+
+    header h1 { font-size: 1.5rem; }
+    .changelog h2 { font-size: 1.15rem; }
+}
+
+/* Reduced Motion Preferences */
+@media (prefers-reduced-motion) {
+    .btn, .status-card, .version-item, .toast {
+        transition: none;
+    }
+    #status-icon.loading {
+        animation: none; /* Disable spinner animation */
+        border: 3px solid var(--primary-color); /* Show static border */
+    }
+    .btn:hover {
+        transform: none;
+    }
+}
+
+/* Consistent Focus Visible */
+:focus-visible {
+    outline: none; /* Remove default */
+    box-shadow: var(--focus-ring);
+}
