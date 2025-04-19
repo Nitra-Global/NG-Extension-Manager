@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "NG Extension Manager",
-  "version": "2.3.6",
+  "version": "2.3.7",
   "description": "Your browser’s new best friend. Manage your extensions with ease and say goodbye to clutter!",
   "homepage_url": "https://github.com/Nitra-Global/NG-Extension-Manager",
   "author": "UNBOUND LABEL",
@@ -9,27 +9,31 @@
     "storage",
     "management",
     "activeTab",
+    "alarms",
     "downloads"
-  ],
+    ],
+    "background": {
+    "service_worker": "src/js/background.js" 
+  },
   "action": {
-    "default_popup": "popup.html",
+    "default_popup": "src/html/popup.html",
     "default_icon": {
-      "48": "icons/48x48.png",
-      "128": "icons/128x128.png"
+      "48": "public/icons/png/48x48.png",
+      "128": "public/icons/png/128x128.png"
     }
   },
   "icons": {
-    "48": "icons/48x48.png",
-    "128": "icons/128x128.png"
+    "48": "public/icons/png/48x48.png",
+    "128": "public/icons/png/128x128.png"
   },
   "content_scripts": [
     {
       "matches": ["<all_urls>"],
-      "js": ["js/content.js"]
+      "js": ["src/js/content.js"]
     }
   ],
   "options_ui": {
-    "page": "updates.html",
+    "page": "src/html/updates.html",
     "open_in_tab": true
   },
   "content_security_policy": {
