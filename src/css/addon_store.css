@@ -1,0 +1,643 @@
+:root {
+    /* Light theme (default) */
+    --bg: #f8f9fa;
+    --text: #333;
+    --text-muted: #6c757d;
+    --primary: #0070f3;
+    --primary-darker: #0056b3;
+    --card: white;
+    --border: #e4e7eb;
+    --button-text: white;
+    --button-bg: #0070f3;
+    --button-hover-bg: #0056b3;
+    --button-hover-text: white;
+    --shadow: rgba(0, 0, 0, 0.08);
+    --danger-bg: #f8d7da;
+    --danger-text: #721c24;
+    --danger-border: #f5c6cb;
+    --warning-text: #856404;
+    --font: 'Inter', sans-serif;
+    --spacing: 1rem;
+}
+
+/* Dark theme */
+@media (prefers-color-scheme: dark) {
+    :root {
+        --bg: #121212;
+        --text: #e4e7eb;
+        --text-muted: #adb5bd;
+        --card: #1e1e1e;
+        --border: #333;
+        --shadow: rgba(0, 0, 0, 0.25);
+        --danger-bg: #49272a;
+        --danger-text: #f8d7da;
+        --danger-border: #5e3034;
+        --warning-text: #fff3cd;
+    }
+}
+
+body {
+    font-family: var(--font);
+    margin: 0;
+    display: grid;
+    grid-template-rows: auto auto 1fr auto; /* Added row for error bar */
+    min-height: 100vh;
+    background-color: var(--bg);
+    color: var(--text);
+    transition: background-color 0.3s, color 0.3s;
+}
+
+/* Error Notification Bar */
+#error-notification {
+    background-color: var(--danger-bg);
+    color: var(--danger-text);
+    border: 1px solid var(--danger-border);
+    padding: calc(var(--spacing) * 0.75) calc(var(--spacing) * 1.5);
+    text-align: center;
+    position: relative; /* For positioning the close button */
+    border-radius: 4px;
+    margin: var(--spacing) calc(var(--spacing) * 2); /* Added margin */
+    font-size: 0.9em;
+}
+
+.error-close-button {
+    position: absolute;
+    top: 50%;
+    right: var(--spacing);
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    font-size: 1.5em;
+    line-height: 1;
+    color: var(--danger-text);
+    cursor: pointer;
+    padding: 0.2em; /* Easier click target */
+    opacity: 0.7;
+    transition: opacity 0.2s;
+}
+
+.error-close-button:hover {
+    opacity: 1;
+}
+
+header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--spacing) calc(var(--spacing) * 2);
+    border-bottom: 1px solid var(--border);
+    background-color: var(--card); /* Give header bg color */
+}
+
+header h1 {
+    margin: 0;
+    font-size: 1.8em;
+}
+
+#controls {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing); /* Add gap between input and button */
+}
+
+#search-input {
+    font-family: var(--font);
+    padding: calc(var(--spacing) * 0.75);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    /* margin-right: var(--spacing); Removed margin, using gap now */
+    width: 250px;
+    font-size: 1em;
+    transition: border-color 0.3s, box-shadow 0.3s;
+    background-color: var(--card);
+    color: var(--text);
+}
+
+#search-input:focus {
+    border-color: var(--primary);
+    outline: none;
+    box-shadow: 0 0 5px rgba(0, 112, 243, 0.5); /* Adjusted color slightly */
+}
+
+/* General Button Style (shared by refresh, pagination, modal) */
+button {
+    padding: 0.75rem 1.25rem;
+    font-family: var(--font);
+    background-color: var(--button-bg);
+    color: var(--button-text);
+    border: none;
+    border-radius: 8px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.2s, transform 0.1s, opacity 0.2s;
+    font-size: 1em;
+    line-height: 1.2; /* Ensure text fits */
+    display: inline-flex; /* For aligning icons */
+    align-items: center;
+    gap: 0.5em; /* Space between icon and text */
+}
+
+button:hover {
+    background-color: var(--button-hover-bg);
+}
+
+button:active {
+    transform: scale(0.98);
+}
+
+button:disabled {
+    opacity: 0.65;
+    cursor: not-allowed;
+    background-color: var(--button-bg); /* Keep bg color */
+    transform: none; /* Don't scale when disabled */
+}
+
+#refresh-button {
+    /* Inherits base button styles */
+    /* Specific styles if needed */
+}
+
+main {
+    padding: calc(var(--spacing) * 2);
+    box-sizing: border-box;
+    max-width: 1200px;
+    width: 100%; /* Ensure it takes width */
+    margin: 0 auto;
+}
+
+/* Updated ID */
+#addon-list {
+    display: grid;
+    /* Responsive columns */
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); /* Adjust minmax as needed */
+    gap: calc(var(--spacing) * 1.5); /* Slightly larger gap */
+    padding: 10px 0; /* Padding top/bottom only */
+}
+
+/* Loading Indicator */
+.loading-indicator,
+.error-message,
+.no-results {
+    grid-column: 1 / -1; /* Span all columns */
+    text-align: center;
+    padding: calc(var(--spacing) * 2);
+    font-size: 1.1em;
+    color: var(--text-muted);
+}
+
+.error-message {
+    color: var(--danger-text);
+    background-color: var(--danger-bg);
+    border: 1px solid var(--danger-border);
+    border-radius: 8px;
+}
+
+/* Add-on Card Style - Updated Class */
+.addon-card {
+    border: 1px solid var(--border);
+    padding: 1.5rem;
+    border-radius: 12px;
+    background-color: var(--card);
+    box-shadow: 0 4px 12px var(--shadow);
+    transition: transform 0.2s, box-shadow 0.2s;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    min-height: 150px; /* Adjust as needed */
+    animation: fadeIn 0.3s ease-out;
+}
+
+.addon-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 10px 25px var(--shadow);
+}
+
+.addon-card h3 {
+    margin: 0 0 0.5rem 0; /* Spacing below heading */
+    font-size: 1.2em;
+    display: flex; /* Align version nicely */
+    justify-content: space-between;
+    align-items: baseline;
+    flex-wrap: wrap; /* Wrap if name is long */
+    gap: 0.5rem; /* Space between name and version */
+}
+
+.addon-card p {
+    margin: 0 0 1rem 0; /* Spacing below description */
+    flex-grow: 1; /* Allow description to take space */
+    font-size: 0.95em;
+    color: var(--text-muted);
+    line-height: 1.5;
+}
+
+/* New: Add-on Version */
+.addon-version {
+    font-size: 0.8em;
+    font-weight: 500;
+    padding: 0.2em 0.5em;
+    background-color: var(--bg); /* Subtle background */
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    color: var(--text-muted);
+    white-space: nowrap;
+}
+
+/* New: Loading/Error Text inside card */
+.loading-text,
+.error-text {
+    font-style: italic;
+    color: var(--text-muted);
+    text-align: center;
+    margin-top: 1rem;
+}
+
+.error-text {
+    color: var(--warning-text); /* Use a less alarming color than red */
+    font-weight: 500;
+}
+
+/* New: Action Buttons Container */
+.addon-actions {
+    display: flex;
+    justify-content: flex-end; /* Align buttons to the right */
+    gap: 0.5rem; /* Space between buttons if multiple */
+    margin-top: auto; /* Push to bottom */
+    padding-top: 1rem; /* Space above buttons */
+    border-top: 1px solid var(--border); /* Separator */
+}
+
+/* New: Specific Button Styles within Card */
+.install-addon-button,
+.retry-button,
+.changelog-button { /* Added changelog-button here */
+    /* Inherit base button styles */
+    padding: 0.5rem 1rem; /* Smaller padding for card buttons */
+    font-size: 0.9em;
+}
+
+.retry-button {
+    background-color: var(--text-muted); /* Different color for retry */
+    color: var(--bg);
+}
+.retry-button:hover {
+    background-color: var(--text);
+}
+
+.changelog-button {
+    background-color: var(--text-muted); /* Example style */
+    color: var(--bg);
+}
+.changelog-button:hover {
+     background-color: var(--text);
+}
+
+/* Install button keeps primary color */
+.install-addon-button {
+    /* Inherits primary color from base button style */
+}
+.install-addon-button:hover {
+    /* Inherits primary hover color */
+}
+
+
+/* Pagination */
+#pagination {
+    margin-top: calc(var(--spacing) * 2.5);
+    text-align: center;
+    display: flex; /* Use flexbox for alignment */
+    justify-content: center;
+    align-items: center;
+    flex-wrap: wrap; /* Allow wrapping on small screens */
+    gap: 0.5rem; /* Space between pagination items */
+}
+
+#pagination button {
+    /* Inherit base button styles */
+    min-width: 40px; /* Ensure consistent button size */
+    padding: 0.5rem 0.75rem; /* Adjust padding */
+    font-size: 0.9em;
+    background-color: var(--card); /* Lighter background for page numbers */
+    color: var(--primary);
+    border: 1px solid var(--border);
+}
+
+#pagination button:hover {
+    background-color: var(--bg);
+    border-color: var(--primary);
+}
+
+#pagination button:disabled {
+    background-color: var(--card);
+    color: var(--text-muted);
+    border-color: var(--border);
+    opacity: 0.7;
+}
+
+/* New: Current Page Style */
+.pagination-current {
+    background-color: var(--primary) !important; /* Use !important carefully */
+    color: var(--button-text) !important;
+    border-color: var(--primary) !important;
+    font-weight: bold;
+}
+
+/* New: Prev/Next Buttons */
+.pagination-prev,
+.pagination-next {
+    /* Optionally add specific styles or icons */
+}
+
+/* New: Ellipsis */
+.pagination-ellipsis {
+    padding: 0 0.5rem;
+    color: var(--text-muted);
+    align-self: center; /* Vertically center with buttons */
+}
+
+
+footer {
+    background-color: var(--card);
+    padding: var(--spacing) calc(var(--spacing) * 2);
+    border-top: 1px solid var(--border);
+    font-size: 0.9em;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap; /* Wrap on small screens */
+    gap: var(--spacing); /* Space between items when wrapped */
+}
+
+footer p {
+    margin: 0;
+}
+
+footer a {
+    color: var(--primary);
+    text-decoration: none;
+    margin: 0 calc(var(--spacing) * 0.5); /* Reduced margin */
+    transition: color 0.3s;
+}
+
+footer a:hover {
+    color: var(--primary-darker);
+    text-decoration: underline;
+}
+
+.footer-links {
+    /* Removed - Using flexbox on footer directly */
+}
+
+/* Modal Styles */
+.modal {
+    display: none; /* Hidden by default */
+    position: fixed;
+    z-index: 1000; /* Ensure it's on top */
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto; /* Enable scroll if needed */
+    background-color: rgba(0, 0, 0, 0.5); /* Dimmed background */
+    animation: fadeInModalBg 0.3s ease-out;
+}
+
+.modal-content {
+    background-color: var(--card);
+    margin: 5% auto; /* Adjust top margin */
+    padding: calc(var(--spacing) * 2);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    width: 80%;
+    max-width: 700px; /* Increase max-width */
+    position: relative;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+    animation: slideInModal 0.3s ease-out;
+}
+
+.close-button {
+    color: #aaa;
+    position: absolute; /* Position relative to modal-content */
+    top: var(--spacing);
+    right: var(--spacing);
+    font-size: 28px;
+    font-weight: bold;
+    cursor: pointer;
+    line-height: 1;
+    padding: 0.2em; /* Easier click target */
+    transition: color 0.2s;
+}
+
+.close-button:hover {
+    color: var(--text);
+}
+
+.modal-content h2 {
+    margin-top: 0;
+    margin-bottom: 1.5rem;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 0.75rem;
+}
+
+/* Style for the add-on name span in modal */
+#modal-addon-name, #changelog-modal-addon-name {
+    font-style: italic;
+    color: var(--primary);
+}
+
+.modal-content ol,
+.modal-content ul {
+    margin-bottom: 1.5rem;
+    padding-left: 2rem; /* Indent lists */
+}
+
+.modal-content li {
+    margin-bottom: 0.75rem; /* Space between list items */
+    line-height: 1.6;
+}
+
+.modal-content strong {
+    font-weight: 600; /* Slightly bolder */
+}
+
+.modal-content ul {
+    margin-top: 0.5rem; /* Space above nested lists */
+    list-style-type: disc; /* Ensure bullets */
+}
+
+/* Modal Button */
+#go-to-addon-button {
+    /* Inherit base button styles */
+    display: block; /* Make it full width */
+    width: max-content; /* Or adjust width as needed */
+    margin: 1.5rem auto 0 auto; /* Center button */
+}
+
+
+/* Accessibility & Animations */
+[aria-label]:focus,
+[role="button"]:focus,
+[role="link"]:focus,
+:focus-visible /* Modern focus indicator */
+ {
+    outline: 3px solid var(--primary);
+    outline-offset: 2px;
+    box-shadow: 0 0 0 3px var(--bg), 0 0 0 6px var(--primary); /* More visible focus */
+    border-radius: 2px; /* Add slight radius to outline */
+}
+/* Remove default outline when using focus-visible */
+*:focus:not(:focus-visible) {
+    outline: none;
+}
+
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeInModalBg {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes slideInModal {
+    from { opacity: 0; transform: translateY(-30px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+input, button {
+    transition: all 0.2s ease;
+}
+
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border-width: 0;
+}
+
+/* Media Queries */
+@media (max-width: 768px) {
+    header {
+        flex-direction: column;
+        align-items: stretch; /* Stretch items */
+        gap: var(--spacing);
+    }
+
+    #controls {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    #search-input {
+        width: 100%; /* Full width on mobile */
+        margin-right: 0; /* Remove margin */
+        box-sizing: border-box; /* Include padding in width */
+    }
+
+    #refresh-button {
+        width: 100%; /* Full width button */
+    }
+
+    #addon-list {
+        grid-template-columns: 1fr; /* Single column */
+    }
+
+    .modal-content {
+        width: 90%;
+        margin: 10% auto; /* Adjust margin */
+    }
+
+    footer {
+        flex-direction: column;
+        text-align: center;
+    }
+
+    footer p:last-child {
+        display: flex;
+        flex-direction: column; /* Stack footer links vertically */
+        gap: 0.5rem;
+    }
+     footer a {
+        margin: 0; /* Remove horizontal margins */
+    }
+}
+
+/* Changelog Modal Content */
+.changelog-container {
+    max-height: 60vh; /* Limit height and make scrollable */
+    overflow-y: auto;
+    border: 1px solid var(--border);
+    padding: var(--spacing);
+    border-radius: 8px;
+    margin-top: 1rem;
+    background-color: var(--bg); /* Slightly different bg */
+}
+
+.changelog-version {
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px dashed var(--border);
+}
+.changelog-version:last-child {
+    border-bottom: none;
+    margin-bottom: 0;
+}
+
+.changelog-version h4 {
+    margin: 0 0 0.5rem 0;
+    font-size: 1.1em;
+    color: var(--primary);
+}
+.changelog-version .changelog-date {
+    font-size: 0.85em;
+    color: var(--text-muted);
+    margin-left: 0.5rem;
+}
+
+.changelog-version ul {
+    list-style-type: disc;
+    padding-left: 1.5rem;
+    margin: 0.5rem 0 0 0;
+}
+
+.changelog-version li {
+    margin-bottom: 0.3rem;
+    line-height: 1.5;
+}
+
+/* Service Status Overlay */
+.service-status-overlay {
+    border: 1px solid var(--border);
+    background-color: var(--card);
+    padding: calc(var(--spacing) * 2);
+    margin-bottom: calc(var(--spacing) * 2);
+    border-radius: 12px;
+    text-align: center;
+    box-shadow: 0 4px 12px var(--shadow);
+}
+.service-status-overlay h2 {
+    margin-top: 0;
+    color: var(--primary);
+}
+.service-status-overlay.maintenance {
+    border-color: var(--warning-text); /* Adjust colors as needed */
+    background-color: var(--bg);
+}
+.service-status-overlay.offline {
+    border-color: var(--danger-border);
+    background-color: var(--danger-bg);
+    color: var(--danger-text);
+}
+ .service-status-overlay.offline h2 {
+     color: var(--danger-text);
+ }
+ #service-status-message {
+     font-size: 1.1em;
+     line-height: 1.6;
+ }
