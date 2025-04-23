@@ -3,53 +3,158 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Updates | NG Extension Manager</title>
-    <link rel="stylesheet" href="updates.css">
-    <link rel="stylesheet" href="fonts/fonts.css">
-</head>
+    <title>Extension Updates | NG Extension Manager</title>
+    <meta name="description" content="Check for updates, view the latest changelog, and access debug information for the NG Extension Manager.">
+    <meta name="color-scheme" content="light dark">
+
+    <link rel="stylesheet" href="../css/updates.css">
+    <link rel="stylesheet" href="../../public/fonts/fonts.css">
+    </head>
 <body>
-    <div class="container">
-        <header>
-            <h1 id="extension-title">NG Extension Manager</h1>
+    <div class="page-wrapper">
+        <header class="page-header" role="banner">
+            <img src="../../public/icons/svg/updatelogo.svg" alt="Extension Logo" class="header-logo">
+            <div>
+                <h1 id="extension-title">NG Extension Manager</h1>
+                <p id="extension-description">Manage updates, view changelogs, and check debug info.</p>
+            </div>
         </header>
-        
-        <main>
-            <div class="status-card">
-                <div class="status-header">
-                    <div class="status-indicator">
-                        <span id="status-icon" class="loading"></span>
-                        <span id="status-message">Checking for updates...</span>
+
+        <div class="tabs-container">
+            <nav class="tab-navigation" aria-label="Updates Sections">
+                <ul role="tablist">
+                    <li role="presentation">
+                        <button role="tab" id="tab-status" aria-controls="panel-status" aria-selected="true" class="tab-button active">
+                             <img src="../../public/icons/svg/info.svg" alt="" class="tab-icon" aria-hidden="true">
+                             Status
+                        </button>
+                    </li>
+                    <li role="presentation">
+                        <button role="tab" id="tab-changelog" aria-controls="panel-changelog" aria-selected="false" class="tab-button">
+                             <img src="../../public/icons/svg/changelog.svg" alt="" class="tab-icon" aria-hidden="true">
+                             Changelog
+                             <span class="update-indicator" title="Update Available"></span>
+                        </button>
+                    </li>
+                    <li role="presentation">
+                        <button role="tab" id="tab-debug" aria-controls="panel-debug" aria-selected="false" class="tab-button debug-tab">
+                           <img src="../../public/icons/svg/terminal.svg" alt="" class="tab-icon" aria-hidden="true">
+                            Debug
+                        </button>
+                    </li>
+                </ul>
+            </nav>
+
+            <main class="tab-panels">
+                <section id="panel-status" role="tabpanel" aria-labelledby="tab-status" class="tab-panel active" tabindex="-1">
+                    <div class="status-content-wrapper" aria-busy="true">
+                        <div class="skeleton-loader" aria-hidden="true">
+                            <div class="skeleton skeleton-title"></div>
+                            <div class="skeleton skeleton-line"></div>
+                            <div class="skeleton skeleton-line short"></div>
+                            <div class="skeleton skeleton-actions">
+                                <div class="skeleton skeleton-button"></div>
+                                <div class="skeleton skeleton-button"></div>
+                            </div>
+                        </div>
+
+                        <div class="status-card-content">
+                            <div class="status-header">
+                                <div id="status-indicator-wrapper" class="status-indicator-wrapper" aria-label="Initializing status check" aria-live="polite">
+                                    <img id="status-icon" src="../../public/icons/svg/loading.svg" alt="Loading Status" class="status-icon loading">
+                                    <span id="status-message" class="status-message">Initializing...</span>
+                                </div>
+                                <div class="status-meta">
+                                    <button id="refresh-check" class="btn icon-btn refresh-btn" title="Refresh update status" aria-label="Refresh update status">
+                                         <img src="../../public/icons/svg/retry.svg" alt="Refresh" class="btn-icon" aria-hidden="true">
+                                         <span class="visually-hidden">Refresh status</span>
+                                    </button>
+                                    <span class="last-checked" id="last-checked-time" title="Time of the last successful check">Never checked</span>
+                                </div>
+                            </div>
+
+                            <div id="api-error-message" class="api-error-display" style="display: none;" role="alert" aria-atomic="true"></div>
+
+                            <div class="status-card-section version-info">
+                                <h2 class="section-title">Version Information</h2>
+                                <div class="version-details">
+                                    <div class="version-item">
+                                        <span class="version-label" id="installed-version-label">Installed</span>
+                                        <div class="version-value-wrapper">
+                                            <strong id="installed-version" class="version-value" aria-labelledby="installed-version-label">0.0.0</strong>
+                                            <button class="btn icon-btn copy-btn" data-copy-target="installed-version" title="Copy Installed Version" aria-label="Copy Installed Version">
+                                                <img src="../../public/icons/svg/id.svg" alt="Copy" class="btn-icon small" aria-hidden="true">
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <div class="version-item">
+                                        <span class="version-label" id="latest-version-label">Latest Available</span>
+                                        <div class="version-value-wrapper">
+                                            <strong id="latest-version" class="version-value" aria-labelledby="latest-version-label">...</strong>
+                                            <button class="btn icon-btn copy-btn" data-copy-target="latest-version" title="Copy Latest Version" aria-label="Copy Latest Version">
+                                                <img src="../../public/icons/svg/id.svg" alt="Copy" class="btn-icon small" aria-hidden="true">
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="status-card-section actions">
+                                 <h2 class="section-title visually-hidden">Actions</h2> <button id="download-button" class="btn primary" disabled aria-disabled="true">
+                                    <img src="../../public/icons/svg/install.svg" alt="" class="btn-icon" aria-hidden="true">
+                                    Download Latest
+                                </button>
+                                <a id="view-all-releases-link" href="#" target="_blank" rel="noopener noreferrer" class="btn secondary">
+                                     <img src="../../public/icons/svg/link.svg" alt="" class="btn-icon" aria-hidden="true">
+                                     View Releases
+                                </a>
+                                <button id="clear-cache-button" class="btn tertiary" title="Clear cached version data and force refresh">
+                                    <img src="../../public/icons/svg/trash.svg" alt="" class="btn-icon" aria-hidden="true">
+                                    Clear Cache
+                                </button>
+                            </div>
+                        </div>
                     </div>
-                </div>
-                
-                <div class="version-info">
-                    <div class="version-item">
-                        <span class="version-label">Installed Version:</span>
-                        <span id="installed-version" class="version-value">0.0.0</span>
+                </section>
+
+                <section id="panel-changelog" role="tabpanel" aria-labelledby="tab-changelog" class="tab-panel" hidden tabindex="-1">
+                    <div id="changelog-content-wrapper" class="content-section changelog">
+                        <h2 id="changelog-heading-main" class="panel-heading">Latest Changelog</h2>
+                        <article id="changelog-content" class="changelog-body markdown-content" aria-live="polite" aria-atomic="false">
+                             <div class="skeleton skeleton-line long"></div>
+                             <div class="skeleton skeleton-line"></div>
+                             <div class="skeleton skeleton-line medium"></div>
+                             <div class="skeleton skeleton-line long"></div>
+                        </article>
                     </div>
-                    <div class="version-item">
-                        <span class="version-label">Latest Version:</span>
-                        <span id="latest-version" class="version-value">0.0.0</span>
-                    </div>
-                </div>
-                <div class="actions">
-                    <a href="https://github.com/Nitra-Global/NG-Extension-Manager/releases" target="_blank">
-                        <button class="btn secondary">All Releases</button>
-                    </a>
-                    <a href="https://github.com/Nitra-Global/NG-Extension-Manager/releases" target="_blank">
-                        <button id="download" class="btn secondary">Download</button>
-                    </a>
-                </div>
-            </div>
-            <div id="latest-changelog" class="changelog">
-            </div>
-        </main>
-    </div>
-    <div class="infobox">
-        <p>Updates for plugins can be checked and applied manually through the plugins page.</p>
+                </section>
+
+                <section id="panel-debug" role="tabpanel" aria-labelledby="tab-debug" class="tab-panel debug-panel" hidden tabindex="-1">
+                     <div id="debug-info" class="content-section debug-box">
+                        <div class="debug-header">
+                            <h2 id="debug-heading" class="panel-heading">Debugging Information</h2>
+                             <button id="copy-debug-log" class="btn tertiary copy-debug-btn" title="Copy Debug Log" aria-label="Copy Debug Log">
+                                 <img src="../../public/icons/svg/id.svg" alt="" class="btn-icon small" aria-hidden="true">
+                                 Copy Log
+                             </button>
+                        </div>
+                        <pre id="debug-output" aria-live="polite" aria-atomic="false" aria-relevant="text additions">Initializing debug log...</pre>
+                     </div>
+                </section>
+            </main>
+        </div>
+
+        <footer class="page-footer" role="contentinfo">
+            <div class="infobox">
+                 <p>Need help? Visit the <a href="#" target="_blank" rel="noopener noreferrer">support page</a> or check the <a href="#" target="_blank" rel="noopener noreferrer">documentation</a>.</p>
+                 </div>
+            <p>NG Extension Manager &copy; <span id="current-year"></span></p>
+        </footer>
     </div>
 
-    <script src="js/updates.js"></script>
-    <script src="js/offline.js"></script>
+    <div id="toast-container" role="log" aria-live="assertive" aria-relevant="additions"></div>
+
+    <script src="../js/markdown.js"></script>
+    <script src="../js/updates.js"></script>
 </body>
 </html>
