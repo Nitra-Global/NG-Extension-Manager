@@ -3,57 +3,269 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Extension Details - NG Extension Manager</title>
-    <link rel="stylesheet" type="text/css" href="../css/details.css">
-    <link rel="stylesheet" type="text/css" href="../../public/fonts/fonts.css">
+    <title>Extension Details | NG Extension Manager</title>
+    <meta name="description" content="View detailed information, permissions with risk assessment, and troubleshooting options for an installed browser extension.">
+    <meta name="color-scheme" content="light dark">
+    <link rel="stylesheet" href="../css/details.css">
+    <link rel="stylesheet" href="../../public/fonts/fonts.css">
 </head>
 <body>
-    <main id="extension-details" class="details-container">
+    <div class="page-wrapper">
+        <aside class="sidebar">
+            <header class="sidebar-header">
+                <img id="sidebar-extension-icon" src="../../public/icons/svg/terminal.svg" alt="" class="header-logo no-mask">
+                <h1 id="sidebar-extension-title" class="sidebar-title">Details</h1>
+            </header>
+            <nav class="sidebar-nav" aria-label="Details Sections">
+                <ul>
+                    <li>
+                        <button class="sidebar-button active" data-panel-target="panel-details" aria-current="page" aria-controls="panel-details">
+                            <span class="icon icon-info" aria-hidden="true"></span> <span>Details</span>
+                        </button>
+                    </li>
+                    <li>
+                        <button class="sidebar-button" data-panel-target="panel-permissions" aria-controls="panel-permissions">
+                            <span class="icon icon-shield" aria-hidden="true"></span>
+                            <span>Permissions</span>
+                        </button>
+                    </li>
+                    <li>
+                        <button class="sidebar-button" data-panel-target="panel-diagnosis" aria-controls="panel-diagnosis">
+                            <span class="icon icon-diagnostic" aria-hidden="true"></span>
+                            <span>Troubleshooting</span>
+                        </button>
+                    </li>
+                 </ul>
+            </nav>
+            <footer class="sidebar-footer">
+                 <p>&copy; <span id="current-year"></span> NG Extension Manager</p>
+             </footer>
+        </aside>
 
-        <div id="details-top-bar" style="display: none;"> {/* Initially hidden until populated by JS */}
-            <div class="top-bar-info">
-                <img id="top-bar-icon" src="../../public/icons/svg/error.svg" alt="Extension Icon" class="top-bar-icon">
-                <h2 id="top-bar-name">Extension Name</h2>
-            </div>
-            <div class="top-bar-actions">
-                {/* Action buttons will be added here by JS */}
-            </div>
-        </div>
-
-        <div id="details-content">
-            <div class="loading-indicator" role="status" aria-live="polite">
+        <main class="content-area">
+            <div id="initial-loading-indicator" class="loading-overlay" role="status" aria-live="polite">
                 <div class="spinner" aria-hidden="true"></div>
-                <p class="loading-placeholder">Loading Extension Details...</p>
+                <p>Loading Extension Details...</p>
             </div>
 
-            <div id="error-container"></div> {/* For displaying errors */}
+            <div id="error-container" class="api-error-display" style="display: none;" role="alert" aria-atomic="true"></div>
 
-            <div id="basic-info-section" class="details-section" style="display: none;">
-                 <h3>Details</h3>
-                 {/* ID, Version, Type, Install, Incognito, Update URL go here */}
-            </div>
+            <section id="panel-details" class="content-panel active" aria-labelledby="details-panel-title" tabindex="-1">
+                 <header class="panel-header">
+                     <h2 id="details-panel-title">Extension Details</h2>
+                     <p id="details-panel-description">Core information about the extension, its status, and management actions.</p>
+                 </header>
+                 <div class="panel-content">
+                     <div id="details-content-wrapper" class="content-section" aria-live="polite" aria-busy="true">
+                         <div class="skeleton-loader details-skeleton" aria-hidden="true">
+                            <div class="skeleton skeleton-title" style="width: 50%;"></div>
+                             <div class="skeleton skeleton-line"></div>
+                             <div class="skeleton skeleton-line short"></div>
+                             <div class="skeleton skeleton-line medium" style="margin-top: 1.5rem;"></div>
+                             <div class="skeleton skeleton-line short"></div>
+                         </div>
+                         <div id="details-actual-content" class="details-view">
+                             <div class="details-grid">
+                                 <div class="detail-item detail-item-full-width">
+                                     <span class="detail-label" id="detail-name-label">Extension Name</span>
+                                     <strong id="detail-name" class="detail-value emphasis" aria-labelledby="detail-name-label">N/A</strong>
+                                 </div>
+                                 <div class="detail-item">
+                                     <span class="detail-label" id="detail-version-label">Version</span>
+                                     <span id="detail-version" class="detail-value" aria-labelledby="detail-version-label">N/A</span>
+                                 </div>
+                                 <div class="detail-item">
+                                     <span class="detail-label" id="detail-id-label">Extension ID</span>
+                                     <div class="detail-value" aria-labelledby="detail-id-label">
+                                         <code id="detail-id">N/A</code>
+                                         <button id="copy-id-button" class="btn-icon" title="Copy Extension ID" aria-label="Copy Extension ID">
+                                             <span class="icon icon-copy" aria-hidden="true"></span>
+                                         </button>
+                                     </div>
+                                 </div>
+                                 <div class="detail-item">
+                                     <span class="detail-label" id="detail-install-type-label">Source</span>
+                                     <span id="detail-install-type" class="detail-value" aria-labelledby="detail-install-type-label">N/A</span>
+                                 </div>
+                                 <div class="detail-item detail-item-full-width">
+                                     <span class="detail-label" id="detail-description-label">Description</span>
+                                     <p id="detail-description" class="detail-description-text" aria-labelledby="detail-description-label">N/A</p>
+                                 </div>
+                                 <div class="detail-item">
+                                     <span class="detail-label" id="detail-homepage-label">Homepage</span>
+                                     <a id="detail-homepage-url" href="#" class="detail-value detail-link" target="_blank" rel="noopener noreferrer" aria-labelledby="detail-homepage-label">N/A</a>
+                                 </div>
+                                 <div class="detail-item">
+                                    <span class="detail-label" id="detail-update-url-label">Update URL</span>
+                                    <code id="detail-update-url" class="detail-value small-code" aria-labelledby="detail-update-url-label">N/A</code>
+                                </div>
 
-            <div id="description-section" class="details-section" style="display: none;">
-                 <h3>Description</h3>
-                 <p id="description-text"></p>
-            </div>
+                             </div>
+                         </div>
+                     </div>
 
-             <div id="links-section" class="details-section" style="display: none;">
-                 <h3>Links</h3>
-                 {/* Homepage, Store, Options links go here */}
-            </div>
+                     <div class="content-section action-buttons-container">
+                         <h3 id="management-actions-title" class="section-title">Management Actions</h3>
+                         <div id="details-actions-content" class="details-actions-grid" aria-live="polite" aria-busy="true" aria-labelledby="management-actions-title">
+                            <div class="skeleton-loader actions-skeleton" aria-hidden="true">
+                                <div class="skeleton skeleton-button" style="width: 120px;"></div>
+                                <div class="skeleton skeleton-button" style="width: 150px;"></div>
+                                <div class="skeleton skeleton-button" style="width: 140px;"></div>
+                            </div>
+                            <div id="details-actual-actions">
+                                <button id="enable-toggle-button" class="btn" aria-live="polite">
+                                    <span class="icon icon-toggle-off" aria-hidden="true"></span>
+                                    <span>Enable</span>
+                                </button>
+                                <button id="options-button" class="btn secondary" style="display: none;">
+                                    <span class="icon icon-settings" aria-hidden="true"></span>
+                                    Options
+                                </button>
+                                <button id="store-button" class="btn secondary" style="display: none;">
+                                    <span class="icon icon-store" aria-hidden="true"></span>
+                                    View in Store
+                                </button>
+                                <button id="uninstall-button" class="btn danger tertiary">
+                                    <span class="icon icon-trash" aria-hidden="true"></span>
+                                    Uninstall
+                                </button>
+                            </div>
+                         </div>
+                         <p class="description small-description">Manage the extension's enabled state, access its options, or remove it.</p>
+                    </div>
+                 </div>
+             </section>
 
-            <div id="permissions-section" style="display: none;">
-                {/* Permissions box will be added here by JS */}
-            </div>
+            <section id="panel-permissions" class="content-panel" aria-labelledby="permissions-panel-title" hidden tabindex="-1">
+                <header class="panel-header">
+                    <h2 id="permissions-panel-title">Permissions & Host Access</h2>
+                    <p id="permissions-panel-description">Review permissions requested by this extension and their potential risks. Permissions allow extensions to interact with your browser or websites.</p>
+                </header>
+                <div class="panel-content">
 
-             <div id="self-notice-section" class="details-section" style="display: none;">
-                 {/* Message for the ng manager extension itself */}
-             </div>
+                    <div class="permissions-controls">
+                        <div class="permissions-search">
+                             <label for="permission-search-input" class="visually-hidden">Search for permissions...</label>
+                             <span class="icon icon-search" aria-hidden="true"></span>
+                            <input type="search" id="permission-search-input" placeholder="Search for permissions..." aria-controls="api-permissions-list host-permissions-list">
+                        </div>
+                        <div class="permissions-layout-toggle" role="group" aria-label="Permissions view layout">
+                             <button id="layout-list-btn" class="btn-icon active" data-layout="list" title="List View" aria-pressed="true" aria-label="Switch to List View">
+                                <span class="icon icon-list" aria-hidden="true"></span>
+                             </button>
+                            <button id="layout-grid-btn" class="btn-icon" data-layout="grid" title="Grid View" aria-pressed="false" aria-label="Switch to Grid View">
+                                <span class="icon icon-grid" aria-hidden="true"></span>
+                             </button>
+                        </div>
+                    </div>
 
-        </div>
+                    <p id="permissions-intro-text" class="description" style="margin-top: var(--spacing-unit);">
+                        Extensions request access to browser features (API Permissions) or specific websites (Host Permissions). Review these carefully. High-risk permissions require more trust in the extension.
+                    </p>
 
-    </main>
+                    <div id="permissions-content-wrapper" aria-live="polite" aria-busy="true">
+                         <div class="skeleton-loader permissions-skeleton" aria-hidden="true">
+                            <div class="skeleton skeleton-title" style="width: 40%; margin-bottom: 1.5rem;"></div>
+                            <div class="skeleton permission-item-skeleton"></div>
+                            <div class="skeleton permission-item-skeleton"></div>
+                            <div class="skeleton skeleton-title" style="width: 45%; margin-top: 2rem; margin-bottom: 1.5rem;"></div>
+                            <div class="skeleton permission-item-skeleton"></div>
+                        </div>
+                        <div id="permissions-actual-content">
+                            <div class="content-section permissions-section">
+                                <h3 id="api-permissions-heading" class="section-title">API Permissions (<span id="api-perm-count">0</span>)</h3>
+                                <div id="api-permissions-list" class="permissions-list list-view" aria-labelledby="api-permissions-heading">
+                                    <div class="placeholder info-message">No API permissions requested. These allow access to browser features.</div>
+                                </div>
+                            </div>
+                            <div class="content-section permissions-section">
+                                <h3 id="host-permissions-heading" class="section-title">Host Permissions (<span id="host-perm-count">0</span>)</h3>
+                                <div id="host-permissions-list" class="permissions-list list-view" aria-labelledby="host-permissions-heading">
+                                    <div class="placeholder info-message">No specific host permissions requested. These allow access to websites.</div>
+                                </div>
+                                <p class="description small-description" id="host-perms-note" style="margin-top: 1rem;">Note: Access to <code>&lt;all_urls&gt;</code> or broad patterns like <code>*://*/*</code> grants extensive access and carries higher risk. Some host permissions might be optional and managed within the extension's settings or via browser controls.</p>
+                            </div>
+                            <div class="content-section permissions-section risk-legend">
+                                <h4 id="risk-legend-title" class="section-title small-title">Risk Factor Legend</h4>
+                                <ul class="risk-definitions" aria-labelledby="risk-legend-title">
+                                    <li><span class="risk-indicator low">Low</span>: Generally safe, limited access required for basic functionality.</li>
+                                    <li><span class="risk-indicator medium">Medium</span>: Accesses sensitive data (like specific websites, bookmarks, cookies) or broader browser features. Evaluate trust.</li>
+                                    <li><span class="risk-indicator high">High</span>: Extensive access (like all websites, history, other extensions, injecting scripts). Requires significant trust in the extension developer.</li>
+                                    <li><span class="risk-indicator varies">Varies</span>: Risk depends on the specific website pattern(s) requested.</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="panel-diagnosis" class="content-panel" aria-labelledby="diagnosis-panel-title" hidden tabindex="-1">
+                 <header class="panel-header">
+                     <h2 id="diagnosis-panel-title">Troubleshooting Checks</h2>
+                     <p>Automatically checks for common issues and provides suggestions to resolve problems with the extension.</p>
+                 </header>
+                 <div class="panel-content">
+                     <div class="content-section">
+                        <h3 id="detected-issues-title" class="section-title">Detected Issues & Suggestions</h3>
+                        <p class="description small-description">These checks provide guidance but may not cover all possible extension problems.</p>
+                         <div id="diagnosis-results-list" class="diagnosis-list" aria-live="polite" aria-busy="true" aria-labelledby="detected-issues-title">
+                             <div class="skeleton-loader diagnosis-skeleton" aria-hidden="true">
+                                 <div class="skeleton skeleton-line medium" style="height: 1.8rem;"></div>
+                                 <div class="skeleton skeleton-line short" style="height: 1.8rem;"></div>
+                                 <div class="skeleton skeleton-line long" style="height: 1.8rem;"></div>
+                             </div>
+                             <div id="diagnosis-actual-content">
+                                <div class="placeholder info-message" id="diag-initial-placeholder">
+                                    <span class="icon icon-loading loading" aria-hidden="true"></span>
+                                    <span>Running automated checks...</span>
+                                </div>
+                             </div>
+                         </div>
+                     </div>
+
+                     <div id="diagnosis-actions" class="content-section action-buttons-container">
+                         <h3 id="troubleshooting-actions-title" class="section-title">Troubleshooting Actions</h3>
+                         <div id="diag-action-items" class="details-actions-grid" aria-live="polite" aria-busy="true" aria-labelledby="troubleshooting-actions-title">
+                            <div class="skeleton-loader diag-actions-skeleton" aria-hidden="true">
+                                <div class="skeleton skeleton-button" style="width: 160px;"></div>
+                            </div>
+                             <div id="diag-actual-actions">
+                                <button id="reload-extension-button" class="btn tertiary">
+                                    <span class="icon icon-reload" aria-hidden="true"></span>
+                                    Reload Extension
+                                </button>
+                                <button id="check-errors-button" class="btn tertiary">
+                                     <span class="icon icon-error" aria-hidden="true"></span>
+                                     Check Runtime Errors
+                                 </button>
+                             </div>
+                         </div>
+                         <p class="description small-description">Reloading can fix temporary glitches. Checking runtime errors opens the extension's specific error console.</p>
+                         <div class="content-section" style="border-bottom: none; padding-bottom: 0; margin-bottom: 0; margin-top: var(--spacing-unit);">
+                              <h4 id="further-assistance-title" class="section-title small-title">Further Assistance</h4>
+                              <p class="description small-description">If issues persist after trying these steps:</p>
+                              <ul class="help-list" aria-labelledby="further-assistance-title">
+                                  <li>Consult the extension's official documentation or website (if available via the Details panel).</li>
+                                  <li>Contact the extension developer directly for support.</li>
+                                  <li>Check if the extension conflicts with other installed extensions by temporarily disabling others.</li>
+                                  <li>Search online forums or communities for similar issues with this specific extension.</li>
+                                  <li><a href="https://support.google.com/chrome_webstore/answer/2664769" target="_blank" rel="noopener noreferrer" title="Opens Chrome Web Store help">View general Chrome extension troubleshooting tips</a>.</li>
+                              </ul>
+                         </div>
+                     </div>
+                 </div>
+             </section>
+
+            <footer class="content-footer" role="contentinfo">
+                 <div class="infobox">
+                    <p><span class="icon icon-help" aria-hidden="true"></span> Need help with NG Extension Manager itself? Visit the <a href="https://sites.google.com/view/ng-extension-manager/ng-extension-manager/help-tutorials?authuser=0" target="_blank" rel="noopener noreferrer">support page</a> or check the <a href="https://sites.google.com/view/ng-extension-manager/home?authuser=0" target="_blank" rel="noopener noreferrer">documentation</a>.</p>
+                </div>
+            </footer>
+        </main>
+    </div>
+
+    <div id="toast-container" role="log" aria-live="assertive" aria-relevant="additions"></div>
+
     <script src="../js/details.js"></script>
 </body>
 </html>
