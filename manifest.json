@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "NG Extension Manager",
-  "version": "2.3.72",
+  "version": "2.3.8",
   "description": "Your browser’s new best friend. Manage your extensions with ease and say goodbye to clutter!",
   "homepage_url": "https://github.com/Nitra-Global/NG-Extension-Manager",
   "author": "UNBOUND LABEL",
@@ -39,6 +39,12 @@
   "content_security_policy": {
     "extension_pages": "script-src 'self'; object-src 'self'"
   },
+  "web_accessible_resources": [
+  {
+    "resources": ["src/json/permissions.json", "src/html/details.html"],
+    "matches": ["<all_urls>"]
+  }
+],
   "browser_specific_settings": {
     "gecko": {
       "id": "ngde@web.de",
