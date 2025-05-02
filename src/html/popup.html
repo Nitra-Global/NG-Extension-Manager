@@ -9,65 +9,113 @@
 </head>
 <body>
     <div class="popup-container">
-        <h1>NG Extension Manager</h1>
 
-        <a href="https://github.com/Nitra-Global/NG-Extension-Manager/wiki" target="_blank" class="faq-link" aria-label="FAQ">
-            <img src="../../public/icons/svg/help.svg" alt="FAQ" style="vertical-align: middle; height: 24px;">
-        </a>
-        <a href="updates.html" target="_blank" class="chrome-extensions-link" aria-label="Chrome Update Extensions Icon">
-            <img src="../../public/icons/svg/update.svg" alt="Update" style="vertical-align: middle; height: 24px;">
-        </a>
+        <div class="popup-header">
+            <h1>NG Extension Manager</h1>
+            <div class="header-icons">
+                <button id="group-management-modal-trigger" class="header-icon-btn" aria-label="Manage Extension Groups" title="Manage Groups">
+                    <img src="../../public/icons/svg/groups.svg" alt="" aria-hidden="true">
+                </button>
+                <a href="addon_store.html" target="_blank" class="header-icon-link" aria-label="Download Add-ons" title="Add-on Store">
+                    <img src="../../public/icons/svg/addon.svg" alt="" aria-hidden="true">
+                </a>
+                <a href="https://github.com/Nitra-Global/NG-Extension-Manager/wiki" target="_blank" class="header-icon-link" aria-label="Frequently Asked Questions" title="FAQ">
+                    <img src="../../public/icons/svg/help.svg" alt="" aria-hidden="true">
+                </a>
+                <a href="updates.html" target="_blank" class="header-icon-link" aria-label="Check for Updates" title="Check for Updates">
+                    <img src="../../public/icons/svg/retry.svg" alt="" aria-hidden="true">
+                </a>
+            </div>
+        </div>
 
-        <input type="text" id="search-input" placeholder="Search for extensions, themes, or apps">
+        <input type="text" id="search-input" placeholder="Search name, description, ID..." aria-label="Search extensions by name, description, or ID">
 
         <div id="filters" class="filters-row">
-            <select id="type-filter" aria-label="Filter by Type">
+            <select id="type-filter" aria-label="Filter by Type" title="Filter extensions by type">
                 <option value="all">All Types</option>
                 <option value="extension">Extensions</option>
                 <option value="theme">Themes</option>
                 <option value="app">Apps</option>
             </select>
-            <select id="status-filter" aria-label="Filter by Status">
+            <select id="status-filter" aria-label="Filter by Status" title="Filter extensions by enabled/disabled status">
                 <option value="all">All Statuses</option>
                 <option value="enabled">Enabled</option>
                 <option value="disabled">Disabled</option>
             </select>
-            <select id="group-filter" aria-label="Filter by Group">
+            <select id="group-filter" aria-label="Filter by Group" title="Filter extensions by assigned group">
                 <option value="all">All Groups</option>
                 </select>
         </div>
 
-        <div id="group-management" class="group-management-row">
-             <input type="text" id="new-group-name" placeholder="New group name">
-             <button id="add-group-button" title="Add New Group">+</button>
-             </div>
+        <div id="bulk-actions-container" class="bulk-actions-container" style="display: none;">
+             <span id="selected-count">0 selected</span>
+             <select id="bulk-assign-group-select" aria-label="Assign selected extensions to group" title="Assign selected extensions to a group">
+                 <option value="">Assign to Group...</option>
+                 <option value="--remove--">Remove from Group</option>
+                 </select>
+             <button id="bulk-enable-button" class="button-small button-success" title="Enable selected extensions">
+                 <img src="../../public/icons/svg/power.svg" alt="" aria-hidden="true"> Enable
+             </button>
+             <button id="bulk-disable-button" class="button-small button-danger" title="Disable selected extensions">
+                 <img src="../../public/icons/svg/power.svg" alt="" aria-hidden="true"> Disable
+             </button>
+             <button id="bulk-uninstall-button" class="button-small button-danger" title="Uninstall selected extensions">
+                 <img src="../../public/icons/svg/trash.svg" alt="" aria-hidden="true"> Uninstall
+             </button>
+        </div>
 
-             <div class="group-management-controls">
-              <button id="manage-groups-toggle-button">Manage Groups</button>
-              <span id="success-message" class="success-message" style="display: none;"></span>
-         </div>
-         
-         <div id="group-management-list-container" style="display: none;">
-             <h3>Existing Groups</h3>
-             <ul id="group-management-list">
-                 </ul>
-         </div>
+        <span id="success-message" class="feedback-message success-message" style="display: none;" aria-live="polite"></span>
+        <span id="error-message" class="feedback-message error-message" style="display: none;" aria-live="assertive"></span>
 
+        <div id="loading-indicator" class="loading-indicator" style="display: none;" aria-label="Loading extensions" role="status">
+             <div class="spinner"></div>
+             <span>Loading...</span>
+        </div>
 
-        <div id="extension-list">
+        <div id="extension-list-header" class="extension-list-header">
+             <input type="checkbox" id="select-all-checkbox" title="Select/Deselect All Visible Extensions" aria-label="Select/Deselect All Visible Extensions">
+             <span>Extension</span>
+             <span class="header-actions-label">Actions</span>
+        </div>
+        <div id="extension-list" aria-live="polite">
             </div>
 
         <div id="pagination-container">
-            <button id="prev-page" disabled>Previous</button>
-            <span id="current-page">1</span> / <span id="total-pages">1</span>
-            <button id="next-page" disabled>Next</button>
+            <button id="prev-page" disabled aria-label="Previous page" title="Go to previous page">
+                 <img src="../../public/icons/svg/arrow-left.svg" alt="" aria-hidden="true"> <span>Previous</span>
+            </button>
+            <span aria-live="polite">Page <span id="current-page">1</span> of <span id="total-pages">1</span></span>
+            <button id="next-page" disabled aria-label="Next page" title="Go to next page">
+                 <span>Next</span>
+                 <img src="../../public/icons/svg/arrow-right.svg" alt="" aria-hidden="true">
+            </button>
         </div>
 
-        <div id="loading-indicator" class="loading" style="display: none;">
-            <i class="material-icons">autorenew</i> Loading...
-        </div>
+    </div> <div id="group-management-modal" class="modal-overlay" style="display: none;" aria-hidden="true">
+        <div class="modal-content" role="dialog" aria-modal="true" aria-labelledby="group-modal-title">
+            <button class="modal-close-button" aria-label="Close Group Management" title="Close">&times;</button>
+            <h2 id="group-modal-title">Manage Groups</h2>
 
-        <div id="error-message" class="error-message" style="display: none;"></div>
+            <div id="modal-group-creation" class="modal-section">
+                <h3>Create New Group</h3>
+                <div class="modal-input-group">
+                    <input type="text" id="modal-new-group-name" placeholder="Enter group name" aria-label="New group name">
+                    <button id="modal-add-group-button" class="button-small button-primary" title="Add New Group" aria-label="Add new group">
+                        <img src="../../public/icons/svg/plus.svg" alt="" aria-hidden="true"> Add
+                    </button>
+                </div>
+            </div>
+
+            <div id="modal-group-list-section" class="modal-section">
+                <h3>Existing Groups <span class="subtle-hint">(Drag to Reorder)</span></h3>
+                <ul id="modal-group-management-list" aria-live="polite">
+                    <li class="no-groups-message">No groups created yet.</li>
+                </ul>
+            </div>
+
+            <span id="modal-success-message" class="feedback-message success-message modal-feedback" style="display: none;" aria-live="polite"></span>
+            <span id="modal-error-message" class="feedback-message error-message modal-feedback" style="display: none;" aria-live="assertive"></span>
+        </div>
     </div>
 
     <script src="../js/popup.js"></script>
