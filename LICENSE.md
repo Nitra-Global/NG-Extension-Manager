@@ -1,197 +1,141 @@
-UNBOUND LABEL Open-Use License Agreement for NG Extension Manager
-=================================================================
+# UNBOUND LABEL Open-Use License Agreement for NG Extension Manager
 
-**Version 2.0**
+**Version 3.0**
 
-Introduction
-------------
+## 1. Introduction
 
-This comprehensive agreement outlines the terms and conditions under which you ("Licensee") may use, modify, distribute, and otherwise engage with the NG Extension Manager software product ("the Software"), developed and owned by UNBOUND LABEL ("Licensor"). The Software encompasses all source code, object code, interfaces, documentation, and related materials. We encourage open use and contribution while ensuring the integrity, proper attribution, and appropriate branding of the Software in accordance with open-source principles and applicable law.
+This License Agreement ("License") sets forth the terms and conditions under which you ("Licensee") may use, reproduce, modify, distribute, and engage with the NG Extension Manager software product ("the Software"). The Software includes all associated source code, object code, interfaces, documentation, and related materials. The Software is developed and contributed to by the individuals comprising **UNBOUND LABEL** ("Licensor"), an informal team.
 
-1\. Grant of Open-Use License
------------------------------
+This License is designed to encourage open use and contribution while ensuring the integrity, proper attribution, and appropriate branding of the Software in accordance with open-source principles and applicable law, specifically considering German legal requirements.
 
-UNBOUND LABEL hereby grants you a worldwide, non-exclusive, perpetual, royalty-free license to:
+## 2. Grant of License
 
-*   **Use:** Utilize the Software for any lawful purpose, whether personal, educational, commercial, or non-commercial.
-    
-*   **Modify:** Adapt, enhance, or otherwise alter the Software to suit your specific requirements or objectives.
-    
-*   **Distribute:** Share, publish, or otherwise disseminate the original or modified Software to third parties through any medium or channel.
-    
-*   **Sublicense:** Grant the same rights contained herein to others, provided such sublicensing adheres to the terms of this agreement.
-    
+Subject to the terms and conditions of this License, Licensor hereby grants Licensee a worldwide, non-exclusive, perpetual, royalty-free license to:
 
-2\. Permitted Actions
----------------------
+* **Use:** Run and utilize the Software for any lawful purpose, whether personal, educational, commercial, or non-commercial.
+* **Reproduce:** Make copies of the Software.
+* **Modify (Create Derivative Works):** Adapt, enhance, or otherwise alter the Software and create works based on the Software ("Derivative Works").
+* **Distribute:** Share, publish, or otherwise disseminate the original Software or Derivative Works to third parties in source code or compiled form, through any medium.
+* **Sublicense:** Grant the same rights granted herein to others, provided such sublicensing is made under the terms of this License.
 
-Specifically, you are expressly allowed to:
+This grant explicitly includes permission to integrate the Software or parts thereof into other projects (open-source or proprietary), deploy it in various environments, use it for academic research, contribute improvements back to the Licensor, and fork the project.
 
-*   Integrate the Software, in whole or in part, into your own projects, whether open-source or proprietary.
-    
-*   Create and distribute derivative works based on the Software.
-    
-*   Distribute the Software in source code, compiled binary form, or as part of a larger work.
-    
-*   Use the Software in educational settings for teaching, learning, research, and academic purposes.
-    
-*   Deploy the Software in commercial environments, including enterprise applications.
-    
-*   Contribute improvements, bug fixes, or extensions back to the main project.
-    
-*   Fork the project for specialized development purposes.
-    
+## 3. Conditions and Obligations
 
-3\. Responsible Use and Branding Requirements
----------------------------------------------
+Licensee's exercise of the rights granted in Section 2 is subject to the following conditions and obligations:
 
-To protect the integrity of the Software and UNBOUND LABEL's intellectual property rights, the following guidelines apply:
+### 3.1. Attribution Requirement
 
-*   **Attribution Requirement:** When distributing the Software or derivative works thereof, you must:
-    
-    *   Retain all copyright, patent, trademark, and attribution notices from the original Software.
-        
-    *   Clearly indicate any significant modifications you've made and the date such modifications were implemented.
-        
-    *   Include a copy of this license with any distribution.
-        
-    *   Provide appropriate attribution to UNBOUND LABEL as the original author.
-        
-*   **Branding Restrictions:**
-    
-    *   You may use the "NG Extension Manager" name to refer to the original Software.
-        
-    *   You must not use the "NG Extension Manager" name, logo, or confusingly similar variations for derivative works in ways that could imply official endorsement by or affiliation with UNBOUND LABEL without prior written authorization.
-        
-    *   For significantly modified versions, you must use a different name that clearly distinguishes your version from the original.
-        
-*   **Commercial Use Limitations:**
-    
-    *   You may incorporate the Software into commercial projects, products, or services.
-        
-    *   You may not sell the original or substantially similar versions of the Software as a standalone product without value-added services or significant modifications.
-        
-    *   You may charge reasonable fees for warranty, support, indemnity, or maintenance of the Software.
-        
-*   **Preservation of Notices:** You must not remove, obscure, or alter any copyright notices, proprietary rights notices, license text, or disclaimers included within the Software or its documentation.
-    
+When distributing the Software or Derivative Works, Licensee must:
 
-4\. Legal Compliance and German Jurisdictional Considerations
--------------------------------------------------------------
+* Retain all copyright, patent, trademark, and attribution notices present in the original Software.
+* Clearly indicate that the Software or Derivative Work is based on the original NG Extension Manager developed by UNBOUND LABEL.
+* Include a copy of this License Agreement with any distribution.
+* Provide appropriate and prominent attribution to UNBOUND LABEL as the original author of the Software.
+* For Derivative Works, clearly indicate any significant modifications made and the date of such modifications.
 
-*   You are solely responsible for ensuring your use of the Software complies with all applicable local, state, national, and international laws and regulations, including but not limited to copyright, patent, trademark, and data protection/privacy laws.
-    
-*   This license is governed by and construed in accordance with the laws of the Federal Republic of Germany, without regard to its conflict of law principles.
-    
-*   Any disputes arising under or in connection with this license shall be subject to the exclusive jurisdiction of the courts located in Germany.
-    
-*   For purposes of German law, this license shall be interpreted according to §§ 69a ff. of the German Copyright Act (Urheberrechtsgesetz – UrhG), and as permitted by § 69c UrhG.
-    
-*   In accordance with German consumer protection laws, nothing in this agreement shall restrict mandatory statutory consumer rights applicable under German law.
-    
-*   If any provision of this license is held to be unenforceable, such provision shall be reformed only to the extent necessary to make it enforceable under German law, and the remainder of the license shall continue in full force and effect.
-    
+### 3.2. Branding and Naming Restrictions
 
-5\. Disclaimer of Warranties
-----------------------------
+To maintain clarity and protect the identity of the original Software:
 
-*   THE SOFTWARE IS PROVIDED "AS IS," WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, AND NONINFRINGEMENT.
-    
-*   UNBOUND LABEL MAKES NO REPRESENTATIONS CONCERNING THE RELIABILITY, ACCURACY, OR COMPATIBILITY OF THE SOFTWARE WITH ANY HARDWARE OR SOFTWARE SYSTEMS.
-    
-*   UNBOUND LABEL DOES NOT WARRANT THAT THE SOFTWARE WILL MEET YOUR REQUIREMENTS OR THAT OPERATION OF THE SOFTWARE WILL BE UNINTERRUPTED OR ERROR-FREE.
-    
-*   YOU ASSUME FULL RESPONSIBILITY FOR SELECTING THE SOFTWARE TO ACHIEVE YOUR INTENDED RESULTS AND FOR THE INSTALLATION, USE, AND RESULTS OBTAINED FROM THE SOFTWARE.
-    
-*   TO THE EXTENT PERMITTED BY GERMAN LAW, ALL IMPLIED WARRANTIES ARE EXCLUDED. IF GERMAN LAW DOES NOT ALLOW FOR THE EXCLUSION OF IMPLIED WARRANTIES, SUCH WARRANTIES ARE LIMITED TO 30 DAYS FROM THE DATE YOU ACQUIRE THE SOFTWARE.
-    
+* Licensee may use the name "NG Extension Manager" to accurately refer to the original Software or unmodified versions obtained under this License.
+* Licensee **must not** use the "NG Extension Manager" name, logo, or any confusingly similar names or marks for Derivative Works or integrated products in a manner that could imply endorsement by, affiliation with, or origin from Licensor without express prior written permission from Licensor.
+* For Derivative Works that are significantly modified from the original Software, Licensee **must** use a distinct name that clearly differentiates the Derivative Work from the original "NG Extension Manager."
 
-6\. Limitation of Liability
----------------------------
+### 3.3. Commercial Use Limitations
 
-*   IN NO EVENT SHALL UNBOUND LABEL BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-    
-*   THE TOTAL LIABILITY OF UNBOUND LABEL FOR ANY CLAIM UNDER THIS AGREEMENT SHALL NOT EXCEED THE AMOUNT PAID BY YOU FOR THE SOFTWARE OR FIVE EUROS (€5.00), WHICHEVER IS GREATER.
-    
-*   NOTHING IN THIS AGREEMENT SHALL EXCLUDE OR LIMIT UNBOUND LABEL'S LIABILITY FOR DEATH OR PERSONAL INJURY CAUSED BY NEGLIGENCE, FRAUD, OR ANY OTHER LIABILITY WHICH CANNOT BE EXCLUDED OR LIMITED UNDER APPLICABLE GERMAN LAW.
-    
-*   IN ACCORDANCE WITH § 309 NO. 7 OF THE GERMAN CIVIL CODE (BÜRGERLICHES GESETZBUCH – BGB), THE ABOVE LIMITATIONS OF LIABILITY DO NOT APPLY TO LIABILITY FOR DAMAGES RESULTING FROM INJURY TO LIFE, BODY, OR HEALTH CAUSED BY NEGLIGENCE OR INTENTIONAL BREACHES OF DUTY.
-    
+While commercial use is permitted under this License:
 
-7\. Acceptance and Termination
-------------------------------
+* Licensee may incorporate the Software or Derivative Works into commercial products or services.
+* However, Licensee **may not** sell, license, or otherwise commercialize the original Software or a substantially similar version as a standalone product without adding significant value or combining it with other distinct services or products.
+* Licensee is permitted to charge fees for providing warranty, support, indemnity, or maintenance services related to the Software.
 
-*   By using, copying, modifying, or distributing the Software, you accept and agree to be bound by the terms of this license.
-    
-*   Your rights under this license will terminate automatically if you fail to comply with any of its terms.
-    
-*   Upon termination, you must cease all use, distribution, and possession of the Software and derivatives thereof.
-    
-*   Sections 4, 5, 6, 10, 11, and 14 shall survive any termination of this license.
-    
+### 3.4. Preservation of Notices
 
-8\. License Modifications and Versions
---------------------------------------
+Licensee must not remove, obscure, or alter any copyright notices, proprietary rights notices, license text, or disclaimers included within the Software or its documentation.
 
-*   UNBOUND LABEL reserves the right to publish updated versions of this license.
-    
-*   Each version will be distinguished by a unique version number.
-    
-*   Once a version of the license has been published, you may continue to use the Software under the terms of that version, or you may choose to use the Software under the terms of any subsequent version published by UNBOUND LABEL.
-    
-*   Changes will be documented and posted in the official repository and on the project website.
-    
+## 4. Legal Compliance and Governing Law
 
-9\. Contributions and Contributor License
------------------------------------------
+* Licensee is solely responsible for ensuring that their use, reproduction, modification, distribution, and all other activities related to the Software comply with all applicable local, state, national, and international laws and regulations, including without limitation laws regarding copyright, patent, trademark, data protection, and privacy (such as the General Data Protection Regulation (GDPR) and the German Federal Data Protection Act (Bundesdatenschutzgesetz – BDSG)).
+* This License is governed by and shall be construed in accordance with the laws of the Federal Republic of Germany, without regard to its conflict of law principles.
+* Any disputes arising out of or in connection with this License shall be subject to the exclusive jurisdiction of the courts located in Germany.
+* This License operates subject to the mandatory provisions of German law, including the German Copyright Act (Urheberrechtsgesetz – UrhG), particularly provisions concerning software (§§ 69a ff. UrhG), such as exceptions for achieving interoperability (§ 69c UrhG), to the extent that such exceptions cannot be excluded by contractual agreement (§ 69e UrhG).
+* Nothing in this License shall restrict or override mandatory statutory consumer rights applicable under German law.
+* If any provision of this License is held to be invalid or unenforceable, that provision shall be reformed only to the extent necessary to make it enforceable under German law, and the remaining provisions of this License shall remain in full force and effect.
 
-*   Any intentional submission of code, modifications, documentation, or other materials to be included in the Software ("Contributions") shall be subject to the terms of this license.
-    
-*   By submitting Contributions, you grant UNBOUND LABEL a perpetual, worldwide, non-exclusive, royalty-free, irrevocable license to use, reproduce, modify, display, perform, sublicense, and distribute such Contributions.
-    
-*   You represent that you are legally entitled to grant the above license and that your Contributions do not violate any third-party intellectual property rights.
-    
+## 5. Disclaimer of Warranties
 
-10\. Export Control
--------------------
+**THE SOFTWARE IS PROVIDED "AS IS," WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, TITLE, NON-INFRINGEMENT, AND ANY WARRANTIES ARISING FROM COURSE OF DEALING, USAGE, OR TRADE PRACTICE.**
 
-*   You agree to comply with all applicable export and re-export control laws and regulations, including the Export Administration Regulations maintained by the U.S. Department of Commerce, trade and economic sanctions maintained by the U.S. Treasury Department's Office of Foreign Assets Control, and export control regulations of the European Union and Germany.
-    
+**LICENSOR, BEING AN INFORMAL TEAM, MAKES NO REPRESENTATIONS, WARRANTIES, OR GUARANTEES WHATSOEVER CONCERNING THE RELIABILITY, ACCURACY, OR COMPATIBILITY OF THE SOFTWARE WITH ANY HARDWARE OR SOFTWARE SYSTEMS.**
 
-11\. Severability and Waiver
-----------------------------
+**LICENSOR DOES NOT WARRANT THAT THE SOFTWARE WILL MEET YOUR REQUIREMENTS OR THAT THE OPERATION OF THE SOFTWARE WILL BE UNINTERRUPTED OR ERROR-FREE.**
 
-*   If any provision of this license is held to be unenforceable or invalid, that provision will be enforced to the maximum extent possible, and the other provisions will remain in full force and effect.
-    
-*   No waiver of any term or condition of this license shall be deemed a further or continuing waiver of such term or condition or any other term or condition.
-    
-*   In accordance with German law, if any provision is found to be invalid, the parties agree that the court should endeavor to give effect to the parties' intentions as reflected in the provision, and that the other provisions remain in full force and effect.
-    
+**LICENSEE ASSUMES FULL RESPONSIBILITY AND ALL RISKS FOR SELECTING THE SOFTWARE TO ACHIEVE THEIR INTENDED RESULTS AND FOR THE INSTALLATION, USE, AND RESULTS OBTAINED FROM THE SOFTWARE.**
 
-12\. Contact and Communication
-------------------------------
+**TO THE MAXIMUM EXTENT PERMITTED BY APPLICABLE LAW, INCLUDING GERMAN LAW, ALL IMPLIED WARRANTIES ARE HEREBY EXCLUDED.**
 
-*   For license questions or clarifications, please contact us at [ngde@web.de](mailto:ngde@web.de).
-    
-*   For bug reports, feature requests, or general information, please use the official GitHub repository of the NG Extension Manager.
-    
-*   For security vulnerabilities, please report them directly to [ngde@web.de](mailto:ngde@web.de) with the subject line "SECURITY VULNERABILITY."
-    
+## 6. Limitation of Liability
 
-13\. Entire Agreement
----------------------
+**TO THE MAXIMUM EXTENT PERMITTED BY APPLICABLE LAW, INCLUDING GERMAN LAW, IN NO EVENT SHALL LICENSOR OR ANY INDIVIDUAL MEMBER OF UNBOUND LABEL BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF LICENSOR HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.**
 
-*   This license constitutes the entire agreement between you and UNBOUND LABEL concerning the Software and supersedes all prior or contemporaneous oral or written communications, proposals, and representations with respect to the Software or any other subject matter covered by this license.
-    
+**LICENSOR'S TOTAL AGGREGATE LIABILITY FOR ANY AND ALL CLAIMS UNDER THIS LICENSE SHALL NOT EXCEED THE AMOUNT PAID BY LICENSEE FOR THE SOFTWARE (IF ANY) OR FIVE EUROS (€5.00), WHICHEVER IS GREATER.**
 
-14\. Data Protection and Privacy
---------------------------------
+**NOTHING IN THIS LICENSE SHALL EXCLUDE OR LIMIT LICENSOR'S LIABILITY FOR DEATH OR PERSONAL INJURY RESULTING FROM LICENSOR'S NEGLIGENCE, FOR FRAUD OR FRAUDULENT MISREPRESENTATION, OR FOR ANY OTHER LIABILITY THAT CANNOT BE EXCLUDED OR LIMITED UNDER APPLICABLE GERMAN LAW, including liability for damages resulting from injury to life, body, or health caused by negligence or intentional breach of duty in accordance with § 309 No. 7 of the German Civil Code (Bürgerliches Gesetzbuch – BGB).**
 
-*   The Software may collect certain data necessary for its operation. Any data collection shall comply with the General Data Protection Regulation (GDPR) and German data protection laws (Bundesdatenschutzgesetz – BDSG).
-    
-*   UNBOUND LABEL shall process personal data only for legitimate purposes and in accordance with applicable data protection laws.
-    
-*   You agree to use the Software in compliance with applicable data protection laws when processing personal data of third parties.
-    
+## 7. Indemnification
+
+Licensee agrees to indemnify, defend, and hold harmless Licensor (the team UNBOUND LABEL) and its individual members, contributors, and representatives from and against any and all claims, liabilities, damages, losses, costs, expenses, or fees (including reasonable attorneys' fees) arising from Licensee's use of the Software or Derivative Works, Licensee's violation of this License, or Licensee's infringement of any third party's rights, including intellectual property rights or privacy rights.
+
+## 8. Acceptance and Termination
+
+* By using, copying, modifying, or distributing the Software, Licensee accepts and agrees to be bound by all terms and conditions of this License.
+* This License is effective until terminated. Licensee's rights under this License will terminate automatically without notice from Licensor if Licensee fails to comply with any of its terms.
+* Upon termination, Licensee must immediately cease all use, reproduction, distribution, and possession of the Software and all Derivative Works.
+* Sections 3, 4, 5, 6, 7, 9, 10, 11, 13, and 14 shall survive any termination of this License.
+
+## 9. License Modifications and Versions
+
+* Licensor reserves the right to publish updated versions of this License.
+* Each version will be distinguished by a unique version number.
+* Licensee may use the Software under the terms of the version of the License under which it was obtained or, at their option, under the terms of any subsequent version of the License published by Licensor.
+* Changes to the License will be documented and made available in the official repository and on the project website.
+
+## 10. Contributions
+
+* Any intentional submission of code, modifications, documentation, or other materials by Licensee to Licensor for inclusion in the Software ("Contributions") shall be subject to the terms of this License.
+* By submitting Contributions, Licensee grants Licensor a perpetual, worldwide, non-exclusive, royalty-free, irrevocable license to use, reproduce, modify, display, perform, sublicense, and distribute such Contributions as part of the Software or Derivative Works thereof.
+* Licensee represents and warrants that they are legally entitled to grant the foregoing license and that their Contributions do not infringe or violate any third-party intellectual property rights, including copyright, patent, trademark, or trade secret rights.
+
+## 11. Relationship
+
+Nothing in this License shall be construed as creating a partnership, joint venture, employment, or agency relationship between the Licensee and the Licensor (UNBOUND LABEL or its individual members).
+
+## 12. Assignment
+
+Licensee may not assign or transfer any of their rights or obligations under this License without the prior written consent of Licensor.
+
+## 13. Severability and Waiver
+
+* If any provision of this License is held to be invalid or unenforceable by a court of competent jurisdiction, that provision shall be reformed to the maximum extent permissible under German law to effect the intent of the parties, and the remainder of this License shall continue in full force and effect.
+* The failure of Licensor to exercise or enforce any right or provision of this License shall not constitute a waiver of such right or provision.
+
+## 14. Contact Information
+
+* For questions or clarifications regarding this License, please contact: [ngde@web.de](mailto:ngde@web.de)
+* For bug reports, feature requests, or general project information, please use the official NG Extension Manager GitHub repository.
+* To report security vulnerabilities, please contact: [ngde@web.de](mailto:ngde@web.de) with the subject line "SECURITY VULNERABILITY".
+
+## 15. Entire Agreement
+
+This License constitutes the entire agreement between Licensee and Licensor concerning the Software and supersedes all prior or contemporaneous oral or written communications, proposals, and representations with respect to the Software or any other subject matter covered by this License.
+
+## 16. Data Protection and Privacy
+
+* Any collection, processing, or use of personal data by the Software shall comply with the General Data Protection Regulation (GDPR) and applicable German data protection laws (Bundesdatenschutzgesetz – BDSG).
+* Licensor shall process personal data only for legitimate purposes related to the Software's operation and in accordance with applicable data protection laws and the project's Privacy Policy (if any).
+* Licensee agrees to use the Software in compliance with all applicable data protection laws when processing personal data of third parties, and understands that Licensee is the data controller or processor responsible for their own data processing activities.
+
+---
 
 Copyright © 2025 UNBOUND LABEL. All rights reserved.
