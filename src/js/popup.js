@@ -1,33 +1,58 @@
 /**
- * popup.js - Logic for the NG Extension Manager Popup (v3.2 - Enhanced Grouping/UX)
+ * popup.js - Logic for the Popup (v4.4)
  *
- * Key Enhancements:
- * - Smarter Search: Matches multiple terms, highlights all matches.
- * - Bulk Actions: Select multiple extensions via checkboxes for Enable/Disable/Uninstall/Assign Group.
- * - Improved Grouping UX: Bulk assignment, clearer modal hints, better drag/drop feedback.
- * - UI/UX Tweaks: Added list header, refined feedback messages, tooltips.
- * - Code Refinements: Better state management for selections, more comments.
+ * Key Enhancements from v4.3:
+ * - Replaced all text-based confirmation prompts with standard `confirm()` dialogs for improved UX.
+ * - Removed the restriction that prevented assigning keyboard shortcuts to profiles created from the current state.
+ * - Fixed an issue where the "Clear Filter" button could appear incorrectly or duplicate.
+ * - Added a suite of new keyboard shortcuts for common actions (opening modals, pagination, etc.).
+ * - General performance and logic enhancements for a smoother experience.
+ * - MODIFICATION: Refactored data storage to use chrome.storage.local instead of localStorage for cross-script consistency.
  */
 
 // --- Constants ---
 const EXTENSIONS_PER_PAGE = 12;
-const SETTINGS_STORAGE_KEY = 'extensionManagerSettings_v2'; // Keep consistent if structure unchanged
-const PREFERENCES_STORAGE_KEY = 'extensionManagerPreferences_v2';
-const GROUPS_STORAGE_KEY = 'extensionManagerGroups_v2';
-const DEFAULT_ICON_PLACEHOLDER = '../../public/icons/svg/updatelogo.svg'; // Default icon path
-// --- ICON PATHS (Ensure these paths are correct) ---
+const PREFERENCES_STORAGE_KEY = 'extensionManagerPreferences_v4';
+const GROUPS_STORAGE_KEY = 'extensionManagerGroups_v4'; // Incremented for shortcutAction
+const PROFILES_STORAGE_KEY = 'extensionManagerProfiles_v2';
+const DEFAULT_ICON_PLACEHOLDER = '../../public/icons/svg/updatelogo.svg';
+const ACTION_FEEDBACK_DURATION = 2500;
+const ITEM_FEEDBACK_HIGHLIGHT_DURATION = 800;
+const PROFILE_TYPE_CURRENT_STATE = 'current_state';
+const SHORTCUT_MODIFIER_KEYS = ['Ctrl', 'Alt', 'Shift'];
+const VALID_SHORTCUT_KEYS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+
+
+// --- ICON PATHS ---
 const ICON_PATHS = {
     toggleOn: '../../public/icons/svg/power.svg',
     toggleOff: '../../public/icons/svg/power.svg',
     details: '../../public/icons/svg/info.svg',
     delete: '../../public/icons/svg/trash.svg',
     addGroup: '../../public/icons/svg/plus.svg',
-    renameGroup: '../../public/icons/svg/edit.svg',
     deleteGroup: '../../public/icons/svg/trash.svg',
-    enableGroup: '../../public/icons/svg/power.svg', // Consider checkmark
-    disableGroup: '../../public/icons/svg/power.svg', // Consider x-mark
+    enableGroup: '../../public/icons/svg/power.svg',
+    disableGroup: '../../public/icons/svg/power.svg',
     prevPage: '../../public/icons/svg/arrow-left.svg',
     nextPage: '../../public/icons/svg/arrow-right.svg',
+    profiles: '../../public/icons/svg/layers.svg',
+    addProfile: '../../public/icons/svg/plus.svg',
+    deleteProfile: '../../public/icons/svg/trash.svg',
+    applyProfile: '../../public/icons/svg/check.svg',
+    configure: '../../public/icons/svg/settings.svg',
+    saveConfig: '../../public/icons/svg/save.svg',
+    backToList: '../../public/icons/svg/arrow-left.svg',
+    successTick: '../../public/icons/svg/check-circle.svg',
+    infoCircle: '../../public/icons/svg/info-circle.svg',
+    duplicate: '../../public/icons/svg/copy.svg',
+    current: '../../public/icons/svg/current.svg',
+    ungroup: '../../public/icons/svg/ungroup.svg',
+    shortcut: '../../public/icons/svg/keyboard.svg',
+    chat: '../../public/icons/svg/chat.svg', // New icon
+    bug: '../../public/icons/svg/error.svg', // New icon
+    documentation: '../../public/icons/svg/help.svg', // New icon
+    feedback: '../../public/icons/svg/feedback.svg', // New icon
+    donate: '../../public/icons/svg/support.svg' // New icon
 };
 // ------------------------------------------------------------------------------------
 
@@ -37,16 +62,20 @@ const elements = {
     loadingIndicator: document.getElementById('loading-indicator'),
     errorMessage: document.getElementById('error-message'),
     successMessage: document.getElementById('success-message'),
+    actionFeedbackMessage: document.getElementById('action-feedback'),
     extensionList: document.getElementById('extension-list'),
     extensionListHeader: document.getElementById('extension-list-header'),
+    emptyStateMessageContainer: document.getElementById('empty-state-message'),
     searchInput: document.getElementById('search-input'),
     typeFilter: document.getElementById('type-filter'),
     statusFilter: document.getElementById('status-filter'),
     groupFilter: document.getElementById('group-filter'),
+    filtersRow: document.getElementById('filters'),
     currentPageSpan: document.getElementById('current-page'),
     totalPagesSpan: document.getElementById('total-pages'),
     prevPageButton: document.getElementById('prev-page'),
     nextPageButton: document.getElementById('next-page'),
+    paginationContainer: document.getElementById('pagination-container'),
     // Bulk Actions
     bulkActionsContainer: document.getElementById('bulk-actions-container'),
     selectedCountSpan: document.getElementById('selected-count'),
@@ -62,68 +91,96 @@ const elements = {
     modalNewGroupNameInput: document.getElementById('modal-new-group-name'),
     modalAddGroupButton: document.getElementById('modal-add-group-button'),
     modalGroupList: document.getElementById('modal-group-management-list'),
+    modalGroupListSection: document.getElementById('modal-group-list-section'),
     modalSuccessMessage: document.getElementById('modal-success-message'),
     modalErrorMessage: document.getElementById('modal-error-message'),
+    ungroupAllButton: document.getElementById('ungroup-all-button'),
+
+    // Group Configuration View Elements
+    groupConfigurationModal: document.getElementById('group-configuration-modal'),
+    groupConfigTitle: document.getElementById('group-config-title'),
+    groupConfigNameInput: document.getElementById('group-config-name-input'),
+    groupConfigShortcutInput: document.getElementById('group-config-shortcut-input'),
+    groupConfigActionSelect: document.getElementById('group-config-action-select'),
+    groupConfigExtensionList: document.getElementById('group-config-extension-list'),
+    saveGroupConfigBtn: document.getElementById('save-group-config-btn'),
+    backToGroupsBtn: document.getElementById('back-to-groups-btn'),
+    modalGroupConfigSuccessMessage: document.getElementById('modal-group-config-success-message'),
+    modalGroupConfigErrorMessage: document.getElementById('modal-group-config-error-message'),
+
+    // Profiles Modal
+    profilesModal: document.getElementById('profiles-modal'),
+    profilesModalTrigger: document.getElementById('profiles-modal-trigger'),
+    profilesModalCloseButton: document.querySelector('#profiles-modal .modal-close-button'),
+    modalNewProfileNameInput: document.getElementById('modal-new-profile-name'),
+    modalAddProfileButton: document.getElementById('modal-add-profile-button'),
+    createFromCurrentStateButton: document.getElementById('create-from-current-state-button'),
+    modalProfileListSection: document.getElementById('modal-profile-list-section'),
+    modalProfileList: document.getElementById('modal-profile-management-list'),
+    modalProfileCreationSection: document.getElementById('modal-profile-creation'),
+    modalProfilesSuccessMessage: document.getElementById('modal-profiles-success-message'),
+    modalProfilesErrorMessage: document.getElementById('modal-profiles-error-message'),
+
+    // Profile Configuration View Elements
+    profileConfigurationView: document.getElementById('modal-profile-configuration-view'),
+    profileConfigurationTitle: document.getElementById('profile-config-title'),
+    profileConfigNameInput: document.getElementById('profile-config-name-input'),
+    profileConfigShortcutInput: document.getElementById('profile-config-shortcut-input'),
+    profileConfigShortcutMessage: document.getElementById('profile-config-shortcut-message'),
+    profileConfigurationExtensionList: document.getElementById('profile-config-extension-list'),
+    profileConfigurationActionsBar: document.getElementById('profile-config-actions-bar'),
+    saveProfileConfigBtn: document.getElementById('save-profile-config-btn'),
+    backToProfilesBtn: document.getElementById('back-to-profiles-btn'),
+
+    // Help Modal
+    helpModal: document.getElementById('help-modal'),
+    helpModalTrigger: document.getElementById('help-modal-trigger'),
+    helpModalCloseButton: document.querySelector('#help-modal .modal-close-button'),
 };
 
+
 // --- State ---
-let draggedGroupItem = null; // For group reordering drag/drop
 let searchDebounceTimeout;
-let allFetchedExtensions = []; // Cache fetched extensions for filtering
-let currentFilteredExtensions = []; // Cache currently filtered/sorted extensions
-let selectedExtensionIds = new Set(); // Store IDs of selected extensions
+let allFetchedExtensions = [];
+let currentFilteredExtensions = [];
+let selectedExtensionIds = new Set();
+let selectedGroupNames = new Set();
+let selectedProfileIds = new Set();
+let ephemeralFeedbackTimeout;
+let currentConfiguringProfileId = null;
+let currentConfiguringGroupName = null;
+
+const activeShortcutHandlers = new Map();
+
 
 // --- Utility Functions ---
-
-/**
- * Sanitize text content to prevent XSS.
- * @param {string|null|undefined} str - The input string.
- * @returns {string} - The sanitized text string.
- */
 function sanitizeText(str) {
     if (str === null || typeof str === 'undefined') return '';
     const temp = document.createElement('div');
-    temp.textContent = String(str); // Use textContent for safety
+    temp.textContent = String(str);
     return temp.textContent;
 }
 
-/**
- * Highlight multiple search terms within text, returning safe HTML.
- * Handles overlapping terms correctly.
- * @param {string} text - The original text.
- * @param {string[]} searchTerms - Array of terms to highlight.
- * @returns {string} - HTML string with highlights or original sanitized text.
- */
 function highlightSearchTerms(text, searchTerms) {
     const sanitizedText = sanitizeText(text);
     if (!searchTerms || searchTerms.length === 0 || !text) {
         return sanitizedText;
     }
-
-    // Filter out empty terms and escape regex characters
     const validSearchTerms = searchTerms
         .map(term => term.trim())
         .filter(Boolean)
-        .map(term => term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')); // Escape regex chars
-
-    if (validSearchTerms.length === 0) {
-        return sanitizedText;
-    }
-
+        .map(term => term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
+    if (validSearchTerms.length === 0) return sanitizedText;
     try {
-        // Create a regex that matches any of the search terms
         const regex = new RegExp(`(${validSearchTerms.join('|')})`, 'gi');
-        // Replace matches with highlighted span
         return sanitizedText.replace(regex, '<span class="search-highlight">$1</span>');
     } catch (e) {
         console.error("Highlight regex error:", e);
-        return sanitizedText; // Fallback to sanitized text on error
+        return sanitizedText;
     }
 }
 
-
 // --- Loading, Error & Success Feedback ---
-
 function showLoading() {
     if (elements.loadingIndicator) {
         elements.loadingIndicator.style.display = 'flex';
@@ -137,81 +194,162 @@ function hideLoading() {
     }
 }
 
-/**
- * Shows a feedback message in a specific container (popup or modal).
- * @param {string} message The message text.
- * @param {'error'|'success'} type The type of message.
- * @param {'popup'|'modal'} location Where to show the message.
- */
-function showFeedbackMessage(message, type = 'error', location = 'popup') {
-    const targetElement = location === 'modal'
-        ? (type === 'error' ? elements.modalErrorMessage : elements.modalSuccessMessage)
-        : (type === 'error' ? elements.errorMessage : elements.successMessage);
-    const otherElement = location === 'modal'
-        ? (type === 'error' ? elements.modalSuccessMessage : elements.modalErrorMessage)
-        : (type === 'error' ? elements.successMessage : elements.errorMessage);
+function showFeedbackMessage(message, type = 'error', location = 'popup', isEphemeral = false) {
+    let targetElement, otherElement;
+
+    if (location === 'modal') {
+        targetElement = type === 'error' ? elements.modalErrorMessage : elements.modalSuccessMessage;
+        otherElement = type === 'error' ? elements.modalSuccessMessage : elements.modalErrorMessage;
+    } else if (location === 'profiles-modal') {
+        targetElement = type === 'error' ? elements.modalProfilesErrorMessage : elements.modalProfilesSuccessMessage;
+        otherElement = type === 'error' ? elements.modalProfilesSuccessMessage : elements.modalProfilesErrorMessage;
+    } else if (location === 'group-config-modal') {
+        targetElement = type === 'error' ? elements.modalGroupConfigErrorMessage : elements.modalGroupConfigSuccessMessage;
+        otherElement = type === 'error' ? elements.modalGroupConfigSuccessMessage : elements.modalGroupConfigErrorMessage;
+    } else if (location === 'profile-config-shortcut') {
+        targetElement = elements.profileConfigShortcutMessage;
+        otherElement = null;
+        if (targetElement) {
+            targetElement.className = 'feedback-message modal-feedback';
+            if (type === 'success') targetElement.classList.add('success-message');
+            else if (type === 'error') targetElement.classList.add('error-message');
+            else targetElement.classList.add('info-message');
+        }
+    }
+    else if (location === 'action') {
+        targetElement = elements.actionFeedbackMessage;
+        otherElement = null;
+        if (targetElement) {
+            targetElement.className = 'feedback-message action-feedback';
+            if (type === 'success') targetElement.classList.add('success-message');
+            else if (type === 'error') targetElement.classList.add('error-message');
+        }
+    }
+    else { // Default to 'popup'
+        targetElement = type === 'error' ? elements.errorMessage : elements.successMessage;
+        otherElement = type === 'error' ? elements.successMessage : elements.errorMessage;
+    }
 
     if (!targetElement) return;
 
-    targetElement.textContent = sanitizeText(message);
-    targetElement.style.display = 'flex'; // Use flex for centering
+    targetElement.innerHTML = sanitizeText(message);
+    targetElement.style.display = 'flex';
     targetElement.setAttribute('aria-hidden', 'false');
     if (otherElement) {
         otherElement.style.display = 'none';
         otherElement.setAttribute('aria-hidden', 'true');
     }
 
-    // Auto-hide after a delay
-    setTimeout(() => hideFeedbackMessage(type, location), type === 'error' ? 6000 : 4000);
+    clearTimeout(ephemeralFeedbackTimeout);
+
+    const duration = (isEphemeral || location === 'action')
+        ? ACTION_FEEDBACK_DURATION
+        : (type === 'error' ? 6000 : 4000);
+
+    ephemeralFeedbackTimeout = setTimeout(() => hideFeedbackMessage(type, location), duration);
 }
 
-/** Hides feedback messages. */
+
 function hideFeedbackMessage(type = 'both', location = 'popup') {
-    const errorEl = location === 'modal' ? elements.modalErrorMessage : elements.errorMessage;
-    const successEl = location === 'modal' ? elements.modalSuccessMessage : elements.successMessage;
+    let errorEl, successEl, actionEl, profileShortcutEl;
+    if (location === 'modal') {
+        errorEl = elements.modalErrorMessage; successEl = elements.modalSuccessMessage;
+    } else if (location === 'profiles-modal') {
+        errorEl = elements.modalProfilesErrorMessage; successEl = elements.modalProfilesSuccessMessage;
+    } else if (location === 'group-config-modal') {
+        errorEl = elements.modalGroupConfigErrorMessage; successEl = elements.modalGroupConfigSuccessMessage;
+    } else if (location === 'profile-config-shortcut') {
+        profileShortcutEl = elements.profileConfigShortcutMessage;
+    } else if (location === 'action') {
+        actionEl = elements.actionFeedbackMessage;
+    } else { // popup
+        errorEl = elements.errorMessage; successEl = elements.successMessage;
+    }
+
+    if (actionEl && (type === 'info' || type === 'success' || type === 'error' || type === 'both')) {
+        actionEl.textContent = ''; actionEl.style.display = 'none'; actionEl.setAttribute('aria-hidden', 'true');
+    }
     if ((type === 'error' || type === 'both') && errorEl) {
         errorEl.textContent = ''; errorEl.style.display = 'none'; errorEl.setAttribute('aria-hidden', 'true');
     }
     if ((type === 'success' || type === 'both') && successEl) {
         successEl.textContent = ''; successEl.style.display = 'none'; successEl.setAttribute('aria-hidden', 'true');
     }
+    if (profileShortcutEl) {
+        profileShortcutEl.textContent = ''; profileShortcutEl.style.display = 'none'; profileShortcutEl.setAttribute('aria-hidden', 'true');
+    }
 }
 
-// Convenience functions for feedback
-const showPopupMessage = (msg, type) => showFeedbackMessage(msg, type, 'popup');
+const showPopupMessage = (msg, type, isEphemeral = false) => showFeedbackMessage(msg, type, 'popup', isEphemeral);
 const hidePopupMessage = (type) => hideFeedbackMessage(type, 'popup');
-const showModalMessage = (msg, type) => showFeedbackMessage(msg, type, 'modal');
+const showActionFeedback = (msg, type = 'info') => showFeedbackMessage(msg, type, 'action', true);
+const showModalMessage = (msg, type, isEphemeral = true) => showFeedbackMessage(msg, type, 'modal', isEphemeral);
 const hideModalMessage = (type) => hideFeedbackMessage(type, 'modal');
+const showProfilesModalMessage = (msg, type, isEphemeral = true) => showFeedbackMessage(msg, type, 'profiles-modal', isEphemeral);
+const hideProfilesModalMessage = (type) => hideFeedbackMessage(type, 'profiles-modal');
+const showGroupConfigMessage = (msg, type, isEphemeral = true) => showFeedbackMessage(msg, type, 'group-config-modal', isEphemeral);
+const hideGroupConfigMessage = (type) => hideFeedbackMessage(type, 'group-config-modal');
+const showProfileConfigShortcutMessage = (msg, type, isEphemeral = true) => showFeedbackMessage(msg, type, 'profile-config-shortcut', isEphemeral);
 
-// --- LocalStorage & Preferences ---
 
-/** Gets user preferences (group order only). */
+// --- Preferences (Includes Filters & Orderings) ---
 function getPreferences() {
-    const defaultPrefs = { groupOrder: [] };
+    const defaultPrefs = {
+        groupOrder: [],
+        profileOrder: [],
+        extensionOrder: [],
+        filters: {
+            searchQuery: '',
+            type: 'all',
+            status: 'all',
+            group: 'all',
+        }
+    };
     try {
         const prefsString = localStorage.getItem(PREFERENCES_STORAGE_KEY);
         if (!prefsString) return defaultPrefs;
-        const prefs = JSON.parse(prefsString);
-        const mergedPrefs = { ...defaultPrefs, ...(prefs && typeof prefs === 'object' ? prefs : {}) };
-        if (!Array.isArray(mergedPrefs.groupOrder) || mergedPrefs.groupOrder.some(item => typeof item !== 'string')) {
-            mergedPrefs.groupOrder = defaultPrefs.groupOrder;
-        }
-        delete mergedPrefs.sortOrder; // Clean up old key if present
-        return mergedPrefs;
+        const parsed = JSON.parse(prefsString);
+        const prefs = {
+            ...defaultPrefs,
+            ...(parsed && typeof parsed === 'object' ? parsed : {}),
+            filters: {
+                ...defaultPrefs.filters,
+                ...(parsed?.filters && typeof parsed.filters === 'object' ? parsed.filters : {})
+            }
+        };
+        ['groupOrder', 'profileOrder', 'extensionOrder'].forEach(key => {
+            if (!Array.isArray(prefs[key]) || prefs[key].some(item => typeof item !== 'string')) {
+                prefs[key] = defaultPrefs[key];
+            }
+        });
+        return prefs;
     } catch (e) {
         console.error("Error reading preferences:", e);
-        localStorage.removeItem(PREFERENCES_STORAGE_KEY); // Clear corrupted data
+        localStorage.removeItem(PREFERENCES_STORAGE_KEY);
         return defaultPrefs;
     }
 }
 
-/** Saves user preferences (group order only). */
 function savePreferences(prefs) {
     try {
-        if (!prefs || typeof prefs !== 'object' || !Array.isArray(prefs.groupOrder)) {
+        if (!prefs || typeof prefs !== 'object' || typeof prefs.filters !== 'object' ||
+            !Array.isArray(prefs.groupOrder) ||
+            !Array.isArray(prefs.profileOrder) ||
+            !Array.isArray(prefs.extensionOrder)) {
             throw new Error("Invalid preferences object structure.");
         }
-        const prefsToSave = { groupOrder: prefs.groupOrder };
+        const validFilterKeys = ['searchQuery', 'type', 'status', 'group'];
+        const sanitizedFilters = {};
+        validFilterKeys.forEach(key => {
+            sanitizedFilters[key] = prefs.filters.hasOwnProperty(key) ? prefs.filters[key] : (key === 'searchQuery' ? '' : 'all');
+        });
+
+        const prefsToSave = {
+            groupOrder: prefs.groupOrder,
+            profileOrder: prefs.profileOrder,
+            extensionOrder: prefs.extensionOrder,
+            filters: sanitizedFilters
+        };
         localStorage.setItem(PREFERENCES_STORAGE_KEY, JSON.stringify(prefsToSave));
     } catch (e) {
         console.error("Error saving preferences:", e);
@@ -219,834 +357,910 @@ function savePreferences(prefs) {
     }
 }
 
-/** Saves the current order of groups. */
-function saveGroupOrderPreference(groupNames) {
-    if (!Array.isArray(groupNames)) {
-        console.error("Attempted to save invalid group order (must be an array).");
-        return;
-    }
+function saveCurrentFilters() {
     const prefs = getPreferences();
-    prefs.groupOrder = groupNames;
+    prefs.filters.searchQuery = elements.searchInput?.value || '';
+    prefs.filters.type = elements.typeFilter?.value || 'all';
+    prefs.filters.status = elements.statusFilter?.value || 'all';
+    prefs.filters.group = elements.groupFilter?.value || 'all';
     savePreferences(prefs);
 }
 
-// --- LocalStorage Group Data ---
-
-/** Gets group data. */
-function getGroups() {
-    try {
-        const groupsString = localStorage.getItem(GROUPS_STORAGE_KEY);
-        if (!groupsString) return {};
-        const groups = JSON.parse(groupsString);
-        // Basic validation
-        if (groups && typeof groups === 'object' && !Array.isArray(groups)) {
-             let isValid = true;
-             Object.entries(groups).forEach(([key, value]) => {
-                 if (typeof key !== 'string' || !Array.isArray(value) || value.some(id => typeof id !== 'string')) isValid = false;
-             });
-             if (isValid) return groups;
-             else throw new Error("Invalid group structure.");
-        } else throw new Error("Invalid groups format.");
-    } catch (e) {
-        console.error("Error reading groups:", e);
-        localStorage.removeItem(GROUPS_STORAGE_KEY); // Clear corrupted data
-        return {};
+function applySavedFilters() {
+    const prefsFilters = getPreferences().filters;
+    if (elements.searchInput) elements.searchInput.value = prefsFilters.searchQuery;
+    if (elements.typeFilter) elements.typeFilter.value = prefsFilters.type;
+    if (elements.statusFilter) elements.statusFilter.value = prefsFilters.status;
+    if (elements.groupFilter) {
+      if (Array.from(elements.groupFilter.options).some(opt => opt.value === prefsFilters.group)) {
+        elements.groupFilter.value = prefsFilters.group;
+      } else {
+        elements.groupFilter.value = 'all';
+      }
     }
 }
 
-/** Saves the entire groups object. */
-function saveGroups(groups) {
+function saveOrderPreference(key, orderArray) {
+    if (!['groupOrder', 'profileOrder', 'extensionOrder'].includes(key) || !Array.isArray(orderArray)) return;
+    const prefs = getPreferences();
+    prefs[key] = orderArray;
+    savePreferences(prefs);
+}
+
+
+// --- Chrome Storage Group Data ---
+async function getGroups() {
+    try {
+        const data = await chrome.storage.local.get(GROUPS_STORAGE_KEY);
+        const groups = data[GROUPS_STORAGE_KEY];
+        if (!groups) return {};
+        if (groups && typeof groups === 'object' && !Array.isArray(groups)) {
+             Object.values(groups).forEach(groupData => {
+                 if (Array.isArray(groupData)) { // Legacy format check
+                    // This case should ideally not happen with schema versioning, but defensive coding helps.
+                 } else {
+                    if (typeof groupData.name === 'undefined') groupData.name = 'Unnamed Group'; // Ensure name property exists
+                    if (!Array.isArray(groupData.members)) groupData.members = [];
+                    if (typeof groupData.shortcut === 'undefined') groupData.shortcut = null;
+                    if (typeof groupData.shortcutAction === 'undefined') groupData.shortcutAction = 'toggle';
+                 }
+             });
+             return groups;
+        } else {
+            console.warn("Invalid groups format found in storage. Resetting.");
+            await chrome.storage.local.remove(GROUPS_STORAGE_KEY);
+            return {};
+        }
+    } catch (e) {
+        console.error("Error reading groups from chrome.storage:", e);
+        return {};
+    }
+}
+async function saveGroups(groups) {
     try {
         if (typeof groups !== 'object' || Array.isArray(groups)) throw new Error("Invalid groups format.");
-        localStorage.setItem(GROUPS_STORAGE_KEY, JSON.stringify(groups));
-    } catch (e) {
-        console.error("Error saving groups:", e);
+        await chrome.storage.local.set({ [GROUPS_STORAGE_KEY]: groups });
+    }
+    catch (e) {
+        console.error("Error saving groups to chrome.storage:", e);
         const message = "Failed to save group data.";
-        // Show message in modal if open, otherwise in popup
         if (elements.groupModal?.classList.contains('visible')) showModalMessage(message, 'error');
         else showPopupMessage(message, 'error');
     }
 }
 
-
 // --- Group Management Core Logic ---
-
-/** Adds a new group. */
-function addGroup(groupName) {
-    hideModalMessage(); // Clear previous messages
+async function addGroup(groupName) {
+    hideModalMessage();
     const trimmedName = groupName.trim();
     if (!trimmedName) {
         showModalMessage("Group name cannot be empty.", 'error');
         return false;
     }
-    const groups = getGroups();
-    if (groups.hasOwnProperty(trimmedName)) {
+    const groups = await getGroups();
+    // Check if the actual group name (stored as 'name' property) exists
+    if (Object.values(groups).some(group => group.name.toLowerCase() === trimmedName.toLowerCase())) {
         showModalMessage(`Group "${sanitizeText(trimmedName)}" already exists.`, 'error');
         return false;
     }
-    // Reserved names check
     if (trimmedName.toLowerCase() === 'all' || trimmedName.toLowerCase() === 'no group' || trimmedName === '--remove--') {
         showModalMessage(`"${sanitizeText(trimmedName)}" is a reserved name.`, 'error');
         return false;
     }
-
-    groups[trimmedName] = []; // Add new group with empty array
-    saveGroups(groups);
-
-    // Update preferences with new group order
+    // Use the trimmedName as the key, and store the name inside the object as well
+    groups[trimmedName] = { name: trimmedName, members: [], shortcut: null, shortcutAction: 'toggle' }; // Initialize with new schema
+    await saveGroups(groups);
     const prefs = getPreferences();
     if (!prefs.groupOrder.includes(trimmedName)) {
         prefs.groupOrder.push(trimmedName);
-        saveGroupOrderPreference(prefs.groupOrder);
+        saveOrderPreference('groupOrder', prefs.groupOrder);
     }
-
-    // Update UI elements
-    updateGroupFilterDropdown();
-    updateAssignGroupDropdownsInList(); // Update dropdowns in the main list
-    updateBulkAssignGroupDropdown(); // Update dropdown in bulk actions
-    displayGroupManagementListInModal(); // Refresh modal list
-    showModalMessage(`Group "${sanitizeText(trimmedName)}" added successfully.`, 'success');
+    await updateGroupFilterDropdown();
+    await updateAssignGroupDropdownsInList();
+    await updateBulkAssignGroupDropdown();
+    await displayGroupManagementListInModal();
+    showModalMessage(`Group "${sanitizeText(trimmedName)}" added successfully.`, 'success', true);
+    await registerKeyboardShortcuts();
     return true;
 }
 
-/** Renames a group. */
-function renameGroup(oldName, newName) {
-    hideModalMessage();
-    const trimmedNewName = newName.trim();
-    if (!trimmedNewName) {
-        showModalMessage("New group name cannot be empty.", 'error');
-        return false;
-    }
-    if (trimmedNewName === oldName) return true; // No change needed
-
-    const groups = getGroups();
-    if (!groups.hasOwnProperty(oldName)) {
-        showModalMessage(`Group "${sanitizeText(oldName)}" not found. Cannot rename.`, 'error');
-        return false;
-    }
-    if (groups.hasOwnProperty(trimmedNewName)) {
-        showModalMessage(`Group name "${sanitizeText(trimmedNewName)}" already exists.`, 'error');
-        return false;
-    }
-    if (trimmedNewName.toLowerCase() === 'all' || trimmedNewName.toLowerCase() === 'no group' || trimmedNewName === '--remove--') {
-        showModalMessage(`"${sanitizeText(trimmedNewName)}" is a reserved name.`, 'error');
-        return false;
-    }
-
-    // Perform rename
-    groups[trimmedNewName] = groups[oldName]; // Copy members
-    delete groups[oldName]; // Remove old group
-    saveGroups(groups);
-
-    // Update preferences order
+function renameGroupInPrefs(oldName, newName) {
     const prefs = getPreferences();
-    const orderIndex = prefs.groupOrder.indexOf(oldName);
-    if (orderIndex > -1) {
-        prefs.groupOrder[orderIndex] = trimmedNewName;
-    } else {
-        // If somehow not in order, just add the new name
-        prefs.groupOrder.push(trimmedNewName);
-    }
-    // Remove the old name if it still exists elsewhere (shouldn't happen often)
+    // Remove old name, add new name. Position in order is lost, but new name is added.
     prefs.groupOrder = prefs.groupOrder.filter(name => name !== oldName);
-    saveGroupOrderPreference(prefs.groupOrder);
+    if (!prefs.groupOrder.includes(newName)) { // Only add if it's truly new or wasn't there
+        prefs.groupOrder.push(newName);
+    }
+    saveOrderPreference('groupOrder', prefs.groupOrder);
 
-    // Update UI
-    updateGroupFilterDropdown();
-    updateAssignGroupDropdownsInList();
-    updateBulkAssignGroupDropdown();
-    displayGroupManagementListInModal();
-    showModalMessage(`Group "${sanitizeText(oldName)}" renamed to "${sanitizeText(trimmedNewName)}".`, 'success');
-    return true;
+    // If the renamed group was selected for bulk deletion, update the set
+    if (selectedGroupNames.has(oldName)) {
+        selectedGroupNames.delete(oldName);
+        selectedGroupNames.add(newName);
+    }
 }
 
-/** Deletes a group. */
-function deleteGroup(groupName) {
+
+async function deleteGroups(groupNamesToDelete) {
     hideModalMessage();
-    const groups = getGroups();
-    if (!groups.hasOwnProperty(groupName)) {
-        showModalMessage(`Group "${sanitizeText(groupName)}" not found.`, 'error');
+    if (groupNamesToDelete.size === 0) return false;
+
+    const groupNamesArray = Array.from(groupNamesToDelete);
+    const confirmationMessage = `Are you sure you want to delete ${groupNamesArray.length} selected group(s)?\n\n${groupNamesArray.map(sanitizeText).join('\n')}\n\nExtensions in these groups will become ungrouped.`;
+    if (!confirm(confirmationMessage)) {
+        showModalMessage("Group deletion cancelled.", 'info');
         return false;
     }
-    // Confirmation dialog
-    if (!confirm(`Are you sure you want to delete the group "${sanitizeText(groupName)}"? Extensions currently in this group will become ungrouped.`)) {
-        return false;
-    }
 
-    delete groups[groupName];
-    saveGroups(groups);
+    const groups = await getGroups();
+    let deletedCount = 0;
+    groupNamesArray.forEach(groupName => {
+        if (groups.hasOwnProperty(groupName)) {
+            delete groups[groupName];
+            deletedCount++;
+        }
+    });
 
-    // Update preferences order
-    const prefs = getPreferences();
-    prefs.groupOrder = prefs.groupOrder.filter(name => name !== groupName);
-    saveGroupOrderPreference(prefs.groupOrder);
+    if (deletedCount > 0) {
+        await saveGroups(groups);
+        const prefs = getPreferences();
+        prefs.groupOrder = prefs.groupOrder.filter(name => !groupNamesToDelete.has(name));
+        saveOrderPreference('groupOrder', prefs.groupOrder);
 
-    // Update UI
-    updateGroupFilterDropdown();
-    updateAssignGroupDropdownsInList();
-    updateBulkAssignGroupDropdown();
-    displayGroupManagementListInModal();
-    showModalMessage(`Group "${sanitizeText(groupName)}" deleted.`, 'success');
-
-    // If the deleted group was selected in the filter, reset filter
-    if (elements.groupFilter?.value === groupName) {
-        elements.groupFilter.value = 'all';
-        renderExtensionList(getCurrentPage()); // Re-render list with updated filter
+        selectedGroupNames.clear();
+        await updateGroupFilterDropdown();
+        await updateAssignGroupDropdownsInList();
+        await updateBulkAssignGroupDropdown();
+        await displayGroupManagementListInModal();
+        showModalMessage(`${deletedCount} group(s) deleted.`, 'success', true);
+        
+        if (groupNamesToDelete.has(elements.groupFilter?.value)) {
+            elements.groupFilter.value = 'all';
+            saveCurrentFilters();
+            await renderExtensionList(getCurrentPage());
+        }
+        await registerKeyboardShortcuts();
     }
     return true;
 }
 
-/** Assigns a single extension to a group. */
-function assignExtensionToGroup(extensionId, groupName) {
-    const groups = getGroups();
-    // Treat empty string or "--remove--" as removing from group
+async function ungroupAllExtensions() {
+    hideModalMessage();
+    if (!confirm("Are you sure you want to remove ALL extensions from their assigned groups? This will not delete groups or uninstall extensions.")) {
+        showModalMessage("Ungrouping cancelled.", 'info', true);
+        return;
+    }
+
+    const groups = await getGroups();
+    let changedCount = 0;
+    const newGroups = {};
+
+    Object.keys(groups).forEach(groupName => {
+        if (groups[groupName].members.length > 0) {
+            changedCount += groups[groupName].members.length;
+        }
+        newGroups[groupName] = { ...groups[groupName], members: [] };
+    });
+
+    if (changedCount === 0) {
+        showModalMessage("No extensions are currently assigned to any group.", 'info', true);
+        return;
+    }
+
+    await saveGroups(newGroups);
+    await updateGroupFilterDropdown();
+    await updateAssignGroupDropdownsInList();
+    await updateBulkAssignGroupDropdown();
+    await displayGroupManagementListInModal();
+    showModalMessage(`Successfully ungrouped ${changedCount} extension(s).`, 'success');
+    await renderExtensionList(getCurrentPage());
+    if (elements.groupFilter?.value !== 'all' && elements.groupFilter?.value !== 'no-group') {
+        elements.groupFilter.value = 'all';
+        saveCurrentFilters();
+        await renderExtensionList(getCurrentPage());
+    }
+    await registerKeyboardShortcuts();
+}
+
+
+async function assignExtensionToGroup(extensionId, groupName) {
+    const groups = await getGroups();
     const targetGroupName = (groupName && groupName !== '--remove--') ? groupName.trim() : "";
     let changed = false;
     let previousGroup = null;
 
-    // Remove extension from any group it's currently in
     Object.keys(groups).forEach(key => {
-        const index = groups[key].indexOf(extensionId);
+        const index = groups[key].members.indexOf(extensionId);
         if (index > -1) {
-            if (key !== targetGroupName) { // Don't remove if assigning to the same group
-                groups[key].splice(index, 1);
+            if (key !== targetGroupName) {
+                groups[key].members.splice(index, 1);
                 previousGroup = key;
                 changed = true;
-            } else {
-                // Already in the target group, no change needed unless removing
-                if (!targetGroupName) { // If target is "No Group"
-                    groups[key].splice(index, 1);
-                    previousGroup = key;
-                    changed = true;
-                }
+            } else if (!targetGroupName) { // If targetGroupName is empty (meaning "No Group")
+                groups[key].members.splice(index, 1);
+                previousGroup = key;
+                changed = true;
             }
         }
     });
 
-    // Add to the target group if specified and valid
     if (targetGroupName) {
         if (groups.hasOwnProperty(targetGroupName)) {
-            if (!groups[targetGroupName].includes(extensionId)) {
-                groups[targetGroupName].push(extensionId);
+            if (!groups[targetGroupName].members.includes(extensionId)) {
+                groups[targetGroupName].members.push(extensionId);
                 changed = true;
             }
         } else {
-            // This case should ideally not happen if dropdowns are up-to-date
             console.warn(`Assign failed: Target group "${sanitizeText(targetGroupName)}" not found.`);
-            // Optionally show an error message
-            // showPopupMessage(`Error: Group "${sanitizeText(targetGroupName)}" no longer exists.`, 'error');
-            // Revert UI dropdown if possible? Or refresh everything.
-            // For now, just log it. The saveGroups will proceed without adding.
+            showActionFeedback(`Error: Group "${sanitizeText(targetGroupName)}" no longer exists.`, 'error');
+            await renderExtensionList(getCurrentPage());
+            return;
         }
     }
 
-
     if (changed) {
-        saveGroups(groups);
-        updateGroupFilterDropdown(); // Update counts in filter dropdown
-        updateBulkAssignGroupDropdown(); // Update counts in bulk assign dropdown
-
-        // Highlight the changed item in the list
+        await saveGroups(groups);
+        showActionFeedback(`Extension moved to "${sanitizeText(targetGroupName || 'No Group')}".`, 'success');
         const extensionItem = elements.extensionList?.querySelector(`.extension-item[data-extension-id="${extensionId}"]`);
         if (extensionItem) {
-            extensionItem.classList.add('item-highlight');
-            setTimeout(() => extensionItem.classList.remove('item-highlight'), 800);
+            extensionItem.classList.add('item-feedback-highlight', 'info');
+            setTimeout(() => extensionItem.classList.remove('item-feedback-highlight', 'info'), ITEM_FEEDBACK_HIGHLIGHT_DURATION);
         }
-        // If the modal is open, refresh its list (counts might change)
-        if (elements.groupModal?.classList.contains('visible')) {
-            displayGroupManagementListInModal();
+        await updateGroupFilterDropdown();
+        await updateBulkAssignGroupDropdown();
+        if (elements.groupModal?.style.display === 'flex') {
+            await displayGroupManagementListInModal();
+        } else if (elements.groupConfigurationModal?.style.display === 'flex') {
+            await renderExtensionsForGroupConfiguration(currentConfiguringGroupName);
         }
-        // If filtering by the previous or new group, refresh the list view
         const currentGroupFilter = elements.groupFilter?.value;
-        if (currentGroupFilter === previousGroup || currentGroupFilter === targetGroupName) {
-             renderExtensionList(getCurrentPage());
+        if (currentGroupFilter !== 'all' && (currentGroupFilter === previousGroup || currentGroupFilter === targetGroupName)) {
+             setTimeout(async () => await renderExtensionList(getCurrentPage()), 50);
         }
+        await registerKeyboardShortcuts();
     }
 }
 
-/** Assigns multiple extensions to a group or removes them. */
-function assignMultipleExtensionsToGroup(extensionIds, groupName) {
-    if (!extensionIds || extensionIds.size === 0) return; // Nothing to assign
-
-    const groups = getGroups();
+async function assignMultipleExtensionsToGroup(extensionIds, groupName) {
+    if (!extensionIds || extensionIds.size === 0) return;
+    const groups = await getGroups();
     const targetGroupName = (groupName && groupName !== '--remove--') ? groupName.trim() : "";
     let changed = false;
-
     extensionIds.forEach(extensionId => {
-        // Remove from all current groups
         Object.keys(groups).forEach(key => {
-            const index = groups[key].indexOf(extensionId);
+            const index = groups[key].members.indexOf(extensionId);
             if (index > -1) {
-                groups[key].splice(index, 1);
+                groups[key].members.splice(index, 1);
                 changed = true;
             }
         });
-
-        // Add to the target group if specified and valid
         if (targetGroupName && groups.hasOwnProperty(targetGroupName)) {
-            if (!groups[targetGroupName].includes(extensionId)) {
-                groups[targetGroupName].push(extensionId);
+            if (!groups[targetGroupName].members.includes(extensionId)) {
+                groups[targetGroupName].members.push(extensionId);
                 changed = true;
             }
         } else if (targetGroupName && !groups.hasOwnProperty(targetGroupName)) {
             console.warn(`Bulk Assign failed for ${extensionId}: Target group "${sanitizeText(targetGroupName)}" not found.`);
-            // Decide if we should stop or continue for others
         }
     });
 
     if (changed) {
-        saveGroups(groups);
-        updateGroupFilterDropdown();
-        updateBulkAssignGroupDropdown();
-        if (elements.groupModal?.classList.contains('visible')) {
-            displayGroupManagementListInModal();
+        await saveGroups(groups);
+        await updateGroupFilterDropdown();
+        await updateAssignGroupDropdownsInList();
+        await updateBulkAssignGroupDropdown();
+        if (elements.groupModal?.style.display === 'flex') {
+            await displayGroupManagementListInModal();
+        } else if (elements.groupConfigurationModal?.style.display === 'flex') {
+            await renderExtensionsForGroupConfiguration(currentConfiguringGroupName);
         }
-        // Refresh the main list to reflect changes and update individual dropdowns
-        renderExtensionList(getCurrentPage());
-        showPopupMessage(`${extensionIds.size} extension(s) ${targetGroupName ? 'assigned to' : 'removed from'} group "${sanitizeText(targetGroupName || 'No Group')}".`, 'success');
-    } else if (targetGroupName && !groups.hasOwnProperty(targetGroupName)) {
+        await renderExtensionList(getCurrentPage());
+        showPopupMessage(`${extensionIds.size} extension(s) moved to "${sanitizeText(targetGroupName || 'No Group')}".`, 'success');
+        await registerKeyboardShortcuts();
+    } else if (targetGroupName && !groups.hasOwnProperty(targetGroupName) && extensionIds.size > 0) {
         showPopupMessage(`Error: Group "${sanitizeText(targetGroupName)}" not found.`, 'error');
     } else {
-         showPopupMessage(`No changes made to group assignments.`, 'success'); // Or maybe no message needed
+         showPopupMessage(`No changes made to group assignments.`, 'info', true);
     }
-
-    // Clear selection after bulk action
     clearSelection();
 }
 
-
 // --- UI Update Functions ---
-
-/** Gets the ordered list of group names based on preferences. */
-function getOrderedGroupNames() {
-    const groups = getGroups();
+async function getOrderedGroupNames() {
+    const groups = await getGroups();
     const groupOrderPref = getPreferences().groupOrder;
-    // Start with names that are in preferences AND exist in current groups
     let orderedNames = groupOrderPref.filter(name => groups.hasOwnProperty(name));
-    // Find names in current groups that are NOT in preferences (newly added or prefs corrupted)
     const groupsNotInOrder = Object.keys(groups)
         .filter(name => !orderedNames.includes(name))
-        .sort((a, b) => a.localeCompare(b, undefined, { sensitivity: 'base' })); // Sort alphabetically
-    // Combine them
+        .sort((a, b) => (groups[a].name || "").localeCompare(groups[b].name || "", undefined, { sensitivity: 'base' })); // Use group.name for sorting
     return [...orderedNames, ...groupsNotInOrder];
 }
-
-/** Populates a generic group select dropdown. */
-function populateGroupSelect(selectElement, includeAllOption = false, includeNoGroupOption = false, includeRemoveOption = false) {
+async function populateGroupSelect(selectElement, includeAllOption = false, includeNoGroupOption = false, includeRemoveOption = false) {
     if (!selectElement) return;
-
-    const currentVal = selectElement.value; // Preserve current selection if possible
-    selectElement.innerHTML = ''; // Clear existing options
-
+    const currentVal = selectElement.value;
+    selectElement.innerHTML = '';
     if (includeAllOption) {
         const option = document.createElement('option');
-        option.value = "all";
-        option.textContent = "All Groups";
+        option.value = "all"; option.textContent = "All Groups";
         selectElement.appendChild(option);
     }
     if (includeNoGroupOption) {
         const option = document.createElement('option');
-        option.value = ""; // Use empty string for "No Group"
+        option.value = "";
         option.textContent = "No Group";
         selectElement.appendChild(option);
     }
      if (includeRemoveOption) {
         const option = document.createElement('option');
-        option.value = "--remove--"; // Special value for removing
+        option.value = "--remove--";
         option.textContent = "Remove from Group";
         selectElement.appendChild(option);
     }
-
-    const groups = getGroups();
-    const orderedGroupNames = getOrderedGroupNames();
-
+    const groups = await getGroups();
+    const orderedGroupNames = await getOrderedGroupNames();
     orderedGroupNames.forEach(groupName => {
-        const count = groups[groupName]?.length || 0;
+        const groupData = groups[groupName]; // Get group data by key
+        const count = groupData?.members?.length || 0;
         const option = document.createElement('option');
-        option.value = groupName;
-        // Display count only in the main filter dropdown for clarity
+        option.value = groupName; // Use the actual groupName as value
         option.textContent = selectElement === elements.groupFilter
-            ? `${sanitizeText(groupName)} (${count})`
-            : sanitizeText(groupName);
+            ? `${sanitizeText(groupData.name)} (${count})` // Use groupData.name for display
+            : sanitizeText(groupData.name); // Use groupData.name for display
         selectElement.appendChild(option);
     });
-
-    // Try to restore previous selection
     if (Array.from(selectElement.options).some(opt => opt.value === currentVal)) {
         selectElement.value = currentVal;
     } else if (includeAllOption) {
-        selectElement.value = 'all'; // Default to 'All Groups' if previous value invalid
+        selectElement.value = 'all';
     } else if (includeNoGroupOption) {
-        selectElement.value = ''; // Default to 'No Group'
+        selectElement.value = '';
     }
 }
-
-
-/** Populates the main group filter dropdown. */
-function updateGroupFilterDropdown() {
-    populateGroupSelect(elements.groupFilter, true, false); // Include 'All Groups'
+async function updateGroupFilterDropdown() {
+    await populateGroupSelect(elements.groupFilter, true, false);
+    const persistedGroupFilter = getPreferences().filters.group;
+    if (elements.groupFilter && Array.from(elements.groupFilter.options).some(opt => opt.value === persistedGroupFilter)) {
+        elements.groupFilter.value = persistedGroupFilter;
+    } else if (elements.groupFilter) {
+        elements.groupFilter.value = 'all';
+    }
 }
+async function updateBulkAssignGroupDropdown() {
+    if (elements.bulkAssignGroupSelect) {
+        const placeholderOption = document.createElement('option');
+        placeholderOption.value = "";
+        placeholderOption.textContent = "Assign to Group...";
+        placeholderOption.disabled = true;
 
-/** Populates the bulk assignment dropdown. */
-function updateBulkAssignGroupDropdown() {
-    // Pass 'true' for includeNoGroupOption if you want "No Group" explicitly,
-    // but '--remove--' might be clearer for bulk actions.
-    populateGroupSelect(elements.bulkAssignGroupSelect, false, false, true); // Include 'Remove from Group'
-    elements.bulkAssignGroupSelect.value = ""; // Reset to default prompt
+        await populateGroupSelect(elements.bulkAssignGroupSelect, false, false, true);
+        elements.bulkAssignGroupSelect.insertBefore(placeholderOption, elements.bulkAssignGroupSelect.firstChild);
+        elements.bulkAssignGroupSelect.value = "";
+    }
 }
-
-
-/** Populates a single assignment dropdown within an extension item. */
-function populateAssignGroupDropdown(selectElement, extensionId) {
+async function populateAssignGroupDropdown(selectElement, extensionId) {
     if (!selectElement) return;
-    const groups = getGroups();
-    let currentGroupForExtension = ""; // Default to "No Group"
-
-    // Find the current group for this specific extension
-    Object.entries(groups).forEach(([groupName, members]) => {
-        if (members.includes(extensionId)) {
-            currentGroupForExtension = groupName;
-        }
+    const groups = await getGroups();
+    let currentGroupForExtension = "";
+    // Iterate over Object.values to check 'members' array efficiently
+    Object.values(groups).forEach(groupData => {
+        if (groupData.members.includes(extensionId)) currentGroupForExtension = groupData.name; // Use groupData.name as value
     });
-
-    // Populate using the generic function
-    populateGroupSelect(selectElement, false, true); // Include 'No Group'
-
-    // Set the value to the found group
+    await populateGroupSelect(selectElement, false, true);
     selectElement.value = currentGroupForExtension;
 }
-
-/** Event handler for individual group assignment dropdown changes. */
-function handleAssignGroupChange(event) {
+async function handleAssignGroupChange(event) {
     const selectElement = event.target.closest('.assign-group-select');
     if (selectElement?.dataset.extensionId) {
-         assignExtensionToGroup(selectElement.dataset.extensionId, selectElement.value);
+         await assignExtensionToGroup(selectElement.dataset.extensionId, selectElement.value);
     }
 }
-
-/** Updates all visible assignment dropdowns in the main list. */
-function updateAssignGroupDropdownsInList() {
-    elements.extensionList?.querySelectorAll('.assign-group-select').forEach(select => {
+async function updateAssignGroupDropdownsInList() {
+    const selects = elements.extensionList?.querySelectorAll('.assign-group-select');
+    if (!selects) return;
+    for (const select of selects) {
         if (select.dataset.extensionId) {
-            populateAssignGroupDropdown(select, select.dataset.extensionId);
+            await populateAssignGroupDropdown(select, select.dataset.extensionId);
         }
-    });
+    }
 }
 
 // --- Group Management Modal ---
-
-/** Opens the group management modal */
-function openGroupManagementModal() {
+async function openGroupManagementModal() {
     const modal = elements.groupModal; if (!modal) return;
-    hideModalMessage(); // Clear any previous messages
-    displayGroupManagementListInModal(); // Populate list
-    modal.style.display = 'flex';
+    hideModalMessage();
+    selectedGroupNames.clear();
+    currentConfiguringGroupName = null;
+    elements.groupModal.style.display = 'flex';
+    elements.groupConfigurationModal.style.display = 'none';
+    await displayGroupManagementListInModal();
     modal.setAttribute('aria-hidden', 'false');
-    // Use setTimeout to allow display change before adding class for transition
     setTimeout(() => {
         modal.classList.add('visible');
-        elements.modalNewGroupNameInput?.focus(); // Focus the input field
-    }, 10); // Small delay
+        elements.modalNewGroupNameInput?.focus();
+    }, 10);
 }
-
-/** Closes the group management modal */
 function closeGroupManagementModal() {
     const modal = elements.groupModal; if (!modal) return;
     modal.classList.remove('visible');
     modal.setAttribute('aria-hidden', 'true');
-
-    // Use transitionend event to set display: none after fade out
-    const listener = (e) => {
-        // Ensure the event is for the modal overlay itself and the transition is opacity
-        if (e.target === modal && e.propertyName === 'opacity' && !modal.classList.contains('visible')) {
-            modal.style.display = 'none';
-            modal.removeEventListener('transitionend', listener); // Clean up listener
-        }
-    };
-    modal.addEventListener('transitionend', listener);
-
-    // Fallback timeout in case transitionend doesn't fire (e.g., transition disabled)
     setTimeout(() => {
         if (!modal.classList.contains('visible')) {
             modal.style.display = 'none';
-            modal.removeEventListener('transitionend', listener); // Clean up listener
         }
-    }, 350); // Slightly longer than transition duration
+        elements.groupModalTrigger?.focus();
+    }, 350);
 }
 
-/** Displays the group list in the modal. */
-function displayGroupManagementListInModal() {
+async function displayGroupManagementListInModal() {
     const listElement = elements.modalGroupList; if (!listElement) return;
-    listElement.innerHTML = ''; // Clear previous list
-    const groups = getGroups();
-    const orderedGroupNames = getOrderedGroupNames();
+    listElement.innerHTML = '';
+    const groups = await getGroups();
+    const orderedGroupNames = await getOrderedGroupNames();
+
+    const existingHeader = elements.modalGroupListSection.querySelector('.modal-list-header');
+    if (existingHeader) existingHeader.remove(); // Ensure it's removed before re-adding
+
+    if (orderedGroupNames.length > 0) {
+        const header = document.createElement('div');
+        header.className = 'modal-list-header';
+        header.innerHTML = `
+            <input type="checkbox" id="select-all-groups-checkbox" title="Select/Deselect all groups">
+            <label for="select-all-groups-checkbox">Select All</label>
+            <button id="modal-bulk-delete-groups-btn" class="button-small button-danger" style="display: none;">Delete Selected</button>
+        `;
+        listElement.before(header);
+        
+        header.querySelector('#select-all-groups-checkbox').addEventListener('change', handleSelectAllGroupsChange);
+        header.querySelector('#modal-bulk-delete-groups-btn').addEventListener('click', () => deleteGroups(selectedGroupNames));
+    }
+
 
     if (orderedGroupNames.length === 0) {
-        listElement.innerHTML = '<li class="no-groups-message">No groups created yet. Use the input above.</li>';
+        listElement.innerHTML = '<li class="no-groups-message" role="status">No groups created yet. Use the input above.</li>';
+        updateBulkDeleteGroupsUI();
         return;
     }
 
     const fragment = document.createDocumentFragment();
-    orderedGroupNames.forEach(groupName => {
-        const count = groups[groupName]?.length || 0;
-        const listItem = document.createElement('li');
-        listItem.dataset.groupname = groupName;
-        listItem.draggable = true; // Make item draggable
-        listItem.setAttribute('role', 'listitem');
-        listItem.setAttribute('aria-label', `${sanitizeText(groupName)} group, ${count} extensions. Draggable.`); // ARIA label
+    orderedGroupNames.forEach(groupName => { // groupName here is the key, which should be the actual name
+        const groupData = groups[groupName];
+        if (!groupData) return; // Should not happen if getOrderedGroupNames is correct
+        const count = groupData?.members?.length || 0;
+        const shortcut = groupData?.shortcut ? normalizeShortcut(groupData.shortcut) : '';
 
-        // Structure: Details | Actions
+        const listItem = document.createElement('li');
+        listItem.dataset.groupname = groupName; // Use groupName (the key) for data-attribute
+        listItem.setAttribute('role', 'listitem');
+        
+        const isSelected = selectedGroupNames.has(groupName);
+        if (isSelected) listItem.classList.add('selected');
+
         listItem.innerHTML = `
-            <div class="group-item-details" title="${sanitizeText(groupName)} (${count} extensions)">
-                <span class="group-item-name">${sanitizeText(groupName)}</span>
+            <input type="checkbox" class="group-select-checkbox" data-groupname="${sanitizeText(groupName)}" ${isSelected ? 'checked' : ''} aria-label="Select group ${sanitizeText(groupData.name)}">
+            <div class="group-item-details" title="${sanitizeText(groupData.name)} (${count} extensions)">
+                <span class="group-item-name">${sanitizeText(groupData.name)}</span>
+                ${shortcut ? `<span class="group-item-shortcut"><img src="${ICON_PATHS.shortcut}" alt="Shortcut"> ${sanitizeText(shortcut)}</span>` : ''}
                 <span class="group-item-count" aria-label="${count} extensions in group">${count}</span>
             </div>
             <div class="group-item-actions">
-                <button class="enable-group-btn button-small button-success" data-groupname="${groupName}" title="Enable all extensions in '${sanitizeText(groupName)}'">
-                    <img src="${ICON_PATHS.enableGroup}" alt="" aria-hidden="true"> Enable All
-                </button>
-                <button class="disable-group-btn button-small button-danger" data-groupname="${groupName}" title="Disable all extensions in '${sanitizeText(groupName)}'">
-                    <img src="${ICON_PATHS.disableGroup}" alt="" aria-hidden="true"> Disable All
-                </button>
-                <button class="rename-group-btn button-small icon-only" data-groupname="${groupName}" title="Rename Group" aria-label="Rename Group '${sanitizeText(groupName)}'">
-                     <img src="${ICON_PATHS.renameGroup}" alt="Rename" aria-hidden="true">
-                </button>
-                <button class="delete-group-btn button-small button-danger icon-only" data-groupname="${groupName}" title="Delete Group" aria-label="Delete Group '${sanitizeText(groupName)}'">
-                     <img src="${ICON_PATHS.deleteGroup}" alt="Delete" aria-hidden="true">
-                </button>
-            </div>
-        `;
+                <button class="enable-group-btn button-small button-success" data-groupname="${sanitizeText(groupName)}" title="Enable all in '${sanitizeText(groupData.name)}'">Enable All</button>
+                <button class="disable-group-btn button-small button-danger" data-groupname="${sanitizeText(groupName)}" title="Disable all in '${sanitizeText(groupData.name)}'">Disable All</button>
+                <button class="configure-group-btn button-small" data-groupname="${sanitizeText(groupName)}" title="Configure Group"><img src="${ICON_PATHS.configure}" alt="Configure"></button>
+                <button class="delete-group-btn button-small button-danger icon-only" data-groupname="${sanitizeText(groupName)}" title="Delete Group"><img src="${ICON_PATHS.deleteGroup}" alt="Delete"></button>
+            </div>`;
         fragment.appendChild(listItem);
     });
     listElement.appendChild(fragment);
-    addGroupDragDropListeners(listElement); // Attach drag/drop handlers
+    updateBulkDeleteGroupsUI();
 }
 
-// --- Drag and Drop for Groups ---
+// --- Group Bulk Selection & Deletion ---
+function updateBulkDeleteGroupsUI() {
+    const bulkDeleteBtn = document.getElementById('modal-bulk-delete-groups-btn');
+    const selectAllCheckbox = document.getElementById('select-all-groups-checkbox');
+    if (!bulkDeleteBtn || !selectAllCheckbox) return;
 
-function addGroupDragDropListeners(listElement) {
-    const items = listElement.querySelectorAll('li[draggable="true"]');
-    items.forEach(item => {
-        // Use capture phase for dragover/dragleave to handle internal elements better
-        item.addEventListener('dragstart', handleDragStart);
-        item.addEventListener('dragover', handleDragOver, false); // Use bubbling phase is fine here
-        item.addEventListener('dragleave', handleDragLeave, false); // Use bubbling phase is fine here
-        item.addEventListener('drop', handleDrop);
-        item.addEventListener('dragend', handleDragEnd);
-
-        // Prevent buttons inside from triggering drag
-        item.querySelectorAll('button').forEach(button => {
-            button.addEventListener('mousedown', (e) => e.stopPropagation()); // Stop drag start on button press
-        });
-    });
-}
-
-function handleDragStart(e) {
-    // Ensure we're dragging the list item itself
-    draggedGroupItem = e.target.closest('li[draggable="true"]');
-    if (!draggedGroupItem) {
-        e.preventDefault(); // Prevent dragging if not the li
-        return;
+    const count = selectedGroupNames.size;
+    bulkDeleteBtn.style.display = count > 0 ? 'inline-flex' : 'none';
+    if (count > 0) {
+        bulkDeleteBtn.textContent = `Delete Selected (${count})`;
     }
 
-    // Use setTimeout to allow the browser to render the drag image before applying class
-    setTimeout(() => {
-        if (draggedGroupItem) draggedGroupItem.classList.add('dragging');
-    }, 0);
-
-    e.dataTransfer.effectAllowed = 'move';
-    // Set data (group name) - use text/plain as fallback
-    try {
-        e.dataTransfer.setData('text/plain', draggedGroupItem.dataset.groupname);
-    } catch (err) {
-        console.warn("Could not set drag data:", err);
-    }
-}
-
-function handleDragOver(e) {
-    e.preventDefault(); // Necessary to allow dropping
-    const targetItem = e.target.closest('li[draggable="true"]');
-
-    if (targetItem && targetItem !== draggedGroupItem) {
-        // Add drag-over class for visual feedback
-        targetItem.classList.add('drag-over');
-        e.dataTransfer.dropEffect = 'move'; // Indicate a move operation
-
-        // Remove drag-over from other items
-        elements.modalGroupList.querySelectorAll('.drag-over').forEach(el => {
-            if (el !== targetItem) el.classList.remove('drag-over');
-        });
+    const totalCheckboxes = elements.modalGroupList.querySelectorAll('.group-select-checkbox').length;
+    if (totalCheckboxes > 0 && count === totalCheckboxes) {
+        selectAllCheckbox.checked = true;
+        selectAllCheckbox.indeterminate = false;
+    } else if (count > 0) {
+        selectAllCheckbox.checked = false;
+        selectAllCheckbox.indeterminate = true;
     } else {
-        // If over self or not over a valid target, deny drop
-        e.dataTransfer.dropEffect = 'none';
-        // Ensure no other items have the drag-over class
-        elements.modalGroupList.querySelectorAll('.drag-over').forEach(el => el.classList.remove('drag-over'));
+        selectAllCheckbox.checked = false;
+        selectAllCheckbox.indeterminate = false;
     }
 }
 
-function handleDragLeave(e) {
-    // Remove visual feedback when dragging leaves an item
-    const targetItem = e.target.closest('li[draggable="true"]');
-    if (targetItem) {
-        targetItem.classList.remove('drag-over');
-    }
-    // Clean up if leaving the list container itself
-    if (e.target === elements.modalGroupList) {
-        elements.modalGroupList.querySelectorAll('.drag-over').forEach(el => el.classList.remove('drag-over'));
-    }
-}
-
-function handleDrop(e) {
-    e.preventDefault(); // Prevent default drop behavior (e.g., opening link)
-    e.stopPropagation(); // Stop propagation to parent elements
-
-    const targetItem = e.target.closest('li[draggable="true"]');
-    targetItem?.classList.remove('drag-over'); // Clean up target visual
-
-    if (targetItem && targetItem !== draggedGroupItem && draggedGroupItem) {
-        const list = targetItem.parentNode; // The UL element
-        const rect = targetItem.getBoundingClientRect();
-        const offsetY = e.clientY - rect.top; // Vertical position within the target item
-
-        // Determine if dropping above or below the middle of the target item
-        const isAfter = offsetY > rect.height / 2;
-
-        // Insert the dragged item relative to the target item
-        if (isAfter) {
-            list.insertBefore(draggedGroupItem, targetItem.nextSibling); // Insert after target
+function handleSelectAllGroupsChange(event) {
+    const isChecked = event.target.checked;
+    const groupCheckboxes = elements.modalGroupList.querySelectorAll('.group-select-checkbox');
+    groupCheckboxes.forEach(checkbox => {
+        const groupName = checkbox.dataset.groupname;
+        checkbox.checked = isChecked;
+        const item = checkbox.closest('li');
+        if (isChecked) {
+            selectedGroupNames.add(groupName);
+            item.classList.add('selected');
         } else {
-            list.insertBefore(draggedGroupItem, targetItem); // Insert before target
+            selectedGroupNames.delete(groupName);
+            item.classList.remove('selected');
         }
-
-        // Get the new order of group names from the DOM
-        const newOrder = Array.from(list.querySelectorAll('li[data-groupname]'))
-                              .map(li => li.dataset.groupname);
-
-        // Save the new order and update relevant UI parts
-        saveGroupOrderPreference(newOrder);
-        updateGroupFilterDropdown(); // Update main filter dropdown order
-        updateAssignGroupDropdownsInList(); // Update order in item dropdowns
-        updateBulkAssignGroupDropdown(); // Update order in bulk dropdown
-    }
-}
-
-function handleDragEnd(e) {
-    // Clean up styles applied during drag, regardless of drop success
-    draggedGroupItem?.classList.remove('dragging');
-    elements.modalGroupList?.querySelectorAll('.drag-over').forEach(el => el.classList.remove('drag-over'));
-    draggedGroupItem = null; // Reset the dragged item state
+    });
+    updateBulkDeleteGroupsUI();
 }
 
 
 // --- Group Enable/Disable Actions ---
-
-/** Sets the enabled state for all extensions within a group. */
 async function setGroupExtensionsState(groupName, enable) {
     hideModalMessage();
-    const groups = getGroups();
-    const extensionIds = groups[groupName]; // Get IDs from the specific group
+    const groups = await getGroups();
+    const groupData = groups[groupName]; // Use groupName as key
+    const extensionIds = groupData?.members || [];
 
     if (!extensionIds || extensionIds.length === 0) {
-        showModalMessage(`Group "${sanitizeText(groupName)}" is empty. No extensions to ${enable ? 'enable' : 'disable'}.`, 'error');
+        showModalMessage(`Group "${sanitizeText(groupData?.name || groupName)}" is empty.`, 'info', true);
         return;
     }
 
-    showLoading(); // Show loading indicator
-    let successCount = 0;
-    let errorCount = 0;
-    const totalCount = extensionIds.length;
-    const actionText = enable ? 'enable' : 'disable';
-    const actionPastTense = enable ? 'enabled' : 'disabled';
+    showLoading();
+    const extensionMap = new Map(allFetchedExtensions.map(ext => [ext.id, ext]));
+    let successCount = 0, errorCount = 0, noChangeCount = 0;
 
-    // Use Promise.allSettled to process all enable/disable requests concurrently
-    const results = await Promise.allSettled(extensionIds.map(id =>
-        new Promise((resolve, reject) => {
-            chrome.management.setEnabled(id, enable, () => {
+    const operations = extensionIds.map(id => {
+        return new Promise((resolve) => {
+            const currentExt = extensionMap.get(id);
+            // The `enable` parameter can be boolean or null (for toggle)
+            const targetState = (typeof enable === 'boolean') ? enable : !currentExt.enabled;
+            if (currentExt && currentExt.enabled === targetState) {
+                return resolve({ status: 'nochange' });
+            }
+            chrome.management.setEnabled(id, targetState, () => {
                 if (chrome.runtime.lastError) {
-                    // Reject with error details
-                    reject({ id, error: chrome.runtime.lastError.message });
+                    resolve({ status: 'error', id, error: chrome.runtime.lastError.message });
                 } else {
-                    // Resolve with the ID on success
-                    resolve(id);
+                    resolve({ status: 'changed', id,newState: targetState });
                 }
             });
-        })
-    ));
+        });
+    });
 
-    // Process results
+    const results = await Promise.all(operations);
+    let finalActionVerb = "Toggled";
+    if (typeof enable === 'boolean') {
+        finalActionVerb = enable ? 'enabled' : 'disabled';
+    }
+
+
     results.forEach(result => {
-        if (result.status === 'fulfilled') {
+        if (result.status === 'changed') {
             successCount++;
-        } else {
+            const extToUpdate = extensionMap.get(result.id);
+            if (extToUpdate) extToUpdate.enabled = result.newState;
+        } else if (result.status === 'nochange') {
+            noChangeCount++;
+        } else if (result.status === 'error') {
             errorCount++;
-            // Log specific errors for debugging
-            console.error(`Error ${actionText}ing extension ${result.reason.id}:`, result.reason.error);
+            console.error(`Error changing state for extension ${result.id}:`, result.error.message);
         }
     });
 
-    hideLoading(); // Hide loading indicator
+    hideLoading();
 
-    // Provide feedback based on results
-    if (errorCount > 0 && successCount > 0) {
-        showModalMessage(`Partially completed: Could not ${actionText} ${errorCount} extension(s). Successfully ${actionPastTense} ${successCount} in group "${sanitizeText(groupName)}".`, 'error');
-    } else if (errorCount > 0) {
-        showModalMessage(`Failed to ${actionText} ${errorCount}/${totalCount} extension(s) in group "${sanitizeText(groupName)}". Check console for details.`, 'error');
+    let message;
+    if (errorCount > 0) {
+        message = `Completed with ${errorCount} errors in group "${sanitizeText(groupData?.name || groupName)}".`;
+        showModalMessage(message, 'error');
+    } else if (successCount > 0) {
+        message = `${successCount} extension(s) in group "${sanitizeText(groupData?.name || groupName)}" ${finalActionVerb}.`;
+        showModalMessage(message, 'success', true);
     } else {
-        showModalMessage(`Successfully ${actionPastTense} all ${totalCount} extension(s) in group "${sanitizeText(groupName)}".`, 'success');
+        message = `All extensions in group "${sanitizeText(groupData?.name || groupName)}" were already in the desired state.`;
+        showModalMessage(message, 'info', true);
+    }
+    
+    await renderExtensionList(getCurrentPage());
+}
+
+// --- Group Configuration View ---
+async function switchToGroupConfigurationView(groupName) {
+    currentConfiguringGroupName = groupName;
+    const groups = await getGroups();
+    const groupData = groups[groupName]; // Access by groupName key
+
+    if (!groupData) {
+        await switchToGroupListView();
+        return;
     }
 
-    // Refresh the main extension list to show updated states
-    renderExtensionList(getCurrentPage());
+    hideModalMessage();
+    hideGroupConfigMessage();
+
+    // Properly hide the group management modal
+    elements.groupModal.classList.remove('visible'); // Ensure 'visible' class is removed
+    elements.groupModal.setAttribute('aria-hidden', 'true'); // Update accessibility attribute
+    elements.groupModal.style.display = 'none';
+
+    // Properly show the group configuration modal
+    elements.groupConfigurationModal.style.display = 'flex';
+    elements.groupConfigurationModal.setAttribute('aria-hidden', 'false'); // Update accessibility attribute
+    setTimeout(() => { // Add 'visible' class after a short delay for animation/transition
+        elements.groupConfigurationModal.classList.add('visible');
+    }, 10);
+
+    if (elements.groupConfigTitle) {
+        elements.groupConfigTitle.textContent = `Configure Group: ${sanitizeText(groupData.name)}`; // Use groupData.name for title
+    }
+    if (elements.groupConfigNameInput) {
+        elements.groupConfigNameInput.value = groupData.name; // Set input value to actual group name
+    }
+    if (elements.groupConfigShortcutInput) {
+        elements.groupConfigShortcutInput.value = groupData.shortcut ? normalizeShortcut(groupData.shortcut) : '';
+    }
+    if (elements.groupConfigActionSelect) {
+        elements.groupConfigActionSelect.value = groupData.shortcutAction || 'toggle';
+    }
+
+    await renderExtensionsForGroupConfiguration(groupName);
+    elements.saveGroupConfigBtn?.focus();
+}
+
+async function switchToGroupListView() {
+    currentConfiguringGroupName = null;
+    // Properly hide the group configuration modal
+    elements.groupConfigurationModal.classList.remove('visible'); // Ensure 'visible' class is removed
+    elements.groupConfigurationModal.setAttribute('aria-hidden', 'true'); // Update accessibility attribute
+    elements.groupConfigurationModal.style.display = 'none';
+
+    // Properly show the group management modal
+    elements.groupModal.style.display = 'flex';
+    elements.groupModal.setAttribute('aria-hidden', 'false'); // Update accessibility attribute
+    setTimeout(() => { // Add 'visible' class after a short delay for animation/transition
+        elements.groupModal.classList.add('visible');
+    }, 10);
+
+    await displayGroupManagementListInModal();
+    elements.modalNewGroupNameInput?.focus();
+}
+
+async function renderExtensionsForGroupConfiguration(groupName) {
+    const listEl = elements.groupConfigExtensionList;
+    if (!listEl) return;
+    listEl.innerHTML = '';
+
+    const userControllableExtensions = allFetchedExtensions.filter(ext => ext.mayDisable)
+        .sort((a, b) => (a.name || "").localeCompare(b.name || ""));
+
+    if (userControllableExtensions.length === 0) {
+        listEl.innerHTML = "<p>No user-controllable extensions available to add to groups.</p>";
+        return;
+    }
+
+    const groups = await getGroups();
+    const groupData = groups[groupName];
+    const groupMembers = groupData?.members || [];
+    const fragment = document.createDocumentFragment();
+
+    userControllableExtensions.forEach(ext => {
+        const itemDiv = document.createElement('div');
+        itemDiv.className = 'profile-config-extension-item';
+        const isMemberOfGroup = groupMembers.includes(ext.id);
+        const checkboxId = `group-cfg-ext-${ext.id}`;
+        const iconUrl = ext.icons?.find(i => i.size >= 16)?.url || DEFAULT_ICON_PLACEHOLDER;
+        itemDiv.innerHTML = `
+            <input type="checkbox" id="${checkboxId}" class="group-config-ext-checkbox" data-extension-id="${ext.id}" ${isMemberOfGroup ? 'checked' : ''}>
+            <img src="${iconUrl}" class="extension-icon-small" alt="">
+            <label for="${checkboxId}">${sanitizeText(ext.name)}</label>
+        `;
+        fragment.appendChild(itemDiv);
+    });
+    listEl.appendChild(fragment);
+}
+
+async function saveCurrentGroupConfiguration() {
+    if (!currentConfiguringGroupName) return;
+    hideGroupConfigMessage();
+
+    const newName = elements.groupConfigNameInput.value.trim();
+    if (!newName) {
+        showGroupConfigMessage("Group name cannot be empty.", 'error');
+        return;
+    }
+
+    const groups = await getGroups();
+    // Check if renaming and if the new name is taken by another group (by its 'name' property)
+    if (newName.toLowerCase() !== groups[currentConfiguringGroupName]?.name.toLowerCase() && Object.values(groups).some(group => group.name.toLowerCase() === newName.toLowerCase() && group.name !== groups[currentConfiguringGroupName]?.name)) {
+        showGroupConfigMessage(`Group name "${sanitizeText(newName)}" already exists.`, 'error');
+        return;
+    }
+
+    const newShortcut = elements.groupConfigShortcutInput?.value.trim() || null;
+    let validatedShortcut = null;
+    if (newShortcut) {
+        const validationResult = await validateShortcut(newShortcut, await getExistingShortcuts(currentConfiguringGroupName, null));
+        if (validationResult.isValid) {
+            validatedShortcut = validationResult.normalizedShortcut;
+        } else {
+            showGroupConfigMessage(`Shortcut error: ${validationResult.message}`, 'error');
+            return;
+        }
+    }
+
+    // Passed validation, now update the group
+    const newMembers = Array.from(elements.groupConfigExtensionList.querySelectorAll('.group-config-ext-checkbox:checked'))
+                            .map(cb => cb.dataset.extensionId);
+    
+    const newShortcutAction = elements.groupConfigActionSelect.value;
+    
+    const originalGroupData = groups[currentConfiguringGroupName];
+    const updatedGroupData = {
+        ...originalGroupData,
+        name: newName, // Crucial: Update the 'name' property inside the object
+        members: newMembers,
+        shortcut: validatedShortcut,
+        shortcutAction: newShortcutAction
+    };
+
+    // If the name (and thus the key) changed, we need to delete the old key and add a new one
+    if (newName !== currentConfiguringGroupName) {
+        delete groups[currentConfiguringGroupName];
+    }
+    groups[newName] = updatedGroupData; // Use newName as the key for storage
+    await saveGroups(groups);
+
+    // Update preferences if name changed
+    if (newName !== currentConfiguringGroupName) {
+        renameGroupInPrefs(currentConfiguringGroupName, newName);
+        currentConfiguringGroupName = newName; // Update state to reflect the new name (key)
+    }
+
+    showGroupConfigMessage(`Configuration saved for "${sanitizeText(newName)}".`, 'success', true);
+    await updateGroupFilterDropdown();
+    await updateAssignGroupDropdownsInList();
+    await updateBulkAssignGroupDropdown();
+    await registerKeyboardShortcuts();
 }
 
 // --- Modal Action Handlers (Delegated) ---
+async function handleModalListClick(event) {
+    const target = event.target;
+    
+    if (target.matches('.group-select-checkbox')) {
+        const groupName = target.dataset.groupname;
+        const item = target.closest('li');
+        if (target.checked) {
+            selectedGroupNames.add(groupName);
+            item.classList.add('selected');
+        } else {
+            selectedGroupNames.delete(groupName);
+            item.classList.remove('selected');
+        }
+        updateBulkDeleteGroupsUI();
+        return;
+    }
 
-/** Handles clicks within the modal's group list (rename, delete, enable/disable all). */
-function handleModalListClick(event) {
     const button = event.target.closest('button[data-groupname]');
-    if (!button) return; // Click wasn't on a button with groupname data
+    if (!button) return;
+    const groupName = button.dataset.groupname; // This is the KEY, which should be the actual name
+    if (!groupName) return;
 
-    const groupName = button.dataset.groupname;
-    if (!groupName) return; // Should not happen if button found
-
-    // Determine action based on button class
-    if (button.classList.contains('rename-group-btn')) {
-        const currentName = groupName; // For clarity in prompt
-        const newName = prompt(`Enter new name for group "${sanitizeText(currentName)}":`, currentName);
-        if (newName !== null) { // Prompt wasn't cancelled
-            if (newName.trim()) {
-                renameGroup(currentName, newName.trim());
-            } else {
-                // User entered empty name after prompt
-                showModalMessage("Group name cannot be empty.", 'error');
-            }
-        } // If null, user cancelled, do nothing.
-    } else if (button.classList.contains('delete-group-btn')) {
-        deleteGroup(groupName); // deleteGroup includes confirmation
+    if (button.classList.contains('delete-group-btn')) {
+        await deleteGroups(new Set([groupName]));
     } else if (button.classList.contains('enable-group-btn')) {
-        setGroupExtensionsState(groupName, true);
+        await setGroupExtensionsState(groupName, true);
     } else if (button.classList.contains('disable-group-btn')) {
-        setGroupExtensionsState(groupName, false);
+        await setGroupExtensionsState(groupName, false);
+    } else if (button.classList.contains('configure-group-btn')) {
+        event.stopPropagation(); // <-- Add this line to stop event bubbling
+        await switchToGroupConfigurationView(groupName);
     }
 }
 
 // --- Extension Data Fetching & Filtering ---
-
-/** Fetches all extensions using chrome.management.getAll. */
 function fetchAllExtensions() {
     return new Promise((resolve, reject) => {
         chrome.management.getAll((extensions) => {
             if (chrome.runtime.lastError) {
                 reject(chrome.runtime.lastError);
-            } else {
-                resolve(extensions || []); // Ensure it resolves with an array
             }
+            else resolve(extensions || []);
         });
     });
 }
 
-/** Filters and sorts extensions based on current criteria. */
-function filterAndSortExtensions(extensions) {
-    // --- Get Filter Values ---
+async function filterAndSortExtensions(extensions) {
     const searchInput = elements.searchInput?.value.toLowerCase().trim() || '';
-    // Split search into terms for smarter matching
-    const searchTerms = searchInput.split(/\s+/).filter(Boolean); // Split by space, remove empty strings
+    const searchTerms = searchInput.split(/\s+/).filter(Boolean);
     const typeFilter = elements.typeFilter?.value || 'all';
     const statusFilter = elements.statusFilter?.value || 'all';
-    const groupFilter = elements.groupFilter?.value || 'all';
-    const groups = getGroups();
+    const groupFilterValue = elements.groupFilter?.value; 
+    const groups = await getGroups();
+    const extensionOrder = getPreferences().extensionOrder;
+    const orderMap = new Map(extensionOrder.map((id, index) => [id, index]));
 
-    // --- 1. Filter ---
     let filtered = extensions.filter(ext => {
-        // Type Filter
         if (typeFilter !== 'all') {
-            // Determine extension type (handle potential inconsistencies)
-            const extType = ext.type || (ext.isApp ? 'app' : 'extension');
-            if (typeFilter === 'extension' && extType !== 'extension') return false;
-            if (typeFilter === 'theme' && extType !== 'theme') return false;
-            if (typeFilter === 'app' && extType !== 'app') return false;
-            // Add more types if necessary (e.g., 'hosted_app')
+            let extActualType = ext.isApp ? 'app' : (ext.type || 'extension');
+            if (typeFilter === 'extension' && !['extension', 'packaged_app'].includes(extActualType)) return false; 
+            if (typeFilter === 'theme' && extActualType !== 'theme') return false;
+            if (typeFilter === 'app' && !['app', 'hosted_app'].includes(extActualType)) return false; 
         }
-        // Status Filter
         if (statusFilter !== 'all') {
             if (statusFilter === 'enabled' && !ext.enabled) return false;
             if (statusFilter === 'disabled' && ext.enabled) return false;
         }
-        // Group Filter
-        if (groupFilter !== 'all') {
-            // Check if the extension ID is present in the selected group's array
-            if (!groups[groupFilter]?.includes(ext.id)) return false;
+        if (groupFilterValue !== 'all' && groupFilterValue !== 'no-group') {
+            if (!groups[groupFilterValue]?.members?.includes(ext.id)) return false; // Check against the correct key
         }
-        // Search Term Filter (match ALL terms entered)
         if (searchTerms.length > 0) {
             const name = ext.name?.toLowerCase() || '';
             const description = ext.description?.toLowerCase() || '';
             const id = ext.id?.toLowerCase() || '';
-            // Check if *all* search terms are found in name, description, or ID
-            const allTermsMatch = searchTerms.every(term =>
-                name.includes(term) || description.includes(term) || id.includes(term)
-            );
-            if (!allTermsMatch) return false;
+            return searchTerms.every(term => name.includes(term) || description.includes(term) || id.includes(term));
         }
-        // If all filters pass, keep the extension
         return true;
     });
 
-    // --- 2. Sort (Default Alphabetical by Name) ---
-    filtered.sort((a, b) => a.name.localeCompare(b.name, undefined, { sensitivity: 'base' }));
+    filtered.sort((a, b) => {
+        const aInOrder = orderMap.has(a.id);
+        const bInOrder = orderMap.has(b.id);
+        if (aInOrder && bInOrder) {
+            return orderMap.get(a.id) - orderMap.get(b.id);
+        }
+        if (aInOrder) return -1;
+        if (bInOrder) return 1;
+        return (a.name || "").localeCompare(b.name || "", undefined, { sensitivity: 'base' });
+    });
 
     return filtered;
 }
 
-
 // --- Extension List Rendering ---
-
-/**
- * Renders the filtered and paginated list of extensions.
- * @param {number} [page=1] - The page number to display.
- */
-function renderExtensionList(page = 1) {
+async function renderExtensionList(page = 1) {
     if (!elements.extensionList) {
-        console.error("Extension list element not found.");
-        hideLoading();
-        return;
+        hideLoading(); return;
     }
-    elements.extensionList.innerHTML = ''; // Clear previous items
-    hidePopupMessage(); // Clear any previous popup messages
+    elements.extensionList.innerHTML = '';
+    elements.emptyStateMessageContainer.style.display = 'none';
+    elements.emptyStateMessageContainer.innerHTML = '';
+    hidePopupMessage(); 
 
-    // --- Use cached filtered data ---
-    const extensionsToPaginate = currentFilteredExtensions;
-
-    // --- Pagination Logic ---
-    const totalExtensions = extensionsToPaginate.length;
+    currentFilteredExtensions = await filterAndSortExtensions(allFetchedExtensions); 
+    const totalExtensions = currentFilteredExtensions.length;
     const totalPages = Math.ceil(totalExtensions / EXTENSIONS_PER_PAGE) || 1;
-    const currentPage = Math.min(Math.max(page, 1), totalPages); // Ensure page is within bounds
+    const currentPage = Math.min(Math.max(page, 1), totalPages);
     const startIndex = (currentPage - 1) * EXTENSIONS_PER_PAGE;
-    const extensionsToDisplay = extensionsToPaginate.slice(startIndex, startIndex + EXTENSIONS_PER_PAGE);
+    const extensionsToDisplay = currentFilteredExtensions.slice(startIndex, startIndex + EXTENSIONS_PER_PAGE);
 
-    // --- Update Pagination Controls ---
     if (elements.currentPageSpan) elements.currentPageSpan.textContent = currentPage;
     if (elements.totalPagesSpan) elements.totalPagesSpan.textContent = totalPages;
     if (elements.prevPageButton) elements.prevPageButton.disabled = currentPage === 1;
     if (elements.nextPageButton) elements.nextPageButton.disabled = currentPage === totalPages;
 
-    // --- Render List Items ---
     const fragment = document.createDocumentFragment();
     const searchTerms = (elements.searchInput?.value.toLowerCase().trim() || '').split(/\s+/).filter(Boolean);
 
     if (extensionsToDisplay.length > 0) {
-        elements.extensionListHeader.style.display = 'flex'; // Show header if items exist
-        extensionsToDisplay.forEach(extension => {
+        if(elements.extensionListHeader) elements.extensionListHeader.style.display = 'flex';
+        for (const extension of extensionsToDisplay) {
             const extensionItem = document.createElement('div');
             extensionItem.classList.add('extension-item');
             extensionItem.dataset.extensionId = extension.id;
             extensionItem.setAttribute('role', 'listitem');
-            // Add selected class if needed
             if (selectedExtensionIds.has(extension.id)) {
                 extensionItem.classList.add('selected');
+                extensionItem.setAttribute('aria-selected', 'true');
+            } else {
+                extensionItem.setAttribute('aria-selected', 'false');
             }
 
-            // Checkbox for selection
             const checkbox = document.createElement('input');
             checkbox.type = 'checkbox';
             checkbox.classList.add('extension-select-checkbox');
@@ -1055,326 +1269,261 @@ function renderExtensionList(page = 1) {
             checkbox.setAttribute('aria-label', `Select ${sanitizeText(extension.name)}`);
             checkbox.title = `Select/Deselect ${sanitizeText(extension.name)}`;
 
-            // Icon
             const icon = document.createElement('img');
-            const bestIcon = extension.icons?.sort((a, b) => b.size - a.size)[0]; // Get largest icon
+            const bestIcon = extension.icons?.sort((a, b) => b.size - a.size)[0];
             icon.src = bestIcon ? bestIcon.url : DEFAULT_ICON_PLACEHOLDER;
-            icon.alt = ""; // Decorative icon
+            icon.alt = ""; 
             icon.classList.add('extension-icon');
-            icon.loading = 'lazy'; // Lazy load icons
-            // Fallback icon source
-            icon.onerror = () => {
-                if (icon.src !== DEFAULT_ICON_PLACEHOLDER) {
-                    icon.src = DEFAULT_ICON_PLACEHOLDER;
-                }
-                icon.onerror = null; // Prevent infinite loop if placeholder fails
-            };
+            icon.loading = 'lazy';
+            icon.onerror = () => { if (icon.src !== DEFAULT_ICON_PLACEHOLDER) icon.src = DEFAULT_ICON_PLACEHOLDER; icon.onerror = null; };
 
-            // Details (Name)
             const detailsDiv = document.createElement('div');
             detailsDiv.classList.add('extension-details');
             const nameSpan = document.createElement('span');
             nameSpan.classList.add('extension-name');
-            // Highlight search terms in the name
             nameSpan.innerHTML = highlightSearchTerms(extension.name, searchTerms);
-            nameSpan.title = sanitizeText(extension.name); // Full name on hover
+            nameSpan.title = sanitizeText(extension.name);
             detailsDiv.appendChild(nameSpan);
 
-            // Actions Container
             const actions = document.createElement('div');
             actions.classList.add('extension-actions');
 
-            // Toggle Button
             const toggleButton = document.createElement('button');
             toggleButton.classList.add('toggle-button', 'button-small');
             toggleButton.dataset.action = 'toggle';
             toggleButton.dataset.extensionId = extension.id;
             toggleButton.dataset.currentState = extension.enabled ? 'enabled' : 'disabled';
-            // Use appropriate icon based on state
-            toggleButton.innerHTML = `<img src="${extension.enabled ? ICON_PATHS.toggleOff : ICON_PATHS.toggleOn}" alt="" aria-hidden="true">`;
+            toggleButton.innerHTML = `<img src="${extension.enabled ? ICON_PATHS.toggleOff : ICON_PATHS.toggleOn}" alt=""> ${extension.enabled ? 'Disable' : 'Enable'}`;
             toggleButton.title = `${extension.enabled ? 'Disable' : 'Enable'} ${sanitizeText(extension.name)}`;
-            toggleButton.setAttribute('aria-label', `${extension.enabled ? 'Disable' : 'Enable'} ${sanitizeText(extension.name)}`);
-            toggleButton.setAttribute('aria-pressed', String(extension.enabled)); // Indicate toggle state
+            toggleButton.setAttribute('aria-pressed', String(extension.enabled));
+            if (extension.enabled) toggleButton.classList.add('button-danger'); else toggleButton.classList.add('button-success');
 
-            // Details Button (links to details.html)
             const detailsButton = document.createElement('button');
             detailsButton.classList.add('details-button', 'button-small');
             detailsButton.dataset.action = 'details';
             detailsButton.dataset.extensionId = extension.id;
-            detailsButton.innerHTML = `<img src="${ICON_PATHS.details}" alt="" aria-hidden="true">`;
+            detailsButton.innerHTML = `<img src="${ICON_PATHS.details}" alt=""> Details`;
             detailsButton.title = `View details for ${sanitizeText(extension.name)}`;
-            detailsButton.setAttribute('aria-label', `View details for ${sanitizeText(extension.name)}`);
 
-            // Assign Group Dropdown
             const assignGroupSelect = document.createElement('select');
             assignGroupSelect.classList.add('assign-group-select');
             assignGroupSelect.dataset.extensionId = extension.id;
-            assignGroupSelect.setAttribute('aria-label', `Assign ${sanitizeText(extension.name)} to Group`);
             assignGroupSelect.title = "Assign to Group";
-            populateAssignGroupDropdown(assignGroupSelect, extension.id); // Populate with groups
+            await populateAssignGroupDropdown(assignGroupSelect, extension.id); 
 
-            // Delete Button
             const deleteButton = document.createElement('button');
             deleteButton.classList.add('delete-button', 'button-small', 'button-danger', 'icon-only');
             deleteButton.dataset.action = 'delete';
             deleteButton.dataset.extensionId = extension.id;
-            deleteButton.dataset.extensionName = sanitizeText(extension.name); // Store name for confirmation
-            deleteButton.innerHTML = `<img src="${ICON_PATHS.delete}" alt="" aria-hidden="true">`;
+            deleteButton.dataset.extensionName = sanitizeText(extension.name); 
+            deleteButton.innerHTML = `<img src="${ICON_PATHS.delete}" alt="">`;
             deleteButton.title = `Uninstall ${sanitizeText(extension.name)}`;
-            deleteButton.setAttribute('aria-label', `Uninstall ${sanitizeText(extension.name)}`);
 
-            // Append elements to the action container
             actions.appendChild(toggleButton);
             actions.appendChild(detailsButton);
             actions.appendChild(assignGroupSelect);
             actions.appendChild(deleteButton);
 
-            // Append all parts to the main item container
             extensionItem.appendChild(checkbox);
             extensionItem.appendChild(icon);
             extensionItem.appendChild(detailsDiv);
             extensionItem.appendChild(actions);
-
-            // Add the complete item to the document fragment
             fragment.appendChild(extensionItem);
-        });
+        }
     } else {
-        // Display message if no extensions match filters
-        elements.extensionListHeader.style.display = 'none'; // Hide header if no items
-        const noExtensionsMessage = document.createElement('p');
-        noExtensionsMessage.textContent = 'No extensions match the current filters.';
-        noExtensionsMessage.classList.add('no-extensions-message');
-        fragment.appendChild(noExtensionsMessage);
+        if(elements.extensionListHeader) elements.extensionListHeader.style.display = 'none';
+        if(elements.emptyStateMessageContainer) {
+            elements.emptyStateMessageContainer.style.display = 'block';
+            let emptyMsg = `<p>No extensions found matching your criteria.</p>`;
+             if (elements.searchInput?.value.trim() || elements.typeFilter?.value !== 'all' || elements.statusFilter?.value !== 'all' || elements.groupFilter?.value !== 'all') {
+                emptyMsg += `<p>Try clearing your search or adjusting filters.</p>`;
+            }
+            elements.emptyStateMessageContainer.innerHTML = emptyMsg;
+        }
     }
 
-    // Append the fragment to the list and hide loading indicator
     elements.extensionList.appendChild(fragment);
     hideLoading();
-
-    // Update the state of the "Select All" checkbox
     updateSelectAllCheckboxState();
-    // Update the visibility and content of the bulk actions bar
     updateBulkActionsUI();
 }
 
-
-/** Fetches, filters, sorts, and then renders the extension list. */
 async function refreshExtensionDataAndRender(page = 1) {
     showLoading();
     try {
         allFetchedExtensions = await fetchAllExtensions();
-        currentFilteredExtensions = filterAndSortExtensions(allFetchedExtensions);
-        renderExtensionList(page);
+        await renderExtensionList(page);
     } catch (error) {
         hideLoading();
-        showPopupMessage(`Error fetching extensions: ${error.message}`, 'error');
+        showPopupMessage(`Error fetching extensions: ${error.message || 'Unknown error'}`, 'error');
         console.error("Extension fetch/render error:", error);
-        elements.extensionList.innerHTML = '<p class="error-message">Could not load extensions.</p>';
-        elements.extensionListHeader.style.display = 'none'; // Hide header on error
     }
 }
 
-
 // --- Extension Action Handlers (Delegation) ---
-
-/** Handles clicks within the main extension list (toggle, details, delete). */
 function handleExtensionListClick(event) {
     const target = event.target;
 
-    // Handle checkbox clicks
     if (target.classList.contains('extension-select-checkbox')) {
         const extensionId = target.dataset.extensionId;
+        const item = target.closest('.extension-item');
         if (target.checked) {
             selectedExtensionIds.add(extensionId);
-            target.closest('.extension-item')?.classList.add('selected');
+            item?.classList.add('selected');
         } else {
             selectedExtensionIds.delete(extensionId);
-            target.closest('.extension-item')?.classList.remove('selected');
+            item?.classList.remove('selected');
         }
-        updateBulkActionsUI(); // Update count and button states
-        updateSelectAllCheckboxState(); // Update master checkbox
-        return; // Stop further processing for checkbox clicks
+        updateBulkActionsUI();
+        updateSelectAllCheckboxState();
+        return; 
     }
 
-    // Handle action button clicks
     const actionButton = target.closest('button[data-action]');
-    if (!actionButton) return; // Click wasn't on an action button
+    if (!actionButton) return;
 
     const action = actionButton.dataset.action;
     const extensionId = actionButton.dataset.extensionId;
-    if (!extensionId) {
-        console.error("Action button missing extension ID.");
-        return;
-    }
+    if (!extensionId) return; 
 
-    // Perform action based on button type
     switch (action) {
         case 'toggle':
-            // Determine the new state based on the current state dataset attribute
-            const enable = actionButton.dataset.currentState === 'disabled';
-            toggleExtension(extensionId, enable);
+            toggleExtension(extensionId, actionButton.dataset.currentState === 'disabled', actionButton);
             break;
         case 'details':
-            openDetailsPage(extensionId); // Use updated function name
+            openDetailsPage(extensionId);
             break;
         case 'delete':
-            // Get the extension name from the button's dataset for the confirmation dialog
-            const extensionName = actionButton.dataset.extensionName || 'this extension';
-            confirmAndDeleteExtension(extensionId, extensionName); // Use updated function name
+            confirmAndDeleteExtension(extensionId, actionButton.dataset.extensionName || 'this extension');
             break;
-        default:
-            console.warn("Unknown action:", action);
     }
 }
 
 // --- Core Extension Actions (Single) ---
-
-/** Toggles a single extension's enabled state. */
-function toggleExtension(extensionId, enable) {
+function toggleExtension(extensionId, enable, buttonElement) {
     showLoading();
-    hidePopupMessage();
-    chrome.management.setEnabled(extensionId, enable, () => {
+    hidePopupMessage(); 
+    chrome.management.setEnabled(extensionId, enable, async () => {
         hideLoading();
         if (chrome.runtime.lastError) {
-            showPopupMessage(`Error: ${chrome.runtime.lastError.message}`, 'error');
-            console.error("setEnabled error:", chrome.runtime.lastError);
+            showActionFeedback(`Error: ${chrome.runtime.lastError.message}`, 'error');
         } else {
-            // Find the specific item and update its state visually
-            const item = elements.extensionList?.querySelector(`.extension-item[data-extension-id="${extensionId}"]`);
-            const button = item?.querySelector('.toggle-button');
-            if (item && button) {
-                // Update button state, icon, and aria attributes
-                button.dataset.currentState = enable ? 'enabled' : 'disabled';
-                button.innerHTML = `<img src="${enable ? ICON_PATHS.toggleOff : ICON_PATHS.toggleOn}" alt="" aria-hidden="true">`;
-                button.title = `${enable ? 'Disable' : 'Enable'} ${sanitizeText(item.querySelector('.extension-name')?.textContent || '')}`;
-                button.setAttribute('aria-label', button.title);
-                button.setAttribute('aria-pressed', String(enable));
-                // Optionally update status filter if active
-                if (elements.statusFilter.value !== 'all') {
-                     refreshExtensionDataAndRender(getCurrentPage()); // Full refresh if status filter active
-                }
-            } else {
-                 refreshExtensionDataAndRender(getCurrentPage()); // Fallback to full refresh
-            }
-            // Update the underlying data cache
+            showActionFeedback(`Extension ${enable ? 'enabled' : 'disabled'}.`, 'success');
+
             const cachedExt = allFetchedExtensions.find(ext => ext.id === extensionId);
             if (cachedExt) cachedExt.enabled = enable;
-            const filteredCachedExt = currentFilteredExtensions.find(ext => ext.id === extensionId);
-             if (filteredCachedExt) filteredCachedExt.enabled = enable;
+
+            const item = elements.extensionList?.querySelector(`.extension-item[data-extension-id="${extensionId}"]`);
+            const button = buttonElement || item?.querySelector('.toggle-button');
+
+            if (item && button) {
+                button.dataset.currentState = enable ? 'enabled' : 'disabled';
+                button.innerHTML = `<img src="${enable ? ICON_PATHS.toggleOff : ICON_PATHS.toggleOn}" alt=""> ${enable ? 'Disable' : 'Enable'}`;
+                button.title = `${enable ? 'Disable' : 'Enable'} ${sanitizeText(cachedExt.name)}`;
+                button.setAttribute('aria-pressed', String(enable));
+                button.classList.remove('button-success', 'button-danger');
+                button.classList.add(enable ? 'button-danger' : 'button-success');
+
+                item.classList.add('item-feedback-highlight', enable ? 'success' : 'info');
+                setTimeout(() => item.classList.remove('item-feedback-highlight', 'success', 'info'), ITEM_FEEDBACK_HIGHLIGHT_DURATION);
+
+                if (elements.statusFilter?.value !== 'all') {
+                     setTimeout(async () => await refreshExtensionDataAndRender(getCurrentPage()), ITEM_FEEDBACK_HIGHLIGHT_DURATION + 50);
+                }
+            } else {
+                 await refreshExtensionDataAndRender(getCurrentPage());
+            }
         }
     });
 }
-
-/** Opens the custom details page for an extension. */
 function openDetailsPage(extensionId) {
-    // --- IMPORTANT: Ensure this path is correct relative to the popup HTML file ---
-    const detailsPageRelativeUrl = `src/html/details.html?id=${extensionId}`;
-    // -----------------------------------------------------------------------------
-    try {
-         // Construct the full URL using runtime.getURL
-         const fullUrl = chrome.runtime.getURL(detailsPageRelativeUrl);
-         // Open in a new tab
-         chrome.tabs.create({ url: fullUrl }, (tab) => {
-            if (chrome.runtime.lastError) {
-                 showPopupMessage(`Error opening details page: ${chrome.runtime.lastError.message}`, 'error');
-                 console.error("tabs.create error:", chrome.runtime.lastError);
-            }
-            // Optional: Close the popup after opening the details page
-            // window.close();
-         });
-    } catch (e) {
-         showPopupMessage(`Could not construct details page URL.`, 'error');
-         console.error("Error creating details URL:", e);
-    }
+    chrome.tabs.create({ url: `src/html/details.html?id=${extensionId}` });
 }
-
-/** Confirms and then triggers uninstallation of an extension. */
 function confirmAndDeleteExtension(extensionId, extensionName) {
-    const sanitizedName = sanitizeText(extensionName); // Sanitize name for display
-    if (confirm(`Are you sure you want to uninstall "${sanitizedName}"? This action cannot be undone.`)) {
-        uninstallExtension(extensionId, sanitizedName);
+    if (confirm(`Are you sure you want to uninstall "${extensionName}"?\n\nThis cannot be undone.`)) {
+        uninstallExtension(extensionId, extensionName);
+    } else {
+        showPopupMessage("Uninstallation cancelled.", 'info', true);
     }
 }
-
-/** Uninstalls the specified extension after confirmation. */
 function uninstallExtension(extensionId, sanitizedName) {
     showLoading();
-    hidePopupMessage();
-    // Use showConfirmDialog: false because we already confirmed manually
-    chrome.management.uninstall(extensionId, { showConfirmDialog: false }, () => {
+    hidePopupMessage(); 
+    chrome.management.uninstall(extensionId, { showConfirmDialog: false }, async () => {
         hideLoading();
         if (chrome.runtime.lastError) {
             showPopupMessage(`Error uninstalling "${sanitizedName}": ${chrome.runtime.lastError.message}`, 'error');
-            console.error("uninstall error:", chrome.runtime.lastError);
         } else {
-            showPopupMessage(`"${sanitizedName}" uninstalled successfully.`, 'success');
-            // Remove from selection if it was selected
-            selectedExtensionIds.delete(extensionId);
-            // Refresh data and UI
-            refreshExtensionDataAndRender(getCurrentPage());
-            // Update group counts as the extension is gone
-            updateGroupFilterDropdown();
-            updateBulkAssignGroupDropdown();
-            if (elements.groupModal?.classList.contains('visible')) {
-                displayGroupManagementListInModal();
+            showPopupMessage(`"${sanitizedName}" uninstalled.`, 'success');
+            selectedExtensionIds.delete(extensionId); 
+
+            const prefs = getPreferences();
+            prefs.extensionOrder = prefs.extensionOrder.filter(id => id !== extensionId);
+            saveOrderPreference('extensionOrder', prefs.extensionOrder);
+
+            await refreshExtensionDataAndRender(getCurrentPage()); 
+            await updateGroupFilterDropdown(); 
+            await updateBulkAssignGroupDropdown(); 
+            if (elements.groupModal?.style.display === 'flex') {
+                await displayGroupManagementListInModal(); 
+            } else if (elements.groupConfigurationModal?.style.display === 'flex') {
+                await renderExtensionsForGroupConfiguration(currentConfiguringGroupName);
             }
+            if (elements.profilesModal?.style.display === 'flex') {
+                await displayProfileManagementListInModal();
+                if (currentConfiguringProfileId) {
+                    await renderExtensionsForProfileConfiguration(currentConfiguringProfileId);
+                }
+            }
+            await registerKeyboardShortcuts();
         }
     });
 }
 
 // --- Bulk Actions ---
-
-/** Updates the visibility and content of the bulk actions bar. */
 function updateBulkActionsUI() {
     const count = selectedExtensionIds.size;
+    const bulkContainer = elements.bulkActionsContainer;
+    if (!bulkContainer) return;
+
     if (count > 0) {
-        elements.selectedCountSpan.textContent = `${count} selected`;
-        elements.bulkActionsContainer.style.display = 'flex';
-        // Enable/disable buttons based on selection (optional: could check if *all* selected are enabled/disabled)
-        elements.bulkEnableButton.disabled = false;
-        elements.bulkDisableButton.disabled = false;
-        elements.bulkUninstallButton.disabled = false;
-        elements.bulkAssignGroupSelect.disabled = false;
+        if(elements.selectedCountSpan) elements.selectedCountSpan.textContent = `${count} selected`;
+        bulkContainer.style.display = 'flex';
+        [elements.bulkEnableButton, elements.bulkDisableButton, elements.bulkUninstallButton, elements.bulkAssignGroupSelect].forEach(el => {
+            if (el) { el.disabled = false; }
+        });
     } else {
-        elements.bulkActionsContainer.style.display = 'none';
-        elements.bulkAssignGroupSelect.value = ""; // Reset dropdown
+        bulkContainer.style.display = 'none';
+        if(elements.bulkAssignGroupSelect) elements.bulkAssignGroupSelect.value = ""; 
     }
 }
-
-/** Updates the state of the "Select All" checkbox based on visible items. */
 function updateSelectAllCheckboxState() {
-    const visibleCheckboxes = elements.extensionList.querySelectorAll('.extension-select-checkbox');
+    if (!elements.selectAllCheckbox) return;
+    const visibleCheckboxes = elements.extensionList?.querySelectorAll('.extension-select-checkbox') || [];
     if (!visibleCheckboxes.length) {
         elements.selectAllCheckbox.checked = false;
         elements.selectAllCheckbox.indeterminate = false;
-        elements.selectAllCheckbox.disabled = true; // Disable if no items visible
-        return;
+        elements.selectAllCheckbox.disabled = true; return;
     }
-
-    elements.selectAllCheckbox.disabled = false; // Enable if items are visible
+    elements.selectAllCheckbox.disabled = false;
     const allVisibleSelected = Array.from(visibleCheckboxes).every(cb => cb.checked);
     const someVisibleSelected = Array.from(visibleCheckboxes).some(cb => cb.checked);
 
-    if (allVisibleSelected) {
-        elements.selectAllCheckbox.checked = true;
-        elements.selectAllCheckbox.indeterminate = false;
+    if (allVisibleSelected) { 
+        elements.selectAllCheckbox.checked = true; elements.selectAllCheckbox.indeterminate = false;
     } else if (someVisibleSelected) {
-        elements.selectAllCheckbox.checked = false;
-        elements.selectAllCheckbox.indeterminate = true;
+        elements.selectAllCheckbox.checked = false; elements.selectAllCheckbox.indeterminate = true;
     } else {
-        elements.selectAllCheckbox.checked = false;
-        elements.selectAllCheckbox.indeterminate = false;
+        elements.selectAllCheckbox.checked = false; elements.selectAllCheckbox.indeterminate = false;
     }
 }
-
-/** Handles the "Select All" checkbox change event. */
 function handleSelectAllChange(event) {
     const isChecked = event.target.checked;
-    const visibleCheckboxes = elements.extensionList.querySelectorAll('.extension-select-checkbox');
+    const visibleCheckboxes = elements.extensionList?.querySelectorAll('.extension-select-checkbox') || [];
 
     visibleCheckboxes.forEach(checkbox => {
         const extensionId = checkbox.dataset.extensionId;
-        checkbox.checked = isChecked;
+        checkbox.checked = isChecked; 
         const item = checkbox.closest('.extension-item');
         if (isChecked) {
             selectedExtensionIds.add(extensionId);
@@ -1384,207 +1533,824 @@ function handleSelectAllChange(event) {
             item?.classList.remove('selected');
         }
     });
-
     updateBulkActionsUI();
-    // No need to call updateSelectAllCheckboxState again here, it's implicitly correct
 }
-
-/** Clears the current selection state. */
 function clearSelection() {
     selectedExtensionIds.clear();
-    elements.extensionList.querySelectorAll('.extension-item.selected').forEach(item => {
+    elements.extensionList?.querySelectorAll('.extension-item.selected').forEach(item => {
         item.classList.remove('selected');
         const checkbox = item.querySelector('.extension-select-checkbox');
         if (checkbox) checkbox.checked = false;
     });
     updateBulkActionsUI();
-    updateSelectAllCheckboxState();
+    updateSelectAllCheckboxState(); 
 }
-
-/** Performs bulk enable/disable/uninstall actions. */
 async function performBulkAction(action) {
-    const idsToProcess = new Set(selectedExtensionIds); // Copy the set
-    if (idsToProcess.size === 0) {
-        showPopupMessage("No extensions selected.", "error");
-        return;
-    }
+    const idsToProcess = new Set(selectedExtensionIds); 
+    if (idsToProcess.size === 0) { return; }
 
-    let confirmMessage = "";
-    let actionFn;
-    let actionPastTense = "";
-
+    let actionFn, actionPastTense = "";
     switch (action) {
         case 'enable':
-            actionFn = (id) => new Promise((res, rej) => chrome.management.setEnabled(id, true, () => chrome.runtime.lastError ? rej(chrome.runtime.lastError) : res()));
+            actionFn = (id) => new Promise((res, rej) => chrome.management.setEnabled(id, true, () => chrome.runtime.lastError ? rej(chrome.runtime.lastError) : res(id)));
             actionPastTense = "enabled";
             break;
         case 'disable':
-            actionFn = (id) => new Promise((res, rej) => chrome.management.setEnabled(id, false, () => chrome.runtime.lastError ? rej(chrome.runtime.lastError) : res()));
+            actionFn = (id) => new Promise((res, rej) => chrome.management.setEnabled(id, false, () => chrome.runtime.lastError ? rej(chrome.runtime.lastError) : res(id)));
             actionPastTense = "disabled";
             break;
         case 'uninstall':
-             confirmMessage = `Are you sure you want to uninstall ${idsToProcess.size} selected extension(s)? This cannot be undone.`;
-             actionFn = (id) => new Promise((res, rej) => chrome.management.uninstall(id, { showConfirmDialog: false }, () => chrome.runtime.lastError ? rej(chrome.runtime.lastError) : res()));
-             actionPastTense = "uninstalled";
-             break;
-        default:
-            console.error("Unknown bulk action:", action);
-            return;
+            if (!confirm(`Are you sure you want to uninstall ${idsToProcess.size} selected extension(s)?\n\nThis cannot be undone.`)) {
+                showPopupMessage("Bulk uninstallation cancelled.", 'info', true);
+                return;
+            }
+            actionFn = (id) => new Promise((res, rej) => chrome.management.uninstall(id, { showConfirmDialog: false }, () => chrome.runtime.lastError ? rej(chrome.runtime.lastError) : res(id))); 
+            actionPastTense = "uninstalled";
+            break;
+        default: return;
     }
 
-    // Confirm uninstall action
-    if (action === 'uninstall' && !confirm(confirmMessage)) {
-        return; // User cancelled
-    }
+    showLoading(); hidePopupMessage();
+    const extensionMap = new Map(allFetchedExtensions.map(ext => [ext.id, ext]));
+    let successCount = 0, errorCount = 0;
 
-    showLoading();
-    hidePopupMessage();
-    let successCount = 0;
-    let errorCount = 0;
-
-    const results = await Promise.allSettled(
-        Array.from(idsToProcess).map(id => actionFn(id).catch(error => ({ id, error }))) // Wrap potential rejections
-    );
+    const operations = Array.from(idsToProcess).map(id => actionFn(id).catch(e => ({error: e, id})));
+    const results = await Promise.all(operations);
 
     results.forEach(result => {
-        if (result.status === 'fulfilled' && !result.value?.error) { // Check for wrapped errors too
+        if (!result?.error) {
             successCount++;
+            const extensionId = result;
+            if (action === 'enable' || action === 'disable') {
+                const extToUpdate = extensionMap.get(extensionId);
+                if (extToUpdate) extToUpdate.enabled = (action === 'enable');
+            }
         } else {
             errorCount++;
-            const errorInfo = result.reason || result.value; // Get error details
-            console.error(`Error performing bulk ${action} on ${errorInfo?.id || 'unknown ID'}:`, errorInfo?.error || errorInfo);
+            console.error(`Error bulk action on ${result.id}:`, result.error.message);
         }
     });
 
     hideLoading();
-
-    // Show summary feedback
     if (errorCount > 0) {
-        showPopupMessage(`Completed with errors. ${successCount} ${actionPastTense}, ${errorCount} failed. Check console.`, 'error');
-    } else {
+        showPopupMessage(`Completed with errors. ${successCount} ${actionPastTense}, ${errorCount} failed.`, 'error');
+    } else if (successCount > 0) {
         showPopupMessage(`Successfully ${actionPastTense} ${successCount} extension(s).`, 'success');
     }
 
-    // Clear selection and refresh UI after action
-    clearSelection();
-    refreshExtensionDataAndRender(getCurrentPage());
+    clearSelection(); 
+    await refreshExtensionDataAndRender(getCurrentPage()); 
+
     if (action === 'uninstall') {
-        // Update group counts if uninstalling
-        updateGroupFilterDropdown();
-        updateBulkAssignGroupDropdown();
-        if (elements.groupModal?.classList.contains('visible')) {
-            displayGroupManagementListInModal();
-        }
+        await updateGroupFilterDropdown(); 
+        await updateBulkAssignGroupDropdown();
+        if (elements.groupModal?.style.display === 'flex') await displayGroupManagementListInModal();
+        if (elements.profilesModal?.style.display === 'flex') await displayProfileManagementListInModal();
+        if (currentConfiguringProfileId) await renderExtensionsForProfileConfiguration(currentConfiguringProfileId);
+        if (currentConfiguringGroupName) await renderExtensionsForGroupConfiguration(currentConfiguringGroupName);
     }
+    await registerKeyboardShortcuts();
 }
-
-/** Handles change event for the bulk assign group dropdown. */
-function handleBulkAssignGroupChange(event) {
+async function handleBulkAssignGroupChange(event) {
     const selectedGroupName = event.target.value;
-    if (selectedGroupName === "") { // Ignore the placeholder "Assign to Group..."
-        return;
-    }
     if (selectedExtensionIds.size === 0) {
-        showPopupMessage("No extensions selected to assign.", "error");
-        event.target.value = ""; // Reset dropdown
+        event.target.value = ""; 
         return;
     }
-
-    assignMultipleExtensionsToGroup(selectedExtensionIds, selectedGroupName);
-    // assignMultipleExtensionsToGroup handles feedback and UI refresh/clear selection
+    if (selectedGroupName === "") return;
+    await assignMultipleExtensionsToGroup(selectedExtensionIds, selectedGroupName);
+    event.target.value = ""; 
 }
-
 
 // --- Pagination ---
-
-/** Gets the current page number from the UI. */
 function getCurrentPage() {
-    const pageNum = parseInt(elements.currentPageSpan?.textContent || '1', 10);
-    // Return 1 if parsing fails or number is invalid
-    return isNaN(pageNum) || pageNum < 1 ? 1 : pageNum;
+    return parseInt(elements.currentPageSpan?.textContent || '1', 10);
 }
-
-/** Sets up pagination button listeners. */
 function setupPagination() {
-    elements.prevPageButton?.addEventListener('click', () => {
-        if (!elements.prevPageButton.disabled) {
-            renderExtensionList(getCurrentPage() - 1);
-        }
-    });
-    elements.nextPageButton?.addEventListener('click', () => {
-        if (!elements.nextPageButton.disabled) {
-            renderExtensionList(getCurrentPage() + 1);
-        }
-    });
+    elements.prevPageButton?.addEventListener('click', async () => { if (!elements.prevPageButton.disabled) await renderExtensionList(getCurrentPage() - 1); });
+    elements.nextPageButton?.addEventListener('click', async () => { if (!elements.nextPageButton.disabled) await renderExtensionList(getCurrentPage() + 1); });
 }
 
 // --- Filters & Search Setup ---
+async function setupFiltersAndSearch() {
+    let clearFiltersBtn;
+    
+    async function clearAllFilters() {
+        elements.searchInput.value = '';
+        elements.typeFilter.value = 'all';
+        elements.statusFilter.value = 'all';
+        elements.groupFilter.value = 'all';
+        await handleFilterOrSearchChange();
+    }
+    
+    function createAndManageClearFiltersButton() {
+        if (!document.getElementById('clear-filters-btn')) {
+            clearFiltersBtn = document.createElement('button');
+            clearFiltersBtn.id = 'clear-filters-btn';
+            clearFiltersBtn.className = 'button-small';
+            clearFiltersBtn.textContent = 'Clear Filters';
+            clearFiltersBtn.title = 'Reset all search and filter options (Ctrl+Shift+F)';
+            clearFiltersBtn.style.display = 'none';
+            elements.filtersRow?.appendChild(clearFiltersBtn);
 
-/** Sets up filters and search listeners. */
-function setupFiltersAndSearch() {
-    // Common handler for filter changes
-    const handleFilterChange = () => {
-        clearSelection(); // Clear selection when filters change
-        currentFilteredExtensions = filterAndSortExtensions(allFetchedExtensions);
-        renderExtensionList(1); // Go back to page 1 and render
+            clearFiltersBtn.addEventListener('click', clearAllFilters);
+        } else {
+            clearFiltersBtn = document.getElementById('clear-filters-btn');
+        }
+    }
+
+    function updateClearFiltersButtonVisibility() {
+        if (!clearFiltersBtn) return;
+        const isAnyFilterActive = (
+            elements.searchInput?.value.trim() !== '' ||
+            elements.typeFilter?.value !== 'all' ||
+            elements.statusFilter?.value !== 'all' ||
+            elements.groupFilter?.value !== 'all'
+        );
+        clearFiltersBtn.style.display = isAnyFilterActive ? 'inline-flex' : 'none';
+    }
+    
+    const handleFilterOrSearchChange = async () => {
+        saveCurrentFilters(); 
+        clearSelection(); 
+        await renderExtensionList(1);
+        updateClearFiltersButtonVisibility();
     };
+    
+    applySavedFilters(); 
+    createAndManageClearFiltersButton();
+    updateClearFiltersButtonVisibility();
 
-    elements.typeFilter?.addEventListener('change', handleFilterChange);
-    elements.statusFilter?.addEventListener('change', handleFilterChange);
-    elements.groupFilter?.addEventListener('change', handleFilterChange);
+    elements.typeFilter?.addEventListener('change', handleFilterOrSearchChange);
+    elements.statusFilter?.addEventListener('change', handleFilterOrSearchChange);
+    elements.groupFilter?.addEventListener('change', handleFilterOrSearchChange);
 
-    // Initial population of group dropdowns
-    updateGroupFilterDropdown();
-    updateBulkAssignGroupDropdown();
+    await updateGroupFilterDropdown();
+    await updateBulkAssignGroupDropdown();
 
-    // Search listener with debounce
     elements.searchInput?.addEventListener('input', () => {
         clearTimeout(searchDebounceTimeout);
-        searchDebounceTimeout = setTimeout(() => {
-             clearSelection(); // Clear selection on search
-             currentFilteredExtensions = filterAndSortExtensions(allFetchedExtensions);
-             renderExtensionList(1); // Go to page 1 and render search results
-        }, 300); // 300ms debounce delay
+        searchDebounceTimeout = setTimeout(handleFilterOrSearchChange, 300); 
+    });
+
+    // Return the clear function for shortcut access
+    return { clearAllFilters };
+}
+
+// --- Help Modal Functions ---
+function openHelpModal() {
+    const modal = elements.helpModal;
+    if (!modal) return;
+    modal.style.display = 'flex';
+    modal.setAttribute('aria-hidden', 'false');
+    setTimeout(() => {
+        modal.classList.add('visible');
+        modal.querySelector('.modal-close-button')?.focus();
+    }, 10);
+}
+
+function closeHelpModal() {
+    const modal = elements.helpModal;
+    if (!modal) return;
+    modal.classList.remove('visible');
+    modal.setAttribute('aria-hidden', 'true');
+    setTimeout(() => {
+        if (!modal.classList.contains('visible')) {
+            modal.style.display = 'none';
+        }
+        elements.helpModalTrigger?.focus();
+    }, 350);
+}
+
+
+// --- Modal Event Listeners Setup ---
+function setupModalEventListeners() {
+    // Group Modal
+    elements.groupModalTrigger?.addEventListener('click', openGroupManagementModal);
+    elements.groupModalCloseButton?.addEventListener('click', closeGroupManagementModal);
+    elements.groupModal?.addEventListener('click', (e) => { if (e.target === elements.groupModal) closeGroupManagementModal(); });
+    elements.modalAddGroupButton?.addEventListener('click', async () => {
+        const input = elements.modalNewGroupNameInput;
+        if (input?.value.trim()) {
+            if (await addGroup(input.value.trim())) input.value = '';
+            input.focus();
+        }
+    });
+    elements.modalNewGroupNameInput?.addEventListener('keypress', (e) => { if (e.key === 'Enter') elements.modalAddGroupButton?.click(); });
+    elements.modalGroupList?.addEventListener('click', handleModalListClick);
+    elements.ungroupAllButton?.addEventListener('click', ungroupAllExtensions);
+
+    // Group Configuration Modal
+    elements.groupConfigurationModal?.addEventListener('click', (e) => { if (e.target === elements.groupConfigurationModal) switchToGroupListView(); });
+    elements.groupConfigurationModal?.querySelector('.modal-close-button')?.addEventListener('click', switchToGroupListView);
+    elements.saveGroupConfigBtn?.addEventListener('click', saveCurrentGroupConfiguration);
+    elements.backToGroupsBtn?.addEventListener('click', switchToGroupListView);
+    elements.groupConfigShortcutInput?.addEventListener('input', handleShortcutInput);
+
+
+    // Profiles Modal
+    elements.profilesModalTrigger?.addEventListener('click', openProfilesModal);
+    elements.profilesModalCloseButton?.addEventListener('click', closeProfilesModal);
+    elements.profilesModal?.addEventListener('click', (e) => { if (e.target === elements.profilesModal) closeProfilesModal(); });
+    elements.modalAddProfileButton?.addEventListener('click', async () => {
+        const input = elements.modalNewProfileNameInput;
+        if (input?.value.trim()) {
+            if(await addProfile(input.value.trim())) input.value = '';
+            input.focus();
+        }
+    });
+    elements.modalNewProfileNameInput?.addEventListener('keypress', (e) => { if (e.key === 'Enter') elements.modalAddProfileButton?.click(); });
+    elements.modalProfileList?.addEventListener('click', handleProfilesModalListClick);
+    elements.createFromCurrentStateButton?.addEventListener('click', createProfileFromCurrentState);
+
+    // Profile Configuration View Buttons
+    elements.saveProfileConfigBtn?.addEventListener('click', saveCurrentProfileConfiguration);
+    elements.backToProfilesBtn?.addEventListener('click', switchToProfileListView);
+    elements.profileConfigShortcutInput?.addEventListener('input', handleShortcutInput);
+
+    // Help Modal
+    elements.helpModalTrigger?.addEventListener('click', openHelpModal);
+    elements.helpModalCloseButton?.addEventListener('click', closeHelpModal);
+    elements.helpModal?.addEventListener('click', (e) => {
+        if (e.target === elements.helpModal) closeHelpModal();
     });
 }
 
-// --- Modal Event Listeners Setup ---
+// --- Profiles Management ---
 
-/** Sets up modal event listeners. */
-function setupModalEventListeners() {
-    elements.groupModalTrigger?.addEventListener('click', openGroupManagementModal);
-    elements.groupModalCloseButton?.addEventListener('click', closeGroupManagementModal);
-    // Close modal if clicking outside the content area
-    elements.groupModal?.addEventListener('click', (event) => {
-        if (event.target === elements.groupModal) { // Check if click is on the overlay itself
-            closeGroupManagementModal();
+async function getProfiles() {
+    try {
+        const data = await chrome.storage.local.get(PROFILES_STORAGE_KEY);
+        const profiles = data[PROFILES_STORAGE_KEY];
+        if (!profiles) return {};
+
+        if (typeof profiles === 'object' && !Array.isArray(profiles)) {
+            Object.values(profiles).forEach(p => {
+                if (typeof p.name !== 'string') p.name = "Unnamed Profile";
+                if (typeof p.extensionStates !== 'object' || p.extensionStates === null) p.extensionStates = {};
+                if (typeof p.shortcut === 'undefined') p.shortcut = null;
+                if (typeof p.type === 'undefined') p.type = 'custom';
+            });
+            return profiles;
+        }
+        console.warn("Invalid profiles format in storage. Resetting.");
+        await chrome.storage.local.remove(PROFILES_STORAGE_KEY);
+        return {};
+    } catch (e) {
+        console.error("Error reading profiles from chrome.storage:", e);
+        return {};
+    }
+}
+
+async function saveProfiles(profiles) {
+    try {
+        await chrome.storage.local.set({ [PROFILES_STORAGE_KEY]: profiles });
+    } catch (e) {
+        console.error("Error saving profiles to chrome.storage:", e);
+        showProfilesModalMessage("Could not save profiles.", "error");
+    }
+}
+
+async function getOrderedProfileIds() { 
+    const profiles = await getProfiles();
+    const profileOrderPref = getPreferences().profileOrder; 
+    let orderedIds = profileOrderPref.filter(id => profiles.hasOwnProperty(id));
+    const profilesNotInOrderIds = Object.keys(profiles)
+        .filter(id => !orderedIds.includes(id))
+        .sort((a, b) => (profiles[a].name || "").localeCompare(profiles[b].name || "", undefined, { sensitivity: 'base' }));
+    return [...orderedIds, ...profilesNotInOrderIds];
+}
+
+
+async function openProfilesModal() {
+    const modal = elements.profilesModal; if (!modal) return;
+    hideProfilesModalMessage(); 
+    selectedProfileIds.clear();
+    currentConfiguringProfileId = null;
+    elements.profilesModal.style.display = 'flex';
+    elements.profileConfigurationView.style.display = 'none';
+    await switchToProfileListView(); 
+    modal.setAttribute('aria-hidden', 'false');
+    setTimeout(() => {
+        modal.classList.add('visible');
+        elements.modalNewProfileNameInput?.focus();
+    }, 10); 
+}
+function closeProfilesModal() {
+    const modal = elements.profilesModal; if (!modal) return;
+    currentConfiguringProfileId = null; 
+    modal.classList.remove('visible');
+    modal.setAttribute('aria-hidden', 'true');
+    setTimeout(() => {
+        if (!modal.classList.contains('visible')) { 
+            modal.style.display = 'none';
+        }
+        elements.profilesModalTrigger?.focus(); 
+    }, 350); 
+}
+
+async function addProfile(profileName) {
+    hideProfilesModalMessage();
+    const trimmedName = profileName.trim();
+    if (!trimmedName) {
+        showProfilesModalMessage("Profile name cannot be empty.", 'error');
+        return false;
+    }
+    const profiles = await getProfiles();
+    // Check if the actual profile name (stored as 'name' property) exists
+    if (Object.values(profiles).some(p => p.name.toLowerCase() === trimmedName.toLowerCase())) {
+        showProfilesModalMessage(`Profile "${sanitizeText(trimmedName)}" already exists.`, 'error');
+        return false;
+    }
+
+    const newProfileId = `profile_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
+    profiles[newProfileId] = { id: newProfileId, name: trimmedName, extensionStates: {}, shortcut: null, type: 'custom' };
+    await saveProfiles(profiles);
+
+    const prefs = getPreferences();
+    prefs.profileOrder.push(newProfileId); 
+    saveOrderPreference('profileOrder', prefs.profileOrder);
+
+    await displayProfileManagementListInModal(); 
+    showProfilesModalMessage(`Profile "${sanitizeText(trimmedName)}" added.`, 'success', true);
+    await registerKeyboardShortcuts();
+    return true;
+}
+
+function renameProfileInPrefs(profileId, newName) {
+    // This function is currently just a placeholder in your code,
+    // as profileOrder uses IDs, not names. No change needed here.
+}
+
+
+async function deleteProfiles(profileIdsToDelete) {
+    hideProfilesModalMessage();
+    if(profileIdsToDelete.size === 0) return false;
+
+    const profiles = await getProfiles();
+    const profileNames = Array.from(profileIdsToDelete).map(id => `"${sanitizeText(profiles[id]?.name)}"`).join(', ');
+    const confirmationMessage = `Are you sure you want to delete ${profileIdsToDelete.size} profile(s)?\n\n${profileNames}\n\nThis cannot be undone.`;
+    if (!confirm(confirmationMessage)) {
+        showProfilesModalMessage("Profile deletion cancelled.", 'info');
+        return false;
+    }
+    
+    let deletedCount = 0;
+    profileIdsToDelete.forEach(profileId => {
+        if (profiles[profileId]) {
+            delete profiles[profileId];
+            deletedCount++;
         }
     });
-    // Add group button click
-    elements.modalAddGroupButton?.addEventListener('click', () => {
-        const input = elements.modalNewGroupNameInput;
-        if (input?.value) {
-            if (addGroup(input.value)) { // addGroup handles feedback
-                input.value = ''; // Clear input on success
-                input.focus(); // Keep focus for adding more
-            } else {
-                 input.focus(); // Keep focus on error (e.g., duplicate name)
-                 input.select();
+
+    if (deletedCount > 0) {
+        await saveProfiles(profiles);
+
+        const prefs = getPreferences();
+        prefs.profileOrder = prefs.profileOrder.filter(id => !profileIdsToDelete.has(id));
+        saveOrderPreference('profileOrder', prefs.profileOrder);
+
+        selectedProfileIds.clear();
+        await displayProfileManagementListInModal();
+        showProfilesModalMessage(`${deletedCount} profile(s) deleted.`, 'success', true);
+        await registerKeyboardShortcuts();
+    }
+    return true;
+}
+
+async function duplicateProfile(sourceProfileId) {
+    hideProfilesModalMessage();
+    const profiles = await getProfiles();
+    const sourceProfile = profiles[sourceProfileId];
+
+    if (!sourceProfile) {
+        showProfilesModalMessage("Source profile not found.", 'error');
+        return false;
+    }
+
+    let newName = `${sourceProfile.name} (Copy)`;
+    let counter = 1;
+    while (Object.values(profiles).some(p => p.name.toLowerCase() === newName.toLowerCase())) {
+        counter++;
+        newName = `${sourceProfile.name} (Copy ${counter})`;
+    }
+
+    const newProfileId = `profile_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
+    profiles[newProfileId] = {
+        id: newProfileId,
+        name: newName,
+        extensionStates: JSON.parse(JSON.stringify(sourceProfile.extensionStates || {})),
+        shortcut: null,
+        type: 'custom'
+    };
+    await saveProfiles(profiles);
+
+    const prefs = getPreferences();
+    prefs.profileOrder.push(newProfileId);
+    saveOrderPreference('profileOrder', prefs.profileOrder);
+
+    await displayProfileManagementListInModal();
+    showProfilesModalMessage(`Profile duplicated as "${sanitizeText(newName)}".`, 'success', true);
+    await registerKeyboardShortcuts();
+    return true;
+}
+
+async function createProfileFromCurrentState() {
+    hideProfilesModalMessage();
+    showLoading();
+
+    let profileName = prompt("Enter a name for the new profile:", "Current State Profile");
+    if (profileName === null) {
+        hideLoading();
+        return;
+    }
+    profileName = profileName.trim();
+    if (!profileName) {
+        hideLoading();
+        showProfilesModalMessage("Profile name cannot be empty.", 'error');
+        return;
+    }
+
+    const profiles = await getProfiles();
+    if (Object.values(profiles).some(p => p.name.toLowerCase() === profileName.toLowerCase())) {
+        hideLoading();
+        showProfilesModalMessage(`Profile "${sanitizeText(profileName)}" already exists.`, 'error');
+        return;
+    }
+
+    const newProfileId = `profile_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
+    const extensionStates = {};
+    allFetchedExtensions.forEach(ext => {
+        if (ext.mayDisable) {
+             extensionStates[ext.id] = ext.enabled;
+        }
+    });
+
+    profiles[newProfileId] = {
+        id: newProfileId,
+        name: profileName,
+        extensionStates,
+        shortcut: null,
+        type: PROFILE_TYPE_CURRENT_STATE
+    };
+    await saveProfiles(profiles);
+
+    const prefs = getPreferences();
+    prefs.profileOrder.push(newProfileId);
+    saveOrderPreference('profileOrder', prefs.profileOrder);
+
+    hideLoading();
+    await displayProfileManagementListInModal();
+    showProfilesModalMessage(`Profile "${sanitizeText(profileName)}" created from current state.`, 'success', true);
+    await registerKeyboardShortcuts();
+}
+
+
+async function displayProfileManagementListInModal() {
+    const listEl = elements.modalProfileList;
+    if (!listEl) return;
+    listEl.innerHTML = ''; 
+    const profiles = await getProfiles();
+    const orderedProfileIds = await getOrderedProfileIds();
+
+    const existingHeader = elements.modalProfileListSection.querySelector('.modal-list-header');
+    if (existingHeader) existingHeader.remove(); // Ensure it's removed before re-adding
+
+    if (orderedProfileIds.length > 0) {
+        const header = document.createElement('div');
+        header.className = 'modal-list-header';
+        header.innerHTML = `
+            <input type="checkbox" id="select-all-profiles-checkbox" title="Select/Deselect all profiles">
+            <label for="select-all-profiles-checkbox">Select All</label>
+            <button id="modal-bulk-delete-profiles-btn" class="button-small button-danger" style="display: none;">Delete Selected</button>
+        `;
+        listEl.before(header);
+        
+        header.querySelector('#select-all-profiles-checkbox').addEventListener('change', handleSelectAllProfilesChange);
+        header.querySelector('#modal-bulk-delete-profiles-btn').addEventListener('click', () => deleteProfiles(selectedProfileIds));
+    }
+
+
+    if (orderedProfileIds.length === 0) {
+        listEl.innerHTML = '<li class="no-profiles-message" role="status">No profiles created yet.</li>';
+        updateBulkDeleteProfilesUI();
+        return;
+    }
+
+    const fragment = document.createDocumentFragment();
+    orderedProfileIds.forEach(profileId => {
+        const profile = profiles[profileId];
+        if (!profile) return; 
+
+        const listItem = document.createElement('li');
+        listItem.dataset.profileid = profileId;
+        listItem.setAttribute('role', 'listitem');
+        const sanitizedProfileName = sanitizeText(profile.name);
+        
+        const isSelected = selectedProfileIds.has(profileId);
+        if (isSelected) listItem.classList.add('selected');
+        
+        const shortcutDisplay = profile.shortcut ? `<span class="profile-item-shortcut"><img src="${ICON_PATHS.shortcut}" alt="Shortcut"> ${sanitizeText(profile.shortcut)}</span>` : '';
+
+        listItem.innerHTML = `
+            <input type="checkbox" class="profile-select-checkbox" data-profileid="${profileId}" ${isSelected ? 'checked' : ''} aria-label="Select profile ${sanitizedProfileName}">
+            <div class="profile-item-details" title="${sanitizedProfileName}">
+                <span class="profile-item-name">${sanitizedProfileName}</span>
+                ${shortcutDisplay}
+            </div>
+            <div class="profile-item-actions">
+                <button class="apply-profile-btn button-small button-success" data-profileid="${profileId}" title="Apply Profile">Apply</button>
+                <button class="configure-profile-btn button-small" data-profileid="${profileId}" title="Configure Profile"><img src="${ICON_PATHS.configure}" alt="Configure"></button>
+                <button class="duplicate-profile-btn button-small icon-only" data-profileid="${profileId}" title="Duplicate Profile"><img src="${ICON_PATHS.duplicate}" alt="Duplicate"></button>
+                <button class="delete-profile-btn button-small button-danger icon-only" data-profileid="${profileId}" title="Delete Profile"><img src="${ICON_PATHS.deleteProfile}" alt="Delete"></button>
+            </div>
+        `;
+        fragment.appendChild(listItem);
+    });
+    listEl.appendChild(fragment);
+    updateBulkDeleteProfilesUI();
+}
+
+async function applyProfile(profileId) {
+    hideProfilesModalMessage();
+    showLoading(); 
+    const profiles = await getProfiles();
+    const profile = profiles[profileId];
+
+    if (!profile || !profile.extensionStates) {
+        hideLoading();
+        showProfilesModalMessage(`Profile not found or is empty.`, 'error');
+        return;
+    }
+
+    const extensionsToChange = Object.entries(profile.extensionStates);
+    if (extensionsToChange.length === 0) {
+        hideLoading();
+        showProfilesModalMessage(`Profile "${sanitizeText(profile.name)}" has no extensions configured.`, 'info', true);
+        return;
+    }
+
+    const extensionMap = new Map(allFetchedExtensions.map(e => [e.id, e]));
+    let successCount = 0, errorCount = 0, noChangeCount = 0;
+
+    const operations = extensionsToChange.map(([extId, shouldBeEnabled]) => {
+        return new Promise(resolve => {
+            const currentExt = extensionMap.get(extId);
+            if (!currentExt || !currentExt.mayDisable) { 
+                return resolve({status: 'skipped'});
             }
-        } else if (input) {
-             showModalMessage("Group name cannot be empty.", 'error');
-             input.focus();
+            if (currentExt.enabled === shouldBeEnabled) { 
+                return resolve({status: 'nochange'});
+            }
+            chrome.management.setEnabled(extId, shouldBeEnabled, () => {
+                if (chrome.runtime.lastError) {
+                    resolve({status: 'error', id: extId, error: chrome.runtime.lastError.message});
+                } else {
+                    resolve({status: 'success', id: extId});
+                }
+            });
+        });
+    });
+
+    const results = await Promise.all(operations);
+    
+    results.forEach(result => {
+        if(result.status === 'success') {
+            successCount++;
+            const ext = extensionMap.get(result.id);
+            if (ext) ext.enabled = !ext.enabled;
+        } else if (result.status === 'nochange') {
+            noChangeCount++;
+        } else if (result.status === 'error') {
+            errorCount++;
+            console.error(`Error applying profile to ${result.id}:`, result.error);
         }
     });
-    // Enter key press in group name input
-    elements.modalNewGroupNameInput?.addEventListener('keypress', (event) => {
-        if (event.key === 'Enter') {
-            event.preventDefault(); // Prevent form submission (if applicable)
-            elements.modalAddGroupButton?.click(); // Trigger add button click
+    
+    hideLoading();
+
+    let message, messageType = "info";
+    if (errorCount > 0) {
+        message = `Profile "${sanitizeText(profile.name)}" applied with ${errorCount} error(s).`;
+        messageType = "error";
+    } else if (successCount > 0) {
+        message = `Profile "${sanitizeText(profile.name)}" applied. ${successCount} changed, ${noChangeCount} unchanged.`;
+        messageType = "success";
+    } else {
+        message = `All extensions in profile "${sanitizeText(profile.name)}" were already in the desired state.`;
+    }
+
+    showProfilesModalMessage(message, messageType, messageType !== 'error'); 
+    await refreshExtensionDataAndRender(getCurrentPage()); 
+}
+
+
+async function switchToProfileConfigurationView(profileId) {
+    currentConfiguringProfileId = profileId;
+    const profiles = await getProfiles();
+    const profile = profiles[profileId];
+
+    if (!profile) {
+        await switchToProfileListView(); 
+        return;
+    }
+
+    hideProfilesModalMessage();
+    hideFeedbackMessage('both', 'profile-config-shortcut');
+    elements.modalProfileCreationSection.style.display = 'none';
+    elements.modalProfileListSection.style.display = 'none';
+    elements.profileConfigurationView.style.display = 'block';
+
+    if (elements.profileConfigurationTitle) {
+        elements.profileConfigurationTitle.textContent = `Configure Profile: ${sanitizeText(profile.name)}`;
+    }
+    if (elements.profileConfigNameInput) {
+        elements.profileConfigNameInput.value = profile.name;
+    }
+
+    if (elements.profileConfigShortcutInput) {
+        elements.profileConfigShortcutInput.disabled = false;
+        elements.profileConfigShortcutInput.value = profile.shortcut ? normalizeShortcut(profile.shortcut) : '';
+        elements.profileConfigShortcutInput.placeholder = 'e.g., Ctrl+Shift+P';
+    }
+
+    await renderExtensionsForProfileConfiguration(profileId);
+    elements.saveProfileConfigBtn?.focus(); 
+}
+
+async function switchToProfileListView() {
+    currentConfiguringProfileId = null; 
+    elements.profileConfigurationView.style.display = 'none';
+    elements.modalProfileCreationSection.style.display = 'block';
+    elements.modalProfileListSection.style.display = 'block';
+    await displayProfileManagementListInModal(); 
+    elements.modalNewProfileNameInput?.focus();
+    hideFeedbackMessage('both', 'profile-config-shortcut');
+}
+
+async function renderExtensionsForProfileConfiguration(profileId) {
+    const listEl = elements.profileConfigurationExtensionList;
+    listEl.innerHTML = ''; 
+    const userControllableExtensions = allFetchedExtensions.filter(ext => ext.mayDisable)
+      .sort((a,b) => (a.name || "").localeCompare(b.name || ""));
+
+    if (userControllableExtensions.length === 0) {
+        listEl.innerHTML = "<p>No user-controllable extensions available.</p>";
+        return;
+    }
+
+    const profiles = await getProfiles();
+    const profile = profiles[profileId];
+    const profileExtensionStates = profile.extensionStates || {};
+    const fragment = document.createDocumentFragment();
+
+    userControllableExtensions.forEach(ext => {
+        const itemDiv = document.createElement('div');
+        itemDiv.className = 'profile-config-extension-item';
+        const isEnabledInProfile = profileExtensionStates[ext.id] ?? ext.enabled;                    
+        const checkboxId = `profile-cfg-ext-${ext.id}`; 
+        const iconUrl = ext.icons?.find(i => i.size >= 16)?.url || DEFAULT_ICON_PLACEHOLDER;
+        itemDiv.innerHTML = `
+            <input type="checkbox" id="${checkboxId}" class="profile-config-ext-checkbox" data-extension-id="${ext.id}" ${isEnabledInProfile ? 'checked' : ''}>
+            <img src="${iconUrl}" class="extension-icon-small" alt="">
+            <label for="${checkboxId}">${sanitizeText(ext.name)}</label>
+        `;
+        fragment.appendChild(itemDiv);
+    });
+    listEl.appendChild(fragment);
+}
+
+async function saveCurrentProfileConfiguration() {
+    if (!currentConfiguringProfileId) return;
+    hideProfilesModalMessage();
+    hideFeedbackMessage('both', 'profile-config-shortcut');
+
+    const profiles = await getProfiles();
+    const profile = profiles[currentConfiguringProfileId];
+    if (!profile) return;
+
+    // --- Name Validation ---
+    const newName = elements.profileConfigNameInput.value.trim();
+    if (!newName) {
+        showProfilesModalMessage("Profile name cannot be empty.", 'error');
+        return;
+    }
+    const originalName = profile.name;
+    // Check if renaming and if the new name is taken by another profile (by its 'name' property)
+    if (newName.toLowerCase() !== originalName.toLowerCase() && Object.values(profiles).some(p => p.name.toLowerCase() === newName.toLowerCase() && p.id !== profile.id)) {
+        showProfilesModalMessage(`Profile name "${sanitizeText(newName)}" already exists.`, 'error');
+        return;
+    }
+
+    // --- Shortcut Validation ---
+    const newShortcut = elements.profileConfigShortcutInput?.value.trim() || null;
+    let validatedShortcut = null;
+    if (newShortcut) {
+        const validationResult = await validateShortcut(newShortcut, await getExistingShortcuts(null, currentConfiguringProfileId));
+        if (validationResult.isValid) {
+            validatedShortcut = validationResult.normalizedShortcut;
+        } else {
+            showProfileConfigShortcutMessage(`Shortcut error: ${validationResult.message}`, 'error');
+            return;
+        }
+    }
+
+    // --- Update Data ---
+    const newExtensionStates = {};
+    elements.profileConfigurationExtensionList?.querySelectorAll('.profile-config-ext-checkbox').forEach(checkbox => {
+        newExtensionStates[checkbox.dataset.extensionId] = checkbox.checked;
+    });
+    
+    profile.name = newName; // Update the 'name' property
+    profile.extensionStates = newExtensionStates;
+    profile.shortcut = validatedShortcut;
+    
+    // If it was a 'current_state' profile, editing it makes it a 'custom' one.
+    if (profile.type === PROFILE_TYPE_CURRENT_STATE) {
+        profile.type = 'custom';
+    }
+
+    await saveProfiles(profiles);
+    
+    showProfilesModalMessage(`Configuration saved for "${sanitizeText(profile.name)}".`, 'success', true);
+    await registerKeyboardShortcuts();
+}
+
+
+async function handleProfilesModalListClick(event) {
+    const target = event.target;
+
+    if (target.matches('.profile-select-checkbox')) {
+        const profileId = target.dataset.profileid;
+        const item = target.closest('li');
+        if (target.checked) {
+            selectedProfileIds.add(profileId);
+            item.classList.add('selected');
+        } else {
+            selectedProfileIds.delete(profileId);
+            item.classList.remove('selected');
+        }
+        updateBulkDeleteProfilesUI();
+        return;
+    }
+
+    const button = event.target.closest('button[data-profileid]');
+    if (!button) return;
+    const profileId = button.dataset.profileid;
+    if (!profileId) return; 
+
+    if (button.classList.contains('delete-profile-btn')) {
+        await deleteProfiles(new Set([profileId]));
+    } else if (button.classList.contains('apply-profile-btn')) {
+        await applyProfile(profileId);
+    } else if (button.classList.contains('configure-profile-btn')) {
+        await switchToProfileConfigurationView(profileId);
+    } else if (button.classList.contains('duplicate-profile-btn')) {
+        await duplicateProfile(profileId);
+    }
+}
+
+// --- Profile Bulk Selection ---
+function updateBulkDeleteProfilesUI() {
+    const bulkDeleteBtn = document.getElementById('modal-bulk-delete-profiles-btn');
+    const selectAllCheckbox = document.getElementById('select-all-profiles-checkbox');
+    if (!bulkDeleteBtn || !selectAllCheckbox) return;
+
+    const count = selectedProfileIds.size;
+    bulkDeleteBtn.style.display = count > 0 ? 'inline-flex' : 'none';
+    if (count > 0) {
+        bulkDeleteBtn.textContent = `Delete Selected (${count})`;
+    }
+
+    const totalCheckboxes = elements.modalProfileList.querySelectorAll('.profile-select-checkbox').length;
+    if (totalCheckboxes > 0 && count === totalCheckboxes) {
+        selectAllCheckbox.checked = true;
+        selectAllCheckbox.indeterminate = false;
+    } else if (count > 0) {
+        selectAllCheckbox.checked = false;
+        selectAllCheckbox.indeterminate = true;
+    } else {
+        selectAllCheckbox.checked = false;
+        selectAllCheckbox.indeterminate = false;
+    }
+}
+
+function handleSelectAllProfilesChange(event) {
+    const isChecked = event.target.checked;
+    const checkboxes = elements.modalProfileList.querySelectorAll('.profile-select-checkbox');
+    checkboxes.forEach(checkbox => {
+        const profileId = checkbox.dataset.profileid;
+        checkbox.checked = isChecked;
+        const item = checkbox.closest('li');
+        if (isChecked) {
+            selectedProfileIds.add(profileId);
+            item.classList.add('selected');
+        } else {
+            selectedProfileIds.delete(profileId);
+            item.classList.remove('selected');
         }
     });
-    // Event delegation for actions within the modal group list
-    elements.modalGroupList?.addEventListener('click', handleModalListClick);
+    updateBulkDeleteProfilesUI();
 }
 
 // --- Bulk Action Listeners Setup ---
@@ -1596,43 +2362,278 @@ function setupBulkActionListeners() {
     elements.bulkAssignGroupSelect?.addEventListener('change', handleBulkAssignGroupChange);
 }
 
+// --- Global Keyboard Shortcut Management ---
+function normalizeShortcut(shortcut) {
+    if (!shortcut) return null;
+    let parts = shortcut.toLowerCase().split('+').map(p => p.trim());
+    let modifiers = [];
+    let key = '';
 
-// --- Initialization ---
-
-/** Initializes the popup: sets up listeners and performs initial render. */
-async function initializePopup() {
-    console.log("NG Extension Manager Popup Initializing (v3.2)...");
-    setupPagination();
-    setupFiltersAndSearch(); // Includes initial group dropdown population
-    setupModalEventListeners();
-    setupBulkActionListeners(); // Setup listeners for bulk actions
-
-    // Setup event delegation for the main extension list
-    elements.extensionList?.addEventListener('click', handleExtensionListClick);
-    // Setup delegation for individual assign group dropdown changes
-    elements.extensionList?.addEventListener('change', handleAssignGroupChange);
-
-    // Listener for potential messages from other parts of the extension (e.g., background script)
-    chrome.runtime.onMessage.addListener((request) => {
-        if (request.action === 'showError' && request.message) {
-            showPopupMessage(request.message, 'error');
-        }
-        // Add other message handlers if needed
-    });
-
-    // Global keydown listener (e.g., for closing modal with Escape key)
-    document.addEventListener('keydown', (event) => {
-        if (event.key === 'Escape' && elements.groupModal?.classList.contains('visible')) {
-            closeGroupManagementModal();
+    parts.forEach(part => {
+        if (SHORTCUT_MODIFIER_KEYS.map(m => m.toLowerCase()).includes(part)) {
+            modifiers.push(part.charAt(0).toUpperCase() + part.slice(1));
+        } else if (VALID_SHORTCUT_KEYS.toLowerCase().includes(part)) {
+            key = part.toUpperCase();
         }
     });
 
-    // Perform initial data fetch and render
-    await refreshExtensionDataAndRender(1);
+    if (!key) return null;
+    if (modifiers.length > 2) return null;
+    if (!modifiers.includes('Ctrl') && !modifiers.includes('Alt')) return null;
 
-    console.log("NG Extension Manager Popup Initialized.");
+    modifiers.sort((a, b) => {
+        if (a === 'Ctrl') return -1;
+        if (b === 'Ctrl') return 1;
+        if (a === 'Alt') return -1;
+        if (b === 'Alt') return 1;
+        return 0;
+    });
+
+    return [...modifiers, key].join('+');
 }
 
-// --- Run Initialization ---
-// Use DOMContentLoaded to ensure the DOM is fully loaded before running scripts
+async function getExistingShortcuts(excludeGroupName = null, excludeProfileId = null) {
+    const existing = new Map();
+
+    const profiles = await getProfiles();
+    Object.entries(profiles).forEach(([id, data]) => {
+        if (id !== excludeProfileId && data.shortcut) {
+            existing.set(normalizeShortcut(data.shortcut), `Profile: "${data.name}"`);
+        }
+    });
+
+    const groups = await getGroups();
+    // Use Object.values to iterate over the group objects themselves, accessing their 'name' property
+    Object.values(groups).forEach(groupData => {
+        if (groupData.name !== excludeGroupName && groupData.shortcut) {
+            existing.set(normalizeShortcut(groupData.shortcut), `Group: "${groupData.name}"`);
+        }
+    });
+    return existing;
+}
+
+async function validateShortcut(shortcut, existingShortcuts) {
+    const normalized = normalizeShortcut(shortcut);
+
+    if (!normalized) {
+        return { isValid: false, message: "Invalid format. Use Ctrl+Shift+<Key> or Alt+Shift+<Key>.", normalizedShortcut: null };
+    }
+
+    const parts = normalized.split('+');
+    const key = parts[parts.length - 1];
+    const modifiers = parts.slice(0, parts.length - 1);
+
+    if (key.length !== 1 || !VALID_SHORTCUT_KEYS.includes(key)) {
+        return { isValid: false, message: `Invalid key "${key}". Must be a letter or number.`, normalizedShortcut: null };
+    }
+    if (modifiers.length === 0 || !modifiers.some(m => ['Ctrl', 'Alt'].includes(m))) {
+        return { isValid: false, message: "Must include 'Ctrl' or 'Alt' modifier.", normalizedShortcut: null };
+    }
+    if (modifiers.length > 2 || (modifiers.includes('Shift') && (!modifiers.includes('Ctrl') && !modifiers.includes('Alt')))) {
+        return { isValid: false, message: "Invalid combination. Use Ctrl+Shift+<Key> or Alt+Shift+<Key>.", normalizedShortcut: null };
+    }
+    
+    if (existingShortcuts.has(normalized)) {
+        return { isValid: false, message: `Shortcut already used by ${existingShortcuts.get(normalized)}.`, normalizedShortcut: null };
+    }
+
+    return { isValid: true, message: "Shortcut is valid.", normalizedShortcut: normalized };
+}
+
+async function handleShortcutInput(event) {
+    const inputElement = event.target;
+    const value = inputElement.value.trim();
+    
+    let feedbackLocation, excludeName, excludeId;
+    
+    if (inputElement === elements.profileConfigShortcutInput) {
+        feedbackLocation = 'profile-config-shortcut';
+        excludeId = currentConfiguringProfileId;
+    } else if (inputElement === elements.groupConfigShortcutInput) {
+        feedbackLocation = 'group-config-modal';
+        excludeName = elements.groupConfigNameInput.value.trim(); // Get current name from input for group config
+    }
+
+    if (!value) {
+        hideFeedbackMessage('both', feedbackLocation);
+        return;
+    }
+
+    const validationResult = await validateShortcut(value, await getExistingShortcuts(excludeName, excludeId));
+    showFeedbackMessage(validationResult.message, validationResult.isValid ? 'success' : 'error', feedbackLocation, true);
+}
+
+
+async function registerKeyboardShortcuts() {
+    console.log("Registering keyboard shortcuts...");
+    activeShortcutHandlers.forEach((handler) => {
+        document.removeEventListener('keydown', handler);
+    });
+    activeShortcutHandlers.clear();
+
+    const profiles = await getProfiles();
+    const groups = await getGroups();
+
+    Object.entries(profiles).forEach(([profileId, profile]) => {
+        if (profile.shortcut) {
+            const normalizedShortcut = normalizeShortcut(profile.shortcut);
+            if (normalizedShortcut && !activeShortcutHandlers.has(normalizedShortcut)) {
+                const handler = (event) => {
+                    const shortcutPressed = [];
+                    if (event.ctrlKey) shortcutPressed.push('Ctrl');
+                    if (event.altKey) shortcutPressed.push('Alt');
+                    if (event.shiftKey) shortcutPressed.push('Shift');
+                    shortcutPressed.push(event.key.toUpperCase());
+                    if (normalizeShortcut(shortcutPressed.join('+')) === normalizedShortcut) {
+                        event.preventDefault();
+                        applyProfile(profileId).then(() => window.close());
+                    }
+                };
+                document.addEventListener('keydown', handler);
+                activeShortcutHandlers.set(normalizedShortcut, handler);
+            }
+        }
+    });
+
+    Object.values(groups).forEach(groupData => { // Iterate over values (group objects)
+        if (groupData.shortcut) {
+            const normalizedShortcut = normalizeShortcut(groupData.shortcut);
+            if (normalizedShortcut && !activeShortcutHandlers.has(normalizedShortcut)) {
+                const handler = (event) => {
+                    const shortcutPressed = [];
+                    if (event.ctrlKey) shortcutPressed.push('Ctrl');
+                    if (event.altKey) shortcutPressed.push('Alt');
+                    if (event.shiftKey) shortcutPressed.push('Shift');
+                    shortcutPressed.push(event.key.toUpperCase());
+                    
+                    if (normalizeShortcut(shortcutPressed.join('+')) === normalizedShortcut) {
+                        event.preventDefault();
+                        let targetState = null; // null means toggle
+                        if (groupData.shortcutAction === 'enable') {
+                            targetState = true;
+                        } else if (groupData.shortcutAction === 'disable') {
+                            targetState = false;
+                        }
+                        setGroupExtensionsState(groupData.name, targetState).then(() => window.close()); // Use groupData.name here
+                    }
+                };
+                document.addEventListener('keydown', handler);
+                activeShortcutHandlers.set(normalizedShortcut, handler);
+            }
+        }
+    });
+}
+
+
+// --- Initialization ---
+async function initializePopup() {
+    console.log("modcore EM Popup Initializing (v4.4)...");
+    
+    const extListHeaderSpan = elements.extensionListHeader?.querySelector('span:not(.header-actions-label) em');
+    if (extListHeaderSpan) extListHeaderSpan.remove();
+    const groupModalTitle = elements.groupModal?.querySelector('#modal-group-list-section h3 .subtle-hint');
+    if (groupModalTitle) groupModalTitle.remove();
+    const profileModalTitle = elements.profilesModal?.querySelector('#modal-profile-list-section h3 .subtle-hint');
+    if (profileModalTitle) profileModalTitle.remove();
+
+    setupPagination();
+    const { clearAllFilters } = await setupFiltersAndSearch(); 
+    setupModalEventListeners();
+    setupBulkActionListeners();
+
+    elements.extensionList?.addEventListener('click', handleExtensionListClick);
+    elements.extensionList?.addEventListener('change', (event) => {
+        if (event.target.classList.contains('assign-group-select')) {
+            handleAssignGroupChange(event);
+        }
+    });
+
+    document.addEventListener('keydown', (event) => {
+        const activeEl = document.activeElement;
+        const isInputActive = activeEl && (activeEl.tagName === 'INPUT' || activeEl.tagName === 'SELECT' || activeEl.tagName === 'TEXTAREA');
+
+        // Global shortcuts that should work even if an input is not focused
+        if (event.key === 'Escape') {
+            if (elements.groupConfigurationModal?.style.display === 'flex') {
+                switchToGroupListView();
+            } else if (elements.groupModal?.classList.contains('visible')) {
+                 closeGroupManagementModal();
+            } else if (elements.profilesModal?.classList.contains('visible')) {
+                if (currentConfiguringProfileId) {
+                    switchToProfileListView(); 
+                } else {
+                    closeProfilesModal(); 
+                }
+            } else if (elements.helpModal?.classList.contains('visible')) { // New: Close help modal on Escape
+                closeHelpModal();
+            }
+        }
+
+
+        // Shortcuts that should NOT fire when typing in an input field
+        if (isInputActive && event.key !== 'Escape') {
+            return;
+        }
+
+        if (event.key === '/') {
+            event.preventDefault();
+            elements.searchInput?.focus();
+            elements.searchInput?.select();
+        }
+        
+        // New shortcuts
+        if (event.ctrlKey && event.shiftKey) {
+            switch (event.key.toUpperCase()) {
+                case 'G':
+                    event.preventDefault();
+                    openGroupManagementModal();
+                    break;
+                case 'P':
+                    event.preventDefault();
+                    openProfilesModal();
+                    break;
+                case 'A':
+                    event.preventDefault();
+                    if (elements.selectAllCheckbox && !elements.selectAllCheckbox.disabled) {
+                        elements.selectAllCheckbox.click();
+                    }
+                    break;
+                case 'F':
+                    event.preventDefault();
+                    clearAllFilters();
+                    break;
+                case 'H': // Updated: Open help modal
+                    event.preventDefault();
+                    openHelpModal();
+                    break;
+            }
+        }
+        
+        if (event.altKey) {
+            switch(event.key) {
+                case 'ArrowRight':
+                    event.preventDefault();
+                    if (elements.nextPageButton && !elements.nextPageButton.disabled) {
+                        elements.nextPageButton.click();
+                    }
+                    break;
+                case 'ArrowLeft':
+                    event.preventDefault();
+                    if (elements.prevPageButton && !elements.prevPageButton.disabled) {
+                        elements.prevPageButton.click();
+                    }
+                    break;
+            }
+        }
+    });
+
+    await refreshExtensionDataAndRender(1); 
+    
+    elements.searchInput?.focus({ preventScroll: true });
+
+    await registerKeyboardShortcuts();
+
+    console.log("modcore EM Popup Initialized.");
+}
+
 document.addEventListener('DOMContentLoaded', initializePopup);
