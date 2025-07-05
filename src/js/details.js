@@ -138,12 +138,8 @@
     const warn = (...args) => { if (ENABLE_DEV_LOGGING) console.warn('[NG Details]', ...args); };
     const error = (...args) => { console.error('[NG Details]', ...args); };
 
-    const escapeHTML = (str) => {
-        if (str === null || str === undefined) return '';
-        const div = document.createElement('div');
-        div.textContent = String(str);
-        return div.innerHTML;
-    };
+    // Removed escapeHTML as innerHTML is no longer used for dynamic content.
+    // Ensure all dynamic text content is set via textContent.
 
     const getElem = (id) => document.getElementById(id);
     const getQuery = (selector, parent = document) => parent.querySelector(selector);
@@ -316,7 +312,8 @@
         } catch (err) {
              error("Error loading extension data:", err);
              extensionInfo = null;
-             displayGlobalError(`Failed to load details for ID "${escapeHTML(extensionId)}": ${escapeHTML(err.message)}.`);
+             // Using textContent for error message to prevent XSS
+             displayGlobalError(`Failed to load details for ID "${extensionId}": ${err.message}.`);
              return null;
         }
     }
@@ -506,7 +503,7 @@
     }
 
     function renderPermissionsList(container, permissions, type) {
-        container.innerHTML = '';
+        container.innerHTML = ''; // Clear existing content
         if (!permissions || permissions.length === 0) {
             const text = type === 'api' ? 'No API permissions requested.' : 'No host permissions requested.';
             const placeholder = createPlaceholderElement(text, 'info');
@@ -534,14 +531,15 @@
                 desc = "Access data/modify behavior on ALL websites you visit.";
                 risk = "High";
             } else {
-                desc = `Access websites matching pattern: <code>${escapeHTML(permissionName)}</code>. Can read and change data on matching sites.`;
+                // For host patterns, display the pattern literally.
+                desc = `Access websites matching pattern: \`${permissionName}\`. Can read and change data on matching sites.`;
                 risk = permissionName.includes('*') ? 'Medium' : 'Low';
             }
             return { ...baseDef, name: permissionName, description: desc, risk, link: "https://developer.chrome.com/docs/extensions/mv3/match_patterns/" };
         }
         return permissionsMap.get(permissionName.toLowerCase()) || {
             name: permissionName,
-            description: `Access to the '${escapeHTML(permissionName)}' browser feature.`,
+            description: `Access to the '${permissionName}' browser feature.`,
             risk: "Medium",
             link: "https://developer.chrome.com/docs/extensions/reference/permissions/"
         };
@@ -553,23 +551,70 @@
         item.dataset.permissionName = name.toLowerCase();
         const riskLevel = def.risk.toLowerCase();
         item.classList.add(`risk-${riskLevel}`);
-        const linkHTML = def.link ? `<a href="${def.link}" target="_blank" rel="noopener noreferrer" class="permission-link" title="View documentation"><span class="icon icon-link" aria-hidden="true"></span></a>` : '';
-        item.innerHTML = `
-            <div class="permission-item-header">
-                <span class="icon ${type === 'host' ? 'icon-host' : 'icon-api'}" aria-hidden="true"></span>
-                <span class="perm-name">${type === 'host' ? `Host: <code>${escapeHTML(name)}</code>` : escapeHTML(name)}</span>
-                <span class="risk-indicator ${riskLevel}">${def.risk} Risk</span>
-            </div>
-            <div class="permission-item-description">
-                ${def.description} ${linkHTML}
-            </div>`;
+
+        const header = document.createElement('div');
+        header.className = 'permission-item-header';
+
+        const iconSpan = document.createElement('span');
+        iconSpan.className = `icon ${type === 'host' ? 'icon-host' : 'icon-api'}`;
+        iconSpan.setAttribute('aria-hidden', 'true');
+        header.appendChild(iconSpan);
+
+        const nameSpan = document.createElement('span');
+        nameSpan.className = 'perm-name';
+        if (type === 'host') {
+            const code = document.createElement('code');
+            code.textContent = name;
+            nameSpan.textContent = 'Host: ';
+            nameSpan.appendChild(code);
+        } else {
+            nameSpan.textContent = name;
+        }
+        header.appendChild(nameSpan);
+
+        const riskIndicator = document.createElement('span');
+        riskIndicator.className = `risk-indicator ${riskLevel}`;
+        riskIndicator.textContent = `${def.risk} Risk`;
+        header.appendChild(riskIndicator);
+
+        item.appendChild(header);
+
+        const descriptionDiv = document.createElement('div');
+        descriptionDiv.className = 'permission-item-description';
+        descriptionDiv.textContent = def.description;
+
+        if (def.link) {
+            const link = document.createElement('a');
+            link.href = def.link;
+            link.target = '_blank';
+            link.rel = 'noopener noreferrer';
+            link.className = 'permission-link';
+            link.title = 'View documentation';
+
+            const linkIcon = document.createElement('span');
+            linkIcon.className = 'icon icon-link';
+            linkIcon.setAttribute('aria-hidden', 'true');
+            link.appendChild(linkIcon);
+            descriptionDiv.appendChild(link); // Append link to description
+        }
+        item.appendChild(descriptionDiv);
         return item;
     }
 
     function createPlaceholderElement(text, type = 'info') {
         const p = document.createElement('div');
         p.className = `placeholder info-message type-${type}`;
-        p.innerHTML = `<span class="icon icon-${type}" aria-hidden="true"></span><span class="placeholder-text">${escapeHTML(text)}</span>`;
+
+        const iconSpan = document.createElement('span');
+        iconSpan.className = `icon icon-${type}`;
+        iconSpan.setAttribute('aria-hidden', 'true');
+        p.appendChild(iconSpan);
+
+        const textSpan = document.createElement('span');
+        textSpan.className = 'placeholder-text';
+        textSpan.textContent = text;
+        p.appendChild(textSpan);
+
         return p;
     }
 
@@ -578,40 +623,96 @@
         setBusyState(dom.supportContentWrapper, true);
         
         requestAnimationFrame(() => {
-            let contentHTML = '';
+            // Clear existing content
+            dom.supportActualContent.textContent = ''; 
+            const fragment = document.createDocumentFragment();
+
             if (supportInfo && supportInfo.error) {
-                contentHTML = `<div class="support-message support-error">...<h4>Could Not Load Support Information</h4><p>Error: ${escapeHTML(supportInfo.error)}</p></div>`;
+                const errorDiv = document.createElement('div');
+                errorDiv.className = 'support-message support-error';
+                errorDiv.textContent = '...'; // Initial placeholder
+                const h4 = document.createElement('h4');
+                h4.textContent = 'Could Not Load Support Information';
+                const p = document.createElement('p');
+                p.textContent = `Error: ${supportInfo.error}`;
+                errorDiv.appendChild(h4);
+                errorDiv.appendChild(p);
+                fragment.appendChild(errorDiv);
             } else if (supportInfo && extensionId) {
                 const extSupport = supportInfo.extensions?.find(ext => ext.id === extensionId);
                 if (extSupport?.support) {
-                    const buttons = Object.entries(extSupport.support).map(([p, u]) => `
-                        <a href="${escapeHTML(u)}" target="_blank" rel="noopener noreferrer" class="btn secondary support-button">Support via ${escapeHTML(p)}</a>`).join('');
-                    contentHTML = `
-                        <div class="support-available">
-                            <h4>Show Your Appreciation</h4>
-                            <p>If you find <strong>${escapeHTML(extensionInfo?.name || 'this extension')}</strong> valuable, consider supporting its creator. Your contribution helps fuel future updates.</p>
-                            <div class="support-actions">${buttons}</div>
-                        </div>`;
+                    const supportAvailableDiv = document.createElement('div');
+                    supportAvailableDiv.className = 'support-available';
+
+                    const h4 = document.createElement('h4');
+                    h4.textContent = 'Show Your Appreciation';
+                    supportAvailableDiv.appendChild(h4);
+
+                    const p = document.createElement('p');
+                    p.textContent = `If you find ${extensionInfo?.name || 'this extension'} valuable, consider supporting its creator. Your contribution helps fuel future updates.`;
+                    supportAvailableDiv.appendChild(p);
+
+                    const supportActionsDiv = document.createElement('div');
+                    supportActionsDiv.className = 'support-actions';
+
+                    Object.entries(extSupport.support).forEach(([platform, url]) => {
+                        const buttonLink = document.createElement('a');
+                        buttonLink.href = url;
+                        buttonLink.target = '_blank';
+                        buttonLink.rel = 'noopener noreferrer';
+                        buttonLink.className = 'btn secondary support-button';
+                        buttonLink.textContent = `Support via ${platform}`;
+                        supportActionsDiv.appendChild(buttonLink);
+                    });
+                    supportAvailableDiv.appendChild(supportActionsDiv);
+                    fragment.appendChild(supportAvailableDiv);
                 } else {
-                    contentHTML = `<div class="support-message support-not-listed">...<h4>Support Information Not Available</h4><p>This extension has not been added to our voluntary support directory.</p></div>`;
+                    const notListedDiv = document.createElement('div');
+                    notListedDiv.className = 'support-message support-not-listed';
+                    notListedDiv.textContent = '...'; // Initial placeholder
+                    const h4 = document.createElement('h4');
+                    h4.textContent = 'Support Information Not Available';
+                    const p = document.createElement('p');
+                    p.textContent = 'This extension has not been added to our voluntary support directory.';
+                    notListedDiv.appendChild(h4);
+                    notListedDiv.appendChild(p);
+                    fragment.appendChild(notListedDiv);
                 }
             }
             
-            const disclaimerHTML = `
-                <div class="support-message support-disclaimer">
-                    <span class="icon icon-info" aria-hidden="true"></span>
-                    <div>
-                        <h4>Please Note</h4>
-                        <ul class="disclaimer-list">
-                            <li><strong>This is a community-driven feature:</strong> Links are provided by developers and listed for your convenience.</li>
-                            <li><strong>We do not process payments:</strong> All transactions happen on third-party platforms. We do not handle any funds.</li>
-                            <li><strong>We cannot provide refunds or support:</strong> We cannot assist with payment disputes, refunds, or other issues.</li>
-                            <li><strong>Verification:</strong> We cannot fully verify every link. Please be diligent when providing support.</li>
-                        </ul>
-                    </div>
-                </div>`;
+            const disclaimerDiv = document.createElement('div');
+            disclaimerDiv.className = 'support-message support-disclaimer';
 
-            dom.supportActualContent.innerHTML = contentHTML + disclaimerHTML;
+            const infoIcon = document.createElement('span');
+            infoIcon.className = 'icon icon-info';
+            infoIcon.setAttribute('aria-hidden', 'true');
+            disclaimerDiv.appendChild(infoIcon);
+
+            const textContainer = document.createElement('div');
+            const h4Disclaimer = document.createElement('h4');
+            h4Disclaimer.textContent = 'Please Note';
+            textContainer.appendChild(h4Disclaimer);
+
+            const disclaimerList = document.createElement('ul');
+            disclaimerList.className = 'disclaimer-list';
+
+            const disclaimers = [
+                'This is a community-driven feature: Links are provided by developers and listed for your convenience.',
+                'We do not process payments: All transactions happen on third-party platforms. We do not handle any funds.',
+                'We cannot provide refunds or support: We cannot assist with payment disputes, refunds, or other issues.',
+                'Verification: We cannot fully verify every link. Please be diligent when providing support.'
+            ];
+
+            disclaimers.forEach(text => {
+                const li = document.createElement('li');
+                li.textContent = text;
+                disclaimerList.appendChild(li);
+            });
+            textContainer.appendChild(disclaimerList);
+            disclaimerDiv.appendChild(textContainer);
+            fragment.appendChild(disclaimerDiv);
+
+            dom.supportActualContent.appendChild(fragment);
             setBusyState(dom.supportContentWrapper, false);
         });
     }
@@ -683,13 +784,14 @@
 
     async function handleUninstallClick() {
         if (!extensionInfo || dom.uninstallButton.disabled) return;
-        const confirmed = await showCustomConfirm(`Uninstall "${escapeHTML(extensionInfo.name)}"?`, "This is permanent and will remove the extension and its data.");
+        // Using textContent for messages
+        const confirmed = await showCustomConfirm(`Uninstall "${extensionInfo.name}"?`, "This is permanent and will remove the extension and its data.");
         if (!confirmed) return;
         dom.uninstallButton.disabled = true;
         chrome.management.uninstall(extensionId, { showConfirmDialog: false })
             .then(() => {
                 showToast(`"${extensionInfo.name}" uninstalled.`, 'success');
-                displayGlobalError(`"${escapeHTML(extensionInfo.name)}" has been uninstalled. You may close this page.`);
+                displayGlobalError(`"${extensionInfo.name}" has been uninstalled. You may close this page.`);
                 disableUIOnError();
             })
             .catch(err => {
@@ -723,7 +825,9 @@
             const items = list?.querySelectorAll('.permission-item');
             let visibleCount = 0;
             items?.forEach(item => {
-                const show = !term || item.dataset.permissionName.includes(term) || item.textContent.toLowerCase().includes(term);
+                // Ensure we check textContent of the item, not just dataset.permissionName
+                const itemText = item.textContent.toLowerCase();
+                const show = !term || item.dataset.permissionName.includes(term) || itemText.includes(term);
                 setElementVisibility(item, show);
                 if (show) visibleCount++;
             });
@@ -735,12 +839,14 @@
         const placeholder = list?.querySelector('.placeholder');
         if (!placeholder) return;
         const totalCount = (placeholder.dataset.listType === 'api' ? extensionInfo.permissions : extensionInfo.hostPermissions)?.length || 0;
+        const placeholderTextSpan = placeholder.querySelector('.placeholder-text');
+
         if (term && visibleCount === 0) {
-            setText(placeholder.querySelector('.placeholder-text'), `No permissions found matching "${escapeHTML(term)}".`);
+            setText(placeholderTextSpan, `No permissions found matching "${term}".`);
             setElementVisibility(placeholder, true);
         } else {
             setElementVisibility(placeholder, totalCount === 0);
-            if (totalCount === 0) setText(placeholder.querySelector('.placeholder-text'), placeholder.dataset.initialText);
+            if (totalCount === 0) setText(placeholderTextSpan, placeholder.dataset.initialText);
         }
     }
 
@@ -776,12 +882,41 @@
 
     // == UI State Helpers ==
     function showLoadingOverlay(show) { if (dom.initialLoadingOverlay) dom.initialLoadingOverlay.style.display = show ? 'flex' : 'none'; }
-    function displayGlobalError(msg) { if (dom.errorContainer) { dom.errorContainer.innerHTML = `<span class="icon icon-error"></span><strong>Error:</strong> ${msg}`; setElementVisibility(dom.errorContainer, true); } }
+    
+    function displayGlobalError(msg) { 
+        if (dom.errorContainer) { 
+            // Clear existing content
+            dom.errorContainer.textContent = ''; 
+            
+            const iconSpan = document.createElement('span');
+            iconSpan.className = 'icon icon-error';
+            dom.errorContainer.appendChild(iconSpan);
+
+            const strongText = document.createElement('strong');
+            strongText.textContent = 'Error: ';
+            dom.errorContainer.appendChild(strongText);
+
+            const textNode = document.createTextNode(msg);
+            dom.errorContainer.appendChild(textNode);
+            
+            setElementVisibility(dom.errorContainer, true); 
+        } 
+    }
+
     function disableUIOnError() { getAllQuery('button, a, input').forEach(el => el.disabled = true); }
     function setBusyState(container, isBusy) { if (container) container.setAttribute('aria-busy', String(isBusy)); }
     function setElementVisibility(el, visible) { if (el) { el.hidden = !visible; el.style.display = visible ? '' : 'none'; } }
     function setText(el, text) { if (el) el.textContent = text ?? ''; }
-    function updateLink(el, url, text) { if (el) { el.href = url || '#'; el.textContent = text; if (!url) el.setAttribute('aria-disabled', 'true'); else el.removeAttribute('aria-disabled'); } }
+    
+    function updateLink(el, url, text) { 
+        if (el) { 
+            el.href = url || '#'; 
+            el.textContent = text; 
+            if (!url) el.setAttribute('aria-disabled', 'true'); 
+            else el.removeAttribute('aria-disabled'); 
+        } 
+    }
+
     function updateEnableToggleButton(isEnabled) {
         if (!dom.enableToggleButton || !extensionInfo) return;
         dom.enableToggleButton.disabled = false;
@@ -789,10 +924,11 @@
         dom.enableToggleButton.querySelector('.icon').className = `icon ${isEnabled ? 'icon-toggle-on' : 'icon-toggle-off'}`;
         dom.enableToggleButton.classList.toggle('enabled', isEnabled);
     }
+    
     function showToast(message, type = 'info', duration = TOAST_DEFAULT_DURATION) {
         const toast = document.createElement('div');
         toast.className = `toast ${type}`;
-        toast.textContent = message;
+        toast.textContent = message; // Use textContent for the message
         dom.toastContainer.appendChild(toast);
         requestAnimationFrame(() => {
             toast.classList.add('show');
@@ -803,7 +939,7 @@
     // Custom Modal
     function showCustomConfirm(title, message) {
         setText(dom.modalTitle, title);
-        dom.modalMessage.innerHTML = message;
+        dom.modalMessage.textContent = message; // Use textContent for the message
         dom.customConfirmModal.style.display = 'flex';
         dom.customConfirmModal.classList.add('visible');
         dom.modalConfirmButton.focus();
