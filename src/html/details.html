@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Extension Details | NG Extension Manager</title>
-    <meta name="description" content="View detailed information, permissions with risk assessment, and troubleshooting options for an installed browser extension.">
+    <title>Extension Details | modcore Extension Manager</title>
+    <meta name="description" content="Get a detailed look at your installed browser extensions: understand their permissions and assess potential risks.">
     <meta name="color-scheme" content="light dark">
     <link rel="stylesheet" href="../css/details.css">
     <link rel="stylesheet" href="../../public/fonts/fonts.css">
@@ -13,14 +13,14 @@
     <div class="page-wrapper">
         <aside class="sidebar">
             <header class="sidebar-header">
-                <img id="sidebar-extension-icon" src="../../public/icons/svg/terminal.svg" alt="" class="header-logo no-mask">
-                <h1 id="sidebar-extension-title" class="sidebar-title">Details</h1>
+                <img id="sidebar-extension-icon" src="../../public/icons/svg/terminal.svg" alt="Extension Icon" class="header-logo no-mask">
+                <h1 id="sidebar-extension-title" class="sidebar-title">Extension Info</h1>
             </header>
-            <nav class="sidebar-nav" aria-label="Details Sections">
+            <nav class="sidebar-nav" aria-label="Extension Sections">
                 <ul>
                     <li>
                         <button class="sidebar-button active" data-panel-target="panel-details" aria-current="page" aria-controls="panel-details">
-                            <span class="icon icon-info" aria-hidden="true"></span> <span>Details</span>
+                            <span class="icon icon-info" aria-hidden="true"></span> <span>Overview</span>
                         </button>
                     </li>
                     <li>
@@ -30,15 +30,15 @@
                         </button>
                     </li>
                     <li>
-                        <button class="sidebar-button" data-panel-target="panel-diagnosis" aria-controls="panel-diagnosis">
-                            <span class="icon icon-diagnostic" aria-hidden="true"></span>
-                            <span>Troubleshooting</span>
+                        <button class="sidebar-button" data-panel-target="panel-support" aria-controls="panel-support">
+                            <span class="icon icon-support" aria-hidden="true"></span>
+                            <span>Support Developer</span>
                         </button>
                     </li>
-                 </ul>
+                </ul>
             </nav>
             <footer class="sidebar-footer">
-                 <p>&copy; <span id="current-year"></span> NG Extension Manager</p>
+                 <p>&copy; <span id="current-year"></span> modcore</p>
              </footer>
         </aside>
 
@@ -51,118 +51,167 @@
             <div id="error-container" class="api-error-display" style="display: none;" role="alert" aria-atomic="true"></div>
 
             <section id="panel-details" class="content-panel active" aria-labelledby="details-panel-title" tabindex="-1">
-                 <header class="panel-header">
-                     <h2 id="details-panel-title">Extension Details</h2>
-                     <p id="details-panel-description">Core information about the extension, its status, and management actions.</p>
-                 </header>
-                 <div class="panel-content">
+                <header class="panel-header">
+                     <h2 id="details-panel-title">Extension Overview</h2>
+                     <p id="details-panel-description">Get key information about this extension, its current status, and basic actions you can take.</p>
+                </header>
+                <div class="panel-content">
                      <div id="details-content-wrapper" class="content-section" aria-live="polite" aria-busy="true">
-                         <div class="skeleton-loader details-skeleton" aria-hidden="true">
-                            <div class="skeleton skeleton-title" style="width: 50%;"></div>
-                             <div class="skeleton skeleton-line"></div>
-                             <div class="skeleton skeleton-line short"></div>
-                             <div class="skeleton skeleton-line medium" style="margin-top: 1.5rem;"></div>
-                             <div class="skeleton skeleton-line short"></div>
-                         </div>
-                         <div id="details-actual-content" class="details-view">
-                             <div class="details-grid">
-                                 <div class="detail-item detail-item-full-width">
-                                     <span class="detail-label" id="detail-name-label">Extension Name</span>
-                                     <strong id="detail-name" class="detail-value emphasis" aria-labelledby="detail-name-label">N/A</strong>
-                                 </div>
-                                 <div class="detail-item">
-                                     <span class="detail-label" id="detail-version-label">Version</span>
-                                     <span id="detail-version" class="detail-value" aria-labelledby="detail-version-label">N/A</span>
-                                 </div>
-                                 <div class="detail-item">
-                                     <span class="detail-label" id="detail-id-label">Extension ID</span>
-                                     <div class="detail-value" aria-labelledby="detail-id-label">
-                                         <code id="detail-id">N/A</code>
-                                         <button id="copy-id-button" class="btn-icon" title="Copy Extension ID" aria-label="Copy Extension ID">
-                                             <span class="icon icon-copy" aria-hidden="true"></span>
-                                         </button>
-                                     </div>
-                                 </div>
-                                 <div class="detail-item">
-                                     <span class="detail-label" id="detail-install-type-label">Source</span>
-                                     <span id="detail-install-type" class="detail-value" aria-labelledby="detail-install-type-label">N/A</span>
-                                 </div>
-                                 <div class="detail-item detail-item-full-width">
-                                     <span class="detail-label" id="detail-description-label">Description</span>
-                                     <p id="detail-description" class="detail-description-text" aria-labelledby="detail-description-label">N/A</p>
-                                 </div>
-                                 <div class="detail-item">
-                                     <span class="detail-label" id="detail-homepage-label">Homepage</span>
-                                     <a id="detail-homepage-url" href="#" class="detail-value detail-link" target="_blank" rel="noopener noreferrer" aria-labelledby="detail-homepage-label">N/A</a>
-                                 </div>
-                                 <div class="detail-item">
-                                    <span class="detail-label" id="detail-update-url-label">Update URL</span>
-                                    <code id="detail-update-url" class="detail-value small-code" aria-labelledby="detail-update-url-label">N/A</code>
-                                </div>
-
-                             </div>
-                         </div>
+                          <div class="skeleton-loader details-skeleton" aria-hidden="true">
+                               <div class="skeleton skeleton-title" style="width: 50%; height: 2rem;"></div>
+                               <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem;">
+                                  <div class="skeleton skeleton-line" style="height: 2.5rem;"></div> <div class="skeleton skeleton-line short" style="height: 2.5rem;"></div> <div class="skeleton skeleton-line" style="height: 2.5rem;"></div> <div class="skeleton skeleton-line medium" style="height: 2.5rem;"></div> <div class="skeleton skeleton-line short" style="height: 2.5rem;"></div> <div class="skeleton skeleton-line" style="height: 2.5rem;"></div>
+                               </div>
+                               <div class="skeleton skeleton-line medium" style="margin-top: 1.5rem;"></div>
+                          </div>
+                          <div id="details-actual-content" class="details-view">
+                              <div class="details-grid">
+                                  <div class="detail-item detail-item-full-width">
+                                      <span class="detail-label" id="detail-name-label">Extension Name</span>
+                                      <strong id="detail-name" class="detail-value emphasis" aria-labelledby="detail-name-label">N/A</strong>
+                                  </div>
+                                   <div class="detail-item">
+                                      <span class="detail-label" id="detail-shortName-label">
+                                          <span>Short Name</span>
+                                          <span class="tooltip-trigger" tabindex="0"> <span class="icon icon-help" aria-hidden="true"></span>
+                                              <span class="tooltip-content" role="tooltip">A shorter name sometimes used by Chrome.</span>
+                                          </span>
+                                      </span>
+                                      <div class="detail-value" aria-labelledby="detail-shortName-label">
+                                           <span id="detail-shortName-text">N/A</span>
+                                            <button id="copy-shortname-button" class="btn-icon btn-copy" title="Copy Short Name" aria-label="Copy Short Name">
+                                                <span class="icon icon-copy" aria-hidden="true"></span>
+                                            </button>
+                                      </div>
+                                  </div>
+                                   <div class="detail-item">
+                                       <span class="detail-label" id="detail-version-label">Version</span>
+                                      <div class="detail-value" aria-labelledby="detail-version-label">
+                                            <span id="detail-version-text">N/A</span>
+                                            <button id="copy-version-button" class="btn-icon btn-copy" title="Copy Version" aria-label="Copy Version">
+                                                <span class="icon icon-copy" aria-hidden="true"></span>
+                                            </button>
+                                      </div>
+                                  </div>
+                                  <div class="detail-item">
+                                       <span class="detail-label" id="detail-id-label">
+                                            <span>ID</span>
+                                            <span class="tooltip-trigger" tabindex="0">
+                                                <span class="icon icon-help" aria-hidden="true"></span>
+                                                <span class="tooltip-content" role="tooltip">A unique identifier for the extension.</span>
+                                            </span>
+                                       </span>
+                                      <div class="detail-value" aria-labelledby="detail-id-label">
+                                          <code id="detail-id">N/A</code>
+                                          <button id="copy-id-button" class="btn-icon btn-copy" title="Copy Extension ID" aria-label="Copy Extension ID">
+                                              <span class="icon icon-copy" aria-hidden="true"></span>
+                                          </button>
+                                      </div>
+                                  </div>
+                                  <div class="detail-item">
+                                       <span class="detail-label" id="detail-type-label">
+                                           <span>Type</span>
+                                           <span class="tooltip-trigger" tabindex="0">
+                                               <span class="icon icon-help" aria-hidden="true"></span>
+                                               <span class="tooltip-content" role="tooltip">The category of the installed item.</span>
+                                           </span>
+                                       </span>
+                                      <span id="detail-type" class="detail-value" aria-labelledby="detail-type-label">N/A</span>
+                                  </div>
+                                   <div class="detail-item">
+                                      <span class="detail-label" id="detail-status-label">
+                                          <span>Status</span>
+                                          <span class="tooltip-trigger" tabindex="0">
+                                              <span class="icon icon-help" aria-hidden="true"></span>
+                                              <span class="tooltip-content" role="tooltip">'Enabled' means the extension is active. 'Disabled' means it is installed but not running.</span>
+                                          </span>
+                                      </span>
+                                      <span id="detail-status" class="detail-value status-disabled" aria-labelledby="detail-status-label">N/A</span>
+                                  </div>
+                                  <div class="detail-item">
+                                       <span class="detail-label" id="detail-install-type-label">
+                                           <span>Installed Via</span>
+                                            <span class="tooltip-trigger" tabindex="0">
+                                                <span class="icon icon-help" aria-hidden="true"></span>
+                                                <span class="tooltip-content" role="tooltip">How the extension was installed.</span>
+                                            </span>
+                                       </span>
+                                      <span id="detail-install-type" class="detail-value" aria-labelledby="detail-install-type-label">N/A</span>
+                                  </div>
+                                   <div class="detail-item">
+                                       <span class="detail-label" id="detail-mayDisable-label">
+                                          <span>Can Be Removed</span>
+                                           <span class="tooltip-trigger" tabindex="0">
+                                              <span class="icon icon-help" aria-hidden="true"></span>
+                                              <span class="tooltip-content" role="tooltip">'No' usually means the extension was installed by an administrator's policy.</span>
+                                          </span>
+                                      </span>
+                                      <span id="detail-mayDisable" class="detail-value" aria-labelledby="detail-mayDisable-label">N/A</span>
+                                  </div>
+                                   <div class="detail-item detail-item-full-width">
+                                      <span class="detail-label" id="detail-description-label">Description</span>
+                                      <p id="detail-description" class="detail-description-text" aria-labelledby="detail-description-label">No description provided.</p>
+                                  </div>
+                                   <div class="detail-item">
+                                      <span class="detail-label" id="detail-homepage-label">Homepage</span>
+                                       <div class="detail-value" aria-labelledby="detail-homepage-label">
+                                            <a id="detail-homepage-url" href="#" class="detail-link" target="_blank" rel="noopener noreferrer">N/A</a>
+                                            <button id="copy-homepage-button" class="btn-icon btn-copy" title="Copy Homepage URL" aria-label="Copy Homepage URL">
+                                                <span class="icon icon-copy" aria-hidden="true"></span>
+                                            </button>
+                                       </div>
+                                  </div>
+                              </div>
+                          </div>
                      </div>
 
-                     <div class="content-section action-buttons-container">
-                         <h3 id="management-actions-title" class="section-title">Management Actions</h3>
-                         <div id="details-actions-content" class="details-actions-grid" aria-live="polite" aria-busy="true" aria-labelledby="management-actions-title">
+                    <div class="content-section action-buttons-container">
+                        <h3 id="actions-title" class="section-title">Actions</h3>
+                        <div id="details-actions-content" class="details-actions-grid" aria-live="polite" aria-busy="true" aria-labelledby="actions-title">
                             <div class="skeleton-loader actions-skeleton" aria-hidden="true">
-                                <div class="skeleton skeleton-button" style="width: 120px;"></div>
                                 <div class="skeleton skeleton-button" style="width: 150px;"></div>
                                 <div class="skeleton skeleton-button" style="width: 140px;"></div>
+                                <div class="skeleton skeleton-button" style="width: 120px;"></div>
+                                <div class="skeleton skeleton-button" style="width: 100px;"></div>
                             </div>
                             <div id="details-actual-actions">
-                                <button id="enable-toggle-button" class="btn" aria-live="polite">
-                                    <span class="icon icon-toggle-off" aria-hidden="true"></span>
-                                    <span>Enable</span>
+                                <button id="enable-toggle-button" class="btn secondary">
+                                     <span class="icon icon-toggle-off" aria-hidden="true"></span>
+                                      <span>Disabled</span>
                                 </button>
-                                <button id="options-button" class="btn secondary" style="display: none;">
-                                    <span class="icon icon-settings" aria-hidden="true"></span>
+                                <button id="options-button" class="btn secondary" hidden> <span class="icon icon-settings" aria-hidden="true"></span>
                                     Options
                                 </button>
-                                <button id="store-button" class="btn secondary" style="display: none;">
-                                    <span class="icon icon-store" aria-hidden="true"></span>
+                                <a id="store-button" href="#" target="_blank" rel="noopener noreferrer" class="btn secondary" hidden> <span class="icon icon-store" aria-hidden="true"></span>
                                     View in Store
-                                </button>
+                                </a>
                                 <button id="uninstall-button" class="btn danger tertiary">
                                     <span class="icon icon-trash" aria-hidden="true"></span>
                                     Uninstall
                                 </button>
                             </div>
-                         </div>
-                         <p class="description small-description">Manage the extension's enabled state, access its options, or remove it.</p>
+                        </div>
                     </div>
-                 </div>
-             </section>
+                </div>
+            </section>
 
             <section id="panel-permissions" class="content-panel" aria-labelledby="permissions-panel-title" hidden tabindex="-1">
                 <header class="panel-header">
-                    <h2 id="permissions-panel-title">Permissions & Host Access</h2>
-                    <p id="permissions-panel-description">Review permissions requested by this extension and their potential risks. Permissions allow extensions to interact with your browser or websites.</p>
+                    <h2 id="permissions-panel-title">Permissions & Site Access</h2>
+                    <p id="permissions-panel-description">Permissions are requests by an extension to access specific browser features (like bookmarks or notifications) or to read and modify data on websites. Carefully reviewing permissions is crucial for understanding what an extension can do and ensuring your online safety and privacy.</p>
                 </header>
                 <div class="panel-content">
-
                     <div class="permissions-controls">
                         <div class="permissions-search">
-                             <label for="permission-search-input" class="visually-hidden">Search for permissions...</label>
+                             <label for="permission-search-input" class="visually-hidden">Search permissions...</label>
                              <span class="icon icon-search" aria-hidden="true"></span>
-                            <input type="search" id="permission-search-input" placeholder="Search for permissions..." aria-controls="api-permissions-list host-permissions-list">
+                           <input type="search" id="permission-search-input" placeholder="Search permissions..." aria-controls="api-permissions-list host-permissions-list">
                         </div>
                         <div class="permissions-layout-toggle" role="group" aria-label="Permissions view layout">
-                             <button id="layout-list-btn" class="btn-icon active" data-layout="list" title="List View" aria-pressed="true" aria-label="Switch to List View">
-                                <span class="icon icon-list" aria-hidden="true"></span>
-                             </button>
-                            <button id="layout-grid-btn" class="btn-icon" data-layout="grid" title="Grid View" aria-pressed="false" aria-label="Switch to Grid View">
-                                <span class="icon icon-grid" aria-hidden="true"></span>
-                             </button>
+                             <button id="layout-list-btn" class="btn-icon active" data-layout="list" title="View as List" aria-pressed="true"><span class="icon icon-list" aria-hidden="true"></span></button>
+                             <button id="layout-grid-btn" class="btn-icon" data-layout="grid" title="View as Grid" aria-pressed="false"><span class="icon icon-grid" aria-hidden="true"></span></button>
                         </div>
                     </div>
-
-                    <p id="permissions-intro-text" class="description" style="margin-top: var(--spacing-unit);">
-                        Extensions request access to browser features (API Permissions) or specific websites (Host Permissions). Review these carefully. High-risk permissions require more trust in the extension.
-                    </p>
-
                     <div id="permissions-content-wrapper" aria-live="polite" aria-busy="true">
                          <div class="skeleton-loader permissions-skeleton" aria-hidden="true">
                             <div class="skeleton skeleton-title" style="width: 40%; margin-bottom: 1.5rem;"></div>
@@ -170,101 +219,67 @@
                             <div class="skeleton permission-item-skeleton"></div>
                             <div class="skeleton skeleton-title" style="width: 45%; margin-top: 2rem; margin-bottom: 1.5rem;"></div>
                             <div class="skeleton permission-item-skeleton"></div>
-                        </div>
-                        <div id="permissions-actual-content">
+                         </div>
+                         <div id="permissions-actual-content">
                             <div class="content-section permissions-section">
-                                <h3 id="api-permissions-heading" class="section-title">API Permissions (<span id="api-perm-count">0</span>)</h3>
-                                <div id="api-permissions-list" class="permissions-list list-view" aria-labelledby="api-permissions-heading">
-                                    <div class="placeholder info-message">No API permissions requested. These allow access to browser features.</div>
-                                </div>
+                                <h3 id="api-permissions-heading" class="section-title small-title">API Permissions (<span id="api-perm-count">0</span>)</h3>
+                                <div id="api-permissions-list" class="permissions-list list-view"></div>
                             </div>
                             <div class="content-section permissions-section">
-                                <h3 id="host-permissions-heading" class="section-title">Host Permissions (<span id="host-perm-count">0</span>)</h3>
-                                <div id="host-permissions-list" class="permissions-list list-view" aria-labelledby="host-permissions-heading">
-                                    <div class="placeholder info-message">No specific host permissions requested. These allow access to websites.</div>
-                                </div>
-                                <p class="description small-description" id="host-perms-note" style="margin-top: 1rem;">Note: Access to <code>&lt;all_urls&gt;</code> or broad patterns like <code>*://*/*</code> grants extensive access and carries higher risk. Some host permissions might be optional and managed within the extension's settings or via browser controls.</p>
+                                <h3 id="host-permissions-heading" class="section-title small-title">Host Permissions (<span id="host-perm-count">0</span>)</h3>
+                                <div id="host-permissions-list" class="permissions-list list-view"></div>
                             </div>
                             <div class="content-section permissions-section risk-legend">
-                                <h4 id="risk-legend-title" class="section-title small-title">Risk Factor Legend</h4>
-                                <ul class="risk-definitions" aria-labelledby="risk-legend-title">
-                                    <li><span class="risk-indicator low">Low</span>: Generally safe, limited access required for basic functionality.</li>
-                                    <li><span class="risk-indicator medium">Medium</span>: Accesses sensitive data (like specific websites, bookmarks, cookies) or broader browser features. Evaluate trust.</li>
-                                    <li><span class="risk-indicator high">High</span>: Extensive access (like all websites, history, other extensions, injecting scripts). Requires significant trust in the extension developer.</li>
-                                    <li><span class="risk-indicator varies">Varies</span>: Risk depends on the specific website pattern(s) requested.</li>
+                                <h3 class="section-title small-title">Risk Level Guide</h3>
+                                <ul class="risk-definitions">
+                                    <li><span class="risk-indicator low">Low Risk</span> Minimal access to non-sensitive features.</li>
+                                    <li><span class="risk-indicator medium">Medium Risk</span> May access sensitive data or browser functions.</li>
+                                    <li><span class="risk-indicator high">High Risk</span> Grants extensive access to data and browser behavior.</li>
+                                    <li><span class="risk-indicator varies">Varies Risk</span> Risk depends on the specific websites it can access.</li>
                                 </ul>
                             </div>
+                         </div>
+                    </div>
+                </div>
+            </section>
+            
+            <section id="panel-support" class="content-panel" aria-labelledby="support-panel-title" hidden tabindex="-1">
+                <header class="panel-header">
+                    <h2 id="support-panel-title">Support the Developer</h2>
+                    <p id="support-panel-description">If you find this extension useful, consider supporting the developer who created it. This is a community-driven feature; we do not process payments or take any fees.</p>
+                </header>
+                <div class="panel-content">
+                    <div id="support-content-wrapper" class="content-section" aria-live="polite" aria-busy="true">
+                        <div class="skeleton-loader support-skeleton" aria-hidden="true">
+                            <div class="skeleton skeleton-line medium" style="height: 1.5rem; margin-bottom: 1rem;"></div>
+                            <div class="skeleton skeleton-line" style="margin-bottom: 0.5rem;"></div>
+                            <div class="skeleton skeleton-line short" style="margin-bottom: 2rem;"></div>
+                            <div style="display: flex; gap: 1rem;">
+                                <div class="skeleton skeleton-button" style="width: 180px;"></div>
+                                <div class="skeleton skeleton-button" style="width: 180px;"></div>
+                            </div>
                         </div>
+                        <div id="support-actual-content">
+                            </div>
                     </div>
                 </div>
             </section>
 
-            <section id="panel-diagnosis" class="content-panel" aria-labelledby="diagnosis-panel-title" hidden tabindex="-1">
-                 <header class="panel-header">
-                     <h2 id="diagnosis-panel-title">Troubleshooting Checks</h2>
-                     <p>Automatically checks for common issues and provides suggestions to resolve problems with the extension.</p>
-                 </header>
-                 <div class="panel-content">
-                     <div class="content-section">
-                        <h3 id="detected-issues-title" class="section-title">Detected Issues & Suggestions</h3>
-                        <p class="description small-description">These checks provide guidance but may not cover all possible extension problems.</p>
-                         <div id="diagnosis-results-list" class="diagnosis-list" aria-live="polite" aria-busy="true" aria-labelledby="detected-issues-title">
-                             <div class="skeleton-loader diagnosis-skeleton" aria-hidden="true">
-                                 <div class="skeleton skeleton-line medium" style="height: 1.8rem;"></div>
-                                 <div class="skeleton skeleton-line short" style="height: 1.8rem;"></div>
-                                 <div class="skeleton skeleton-line long" style="height: 1.8rem;"></div>
-                             </div>
-                             <div id="diagnosis-actual-content">
-                                <div class="placeholder info-message" id="diag-initial-placeholder">
-                                    <span class="icon icon-loading loading" aria-hidden="true"></span>
-                                    <span>Running automated checks...</span>
-                                </div>
-                             </div>
-                         </div>
-                     </div>
-
-                     <div id="diagnosis-actions" class="content-section action-buttons-container">
-                         <h3 id="troubleshooting-actions-title" class="section-title">Troubleshooting Actions</h3>
-                         <div id="diag-action-items" class="details-actions-grid" aria-live="polite" aria-busy="true" aria-labelledby="troubleshooting-actions-title">
-                            <div class="skeleton-loader diag-actions-skeleton" aria-hidden="true">
-                                <div class="skeleton skeleton-button" style="width: 160px;"></div>
-                            </div>
-                             <div id="diag-actual-actions">
-                                <button id="reload-extension-button" class="btn tertiary">
-                                    <span class="icon icon-reload" aria-hidden="true"></span>
-                                    Reload Extension
-                                </button>
-                                <button id="check-errors-button" class="btn tertiary">
-                                     <span class="icon icon-error" aria-hidden="true"></span>
-                                     Check Runtime Errors
-                                 </button>
-                             </div>
-                         </div>
-                         <p class="description small-description">Reloading can fix temporary glitches. Checking runtime errors opens the extension's specific error console.</p>
-                         <div class="content-section" style="border-bottom: none; padding-bottom: 0; margin-bottom: 0; margin-top: var(--spacing-unit);">
-                              <h4 id="further-assistance-title" class="section-title small-title">Further Assistance</h4>
-                              <p class="description small-description">If issues persist after trying these steps:</p>
-                              <ul class="help-list" aria-labelledby="further-assistance-title">
-                                  <li>Consult the extension's official documentation or website (if available via the Details panel).</li>
-                                  <li>Contact the extension developer directly for support.</li>
-                                  <li>Check if the extension conflicts with other installed extensions by temporarily disabling others.</li>
-                                  <li>Search online forums or communities for similar issues with this specific extension.</li>
-                                  <li><a href="https://support.google.com/chrome_webstore/answer/2664769" target="_blank" rel="noopener noreferrer" title="Opens Chrome Web Store help">View general Chrome extension troubleshooting tips</a>.</li>
-                              </ul>
-                         </div>
-                     </div>
-                 </div>
-             </section>
-
-            <footer class="content-footer" role="contentinfo">
-                 <div class="infobox">
-                    <p><span class="icon icon-help" aria-hidden="true"></span> Need help with NG Extension Manager itself? Visit the <a href="https://sites.google.com/view/ng-extension-manager/ng-extension-manager/help-tutorials?authuser=0" target="_blank" rel="noopener noreferrer">support page</a> or check the <a href="https://sites.google.com/view/ng-extension-manager/home?authuser=0" target="_blank" rel="noopener noreferrer">documentation</a>.</p>
-                </div>
-            </footer>
         </main>
     </div>
 
-    <div id="toast-container" role="log" aria-live="assertive" aria-relevant="additions"></div>
+    <div id="custom-confirm-modal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="modal-title" aria-describedby="modal-message">
+        <div class="modal-content">
+            <h3 id="modal-title">Confirm Action</h3>
+            <p id="modal-message">Are you sure?</p>
+            <div class="modal-actions">
+                <button id="modal-cancel-button" class="btn secondary">Cancel</button>
+                <button id="modal-confirm-button" class="btn primary">Confirm</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="toast-container" aria-live="polite" aria-atomic="true"></div>
 
     <script src="../js/details.js"></script>
 </body>
