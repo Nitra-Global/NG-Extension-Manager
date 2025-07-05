@@ -8,6 +8,7 @@
  * - Added a suite of new keyboard shortcuts for common actions (opening modals, pagination, etc.).
  * - General performance and logic enhancements for a smoother experience.
  * - MODIFICATION: Refactored data storage to use chrome.storage.local instead of localStorage for cross-script consistency.
+ * - SECURITY REFACTOR: Eliminated all usage of `innerHTML` to prevent potential XSS vulnerabilities. DOM elements are now created and appended programmatically.
  */
 
 // --- Constants ---
@@ -164,19 +165,36 @@ function sanitizeText(str) {
 function highlightSearchTerms(text, searchTerms) {
     const sanitizedText = sanitizeText(text);
     if (!searchTerms || searchTerms.length === 0 || !text) {
-        return sanitizedText;
+        return document.createTextNode(sanitizedText);
     }
     const validSearchTerms = searchTerms
         .map(term => term.trim())
         .filter(Boolean)
         .map(term => term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
-    if (validSearchTerms.length === 0) return sanitizedText;
+
+    if (validSearchTerms.length === 0) {
+        return document.createTextNode(sanitizedText);
+    }
+
     try {
         const regex = new RegExp(`(${validSearchTerms.join('|')})`, 'gi');
-        return sanitizedText.replace(regex, '<span class="search-highlight">$1</span>');
+        const parts = sanitizedText.split(regex);
+        const fragment = document.createDocumentFragment();
+
+        parts.forEach(part => {
+            if (regex.test(part) && validSearchTerms.some(term => part.toLowerCase() === term.toLowerCase())) {
+                const span = document.createElement('span');
+                span.className = 'search-highlight';
+                span.textContent = part;
+                fragment.appendChild(span);
+            } else if (part) {
+                fragment.appendChild(document.createTextNode(part));
+            }
+        });
+        return fragment;
     } catch (e) {
         console.error("Highlight regex error:", e);
-        return sanitizedText;
+        return document.createTextNode(sanitizedText);
     }
 }
 
@@ -232,7 +250,7 @@ function showFeedbackMessage(message, type = 'error', location = 'popup', isEphe
 
     if (!targetElement) return;
 
-    targetElement.innerHTML = sanitizeText(message);
+    targetElement.textContent = message; // Use textContent instead of innerHTML
     targetElement.style.display = 'flex';
     targetElement.setAttribute('aria-hidden', 'false');
     if (otherElement) {
@@ -792,7 +810,8 @@ function closeGroupManagementModal() {
 }
 
 async function displayGroupManagementListInModal() {
-    const listElement = elements.modalGroupList; if (!listElement) return;
+    const listElement = elements.modalGroupList;
+    if (!listElement) return;
     listElement.innerHTML = '';
     const groups = await getGroups();
     const orderedGroupNames = await getOrderedGroupNames();
@@ -803,51 +822,122 @@ async function displayGroupManagementListInModal() {
     if (orderedGroupNames.length > 0) {
         const header = document.createElement('div');
         header.className = 'modal-list-header';
-        header.innerHTML = `
-            <input type="checkbox" id="select-all-groups-checkbox" title="Select/Deselect all groups">
-            <label for="select-all-groups-checkbox">Select All</label>
-            <button id="modal-bulk-delete-groups-btn" class="button-small button-danger" style="display: none;">Delete Selected</button>
-        `;
+
+        const checkbox = document.createElement('input');
+        checkbox.type = 'checkbox';
+        checkbox.id = 'select-all-groups-checkbox';
+        checkbox.title = 'Select/Deselect all groups';
+
+        const label = document.createElement('label');
+        label.htmlFor = 'select-all-groups-checkbox';
+        label.textContent = 'Select All';
+
+        const deleteBtn = document.createElement('button');
+        deleteBtn.id = 'modal-bulk-delete-groups-btn';
+        deleteBtn.className = 'button-small button-danger';
+        deleteBtn.style.display = 'none';
+        deleteBtn.textContent = 'Delete Selected';
+
+        header.appendChild(checkbox);
+        header.appendChild(label);
+        header.appendChild(deleteBtn);
         listElement.before(header);
         
-        header.querySelector('#select-all-groups-checkbox').addEventListener('change', handleSelectAllGroupsChange);
-        header.querySelector('#modal-bulk-delete-groups-btn').addEventListener('click', () => deleteGroups(selectedGroupNames));
+        checkbox.addEventListener('change', handleSelectAllGroupsChange);
+        deleteBtn.addEventListener('click', () => deleteGroups(selectedGroupNames));
     }
 
 
     if (orderedGroupNames.length === 0) {
-        listElement.innerHTML = '<li class="no-groups-message" role="status">No groups created yet. Use the input above.</li>';
+        const li = document.createElement('li');
+        li.className = 'no-groups-message';
+        li.setAttribute('role', 'status');
+        li.textContent = 'No groups created yet. Use the input above.';
+        listElement.appendChild(li);
         updateBulkDeleteGroupsUI();
         return;
     }
 
     const fragment = document.createDocumentFragment();
-    orderedGroupNames.forEach(groupName => { // groupName here is the key, which should be the actual name
+    orderedGroupNames.forEach(groupName => { // groupName here is the key
         const groupData = groups[groupName];
-        if (!groupData) return; // Should not happen if getOrderedGroupNames is correct
+        if (!groupData) return;
         const count = groupData?.members?.length || 0;
         const shortcut = groupData?.shortcut ? normalizeShortcut(groupData.shortcut) : '';
 
         const listItem = document.createElement('li');
-        listItem.dataset.groupname = groupName; // Use groupName (the key) for data-attribute
+        listItem.dataset.groupname = groupName;
         listItem.setAttribute('role', 'listitem');
         
         const isSelected = selectedGroupNames.has(groupName);
         if (isSelected) listItem.classList.add('selected');
 
-        listItem.innerHTML = `
-            <input type="checkbox" class="group-select-checkbox" data-groupname="${sanitizeText(groupName)}" ${isSelected ? 'checked' : ''} aria-label="Select group ${sanitizeText(groupData.name)}">
-            <div class="group-item-details" title="${sanitizeText(groupData.name)} (${count} extensions)">
-                <span class="group-item-name">${sanitizeText(groupData.name)}</span>
-                ${shortcut ? `<span class="group-item-shortcut"><img src="${ICON_PATHS.shortcut}" alt="Shortcut"> ${sanitizeText(shortcut)}</span>` : ''}
-                <span class="group-item-count" aria-label="${count} extensions in group">${count}</span>
-            </div>
-            <div class="group-item-actions">
-                <button class="enable-group-btn button-small button-success" data-groupname="${sanitizeText(groupName)}" title="Enable all in '${sanitizeText(groupData.name)}'">Enable All</button>
-                <button class="disable-group-btn button-small button-danger" data-groupname="${sanitizeText(groupName)}" title="Disable all in '${sanitizeText(groupData.name)}'">Disable All</button>
-                <button class="configure-group-btn button-small" data-groupname="${sanitizeText(groupName)}" title="Configure Group"><img src="${ICON_PATHS.configure}" alt="Configure"></button>
-                <button class="delete-group-btn button-small button-danger icon-only" data-groupname="${sanitizeText(groupName)}" title="Delete Group"><img src="${ICON_PATHS.deleteGroup}" alt="Delete"></button>
-            </div>`;
+        const checkbox = document.createElement('input');
+        checkbox.type = 'checkbox';
+        checkbox.className = 'group-select-checkbox';
+        checkbox.dataset.groupname = groupName;
+        checkbox.checked = isSelected;
+        checkbox.setAttribute('aria-label', `Select group ${sanitizeText(groupData.name)}`);
+        
+        const detailsDiv = document.createElement('div');
+        detailsDiv.className = 'group-item-details';
+        detailsDiv.title = `${sanitizeText(groupData.name)} (${count} extensions)`;
+
+        const nameSpan = document.createElement('span');
+        nameSpan.className = 'group-item-name';
+        nameSpan.textContent = sanitizeText(groupData.name);
+        detailsDiv.appendChild(nameSpan);
+
+        if (shortcut) {
+            const shortcutSpan = document.createElement('span');
+            shortcutSpan.className = 'group-item-shortcut';
+            const shortcutImg = document.createElement('img');
+            shortcutImg.src = ICON_PATHS.shortcut;
+            shortcutImg.alt = 'Shortcut';
+            shortcutSpan.appendChild(shortcutImg);
+            shortcutSpan.appendChild(document.createTextNode(` ${sanitizeText(shortcut)}`));
+            detailsDiv.appendChild(shortcutSpan);
+        }
+
+        const countSpan = document.createElement('span');
+        countSpan.className = 'group-item-count';
+        countSpan.setAttribute('aria-label', `${count} extensions in group`);
+        countSpan.textContent = count;
+        detailsDiv.appendChild(countSpan);
+
+        const actionsDiv = document.createElement('div');
+        actionsDiv.className = 'group-item-actions';
+
+        const createButton = (className, title, text, iconSrc = null) => {
+            const button = document.createElement('button');
+            button.className = `button-small ${className}`;
+            button.dataset.groupname = groupName;
+            button.title = title;
+            if (iconSrc) {
+                const img = document.createElement('img');
+                img.src = iconSrc;
+                img.alt = '';
+                button.appendChild(img);
+            }
+            if (text) {
+                 button.appendChild(document.createTextNode(text));
+            }
+            return button;
+        };
+
+        const enableBtn = createButton('button-success enable-group-btn', `Enable all in '${sanitizeText(groupData.name)}'`, 'Enable All');
+        const disableBtn = createButton('button-danger disable-group-btn', `Disable all in '${sanitizeText(groupData.name)}'`, 'Disable All');
+        const configureBtn = createButton('configure-group-btn', 'Configure Group', null, ICON_PATHS.configure);
+        const deleteBtn = createButton('button-danger icon-only delete-group-btn', 'Delete Group', null, ICON_PATHS.deleteGroup);
+
+        actionsDiv.appendChild(enableBtn);
+        actionsDiv.appendChild(disableBtn);
+        actionsDiv.appendChild(configureBtn);
+        actionsDiv.appendChild(deleteBtn);
+
+        listItem.appendChild(checkbox);
+        listItem.appendChild(detailsDiv);
+        listItem.appendChild(actionsDiv);
         fragment.appendChild(listItem);
     });
     listElement.appendChild(fragment);
@@ -1039,7 +1129,9 @@ async function renderExtensionsForGroupConfiguration(groupName) {
         .sort((a, b) => (a.name || "").localeCompare(b.name || ""));
 
     if (userControllableExtensions.length === 0) {
-        listEl.innerHTML = "<p>No user-controllable extensions available to add to groups.</p>";
+        const p = document.createElement('p');
+        p.textContent = "No user-controllable extensions available to add to groups.";
+        listEl.appendChild(p);
         return;
     }
 
@@ -1051,14 +1143,29 @@ async function renderExtensionsForGroupConfiguration(groupName) {
     userControllableExtensions.forEach(ext => {
         const itemDiv = document.createElement('div');
         itemDiv.className = 'profile-config-extension-item';
+        
         const isMemberOfGroup = groupMembers.includes(ext.id);
         const checkboxId = `group-cfg-ext-${ext.id}`;
-        const iconUrl = ext.icons?.find(i => i.size >= 16)?.url || DEFAULT_ICON_PLACEHOLDER;
-        itemDiv.innerHTML = `
-            <input type="checkbox" id="${checkboxId}" class="group-config-ext-checkbox" data-extension-id="${ext.id}" ${isMemberOfGroup ? 'checked' : ''}>
-            <img src="${iconUrl}" class="extension-icon-small" alt="">
-            <label for="${checkboxId}">${sanitizeText(ext.name)}</label>
-        `;
+        
+        const checkbox = document.createElement('input');
+        checkbox.type = 'checkbox';
+        checkbox.id = checkboxId;
+        checkbox.className = 'group-config-ext-checkbox';
+        checkbox.dataset.extensionId = ext.id;
+        checkbox.checked = isMemberOfGroup;
+
+        const img = document.createElement('img');
+        img.src = ext.icons?.find(i => i.size >= 16)?.url || DEFAULT_ICON_PLACEHOLDER;
+        img.className = 'extension-icon-small';
+        img.alt = '';
+
+        const label = document.createElement('label');
+        label.htmlFor = checkboxId;
+        label.textContent = sanitizeText(ext.name);
+
+        itemDiv.appendChild(checkbox);
+        itemDiv.appendChild(img);
+        itemDiv.appendChild(label);
         fragment.appendChild(itemDiv);
     });
     listEl.appendChild(fragment);
@@ -1148,7 +1255,7 @@ async function handleModalListClick(event) {
 
     const button = event.target.closest('button[data-groupname]');
     if (!button) return;
-    const groupName = button.dataset.groupname; // This is the KEY, which should be the actual name
+    const groupName = button.dataset.groupname; // This is the KEY
     if (!groupName) return;
 
     if (button.classList.contains('delete-group-btn')) {
@@ -1158,7 +1265,7 @@ async function handleModalListClick(event) {
     } else if (button.classList.contains('disable-group-btn')) {
         await setGroupExtensionsState(groupName, false);
     } else if (button.classList.contains('configure-group-btn')) {
-        event.stopPropagation(); // <-- Add this line to stop event bubbling
+        event.stopPropagation();
         await switchToGroupConfigurationView(groupName);
     }
 }
@@ -1251,7 +1358,7 @@ async function renderExtensionList(page = 1) {
         if(elements.extensionListHeader) elements.extensionListHeader.style.display = 'flex';
         for (const extension of extensionsToDisplay) {
             const extensionItem = document.createElement('div');
-            extensionItem.classList.add('extension-item');
+            extensionItem.className = 'extension-item';
             extensionItem.dataset.extensionId = extension.id;
             extensionItem.setAttribute('role', 'listitem');
             if (selectedExtensionIds.has(extension.id)) {
@@ -1263,7 +1370,7 @@ async function renderExtensionList(page = 1) {
 
             const checkbox = document.createElement('input');
             checkbox.type = 'checkbox';
-            checkbox.classList.add('extension-select-checkbox');
+            checkbox.className = 'extension-select-checkbox';
             checkbox.dataset.extensionId = extension.id;
             checkbox.checked = selectedExtensionIds.has(extension.id);
             checkbox.setAttribute('aria-label', `Select ${sanitizeText(extension.name)}`);
@@ -1273,50 +1380,60 @@ async function renderExtensionList(page = 1) {
             const bestIcon = extension.icons?.sort((a, b) => b.size - a.size)[0];
             icon.src = bestIcon ? bestIcon.url : DEFAULT_ICON_PLACEHOLDER;
             icon.alt = ""; 
-            icon.classList.add('extension-icon');
+            icon.className = 'extension-icon';
             icon.loading = 'lazy';
             icon.onerror = () => { if (icon.src !== DEFAULT_ICON_PLACEHOLDER) icon.src = DEFAULT_ICON_PLACEHOLDER; icon.onerror = null; };
 
             const detailsDiv = document.createElement('div');
-            detailsDiv.classList.add('extension-details');
+            detailsDiv.className = 'extension-details';
+            
             const nameSpan = document.createElement('span');
-            nameSpan.classList.add('extension-name');
-            nameSpan.innerHTML = highlightSearchTerms(extension.name, searchTerms);
+            nameSpan.className = 'extension-name';
+            nameSpan.appendChild(highlightSearchTerms(extension.name, searchTerms));
             nameSpan.title = sanitizeText(extension.name);
             detailsDiv.appendChild(nameSpan);
 
             const actions = document.createElement('div');
-            actions.classList.add('extension-actions');
+            actions.className = 'extension-actions';
 
-            const toggleButton = document.createElement('button');
-            toggleButton.classList.add('toggle-button', 'button-small');
+            const createButton = (text, iconSrc) => {
+                const button = document.createElement('button');
+                const img = document.createElement('img');
+                img.src = iconSrc;
+                img.alt = "";
+                button.appendChild(img);
+                if (text) {
+                    button.appendChild(document.createTextNode(` ${text}`));
+                }
+                return button;
+            };
+            
+            const toggleButton = createButton(extension.enabled ? 'Disable' : 'Enable', extension.enabled ? ICON_PATHS.toggleOff : ICON_PATHS.toggleOn);
+            toggleButton.className = 'toggle-button button-small';
+            toggleButton.classList.add(extension.enabled ? 'button-danger' : 'button-success');
             toggleButton.dataset.action = 'toggle';
             toggleButton.dataset.extensionId = extension.id;
             toggleButton.dataset.currentState = extension.enabled ? 'enabled' : 'disabled';
-            toggleButton.innerHTML = `<img src="${extension.enabled ? ICON_PATHS.toggleOff : ICON_PATHS.toggleOn}" alt=""> ${extension.enabled ? 'Disable' : 'Enable'}`;
             toggleButton.title = `${extension.enabled ? 'Disable' : 'Enable'} ${sanitizeText(extension.name)}`;
             toggleButton.setAttribute('aria-pressed', String(extension.enabled));
-            if (extension.enabled) toggleButton.classList.add('button-danger'); else toggleButton.classList.add('button-success');
 
-            const detailsButton = document.createElement('button');
-            detailsButton.classList.add('details-button', 'button-small');
+            const detailsButton = createButton('Details', ICON_PATHS.details);
+            detailsButton.className = 'details-button button-small';
             detailsButton.dataset.action = 'details';
             detailsButton.dataset.extensionId = extension.id;
-            detailsButton.innerHTML = `<img src="${ICON_PATHS.details}" alt=""> Details`;
             detailsButton.title = `View details for ${sanitizeText(extension.name)}`;
 
             const assignGroupSelect = document.createElement('select');
-            assignGroupSelect.classList.add('assign-group-select');
+            assignGroupSelect.className = 'assign-group-select';
             assignGroupSelect.dataset.extensionId = extension.id;
             assignGroupSelect.title = "Assign to Group";
             await populateAssignGroupDropdown(assignGroupSelect, extension.id); 
 
-            const deleteButton = document.createElement('button');
-            deleteButton.classList.add('delete-button', 'button-small', 'button-danger', 'icon-only');
+            const deleteButton = createButton(null, ICON_PATHS.delete);
+            deleteButton.className = 'delete-button button-small button-danger icon-only';
             deleteButton.dataset.action = 'delete';
             deleteButton.dataset.extensionId = extension.id;
-            deleteButton.dataset.extensionName = sanitizeText(extension.name); 
-            deleteButton.innerHTML = `<img src="${ICON_PATHS.delete}" alt="">`;
+            deleteButton.dataset.extensionName = sanitizeText(extension.name);
             deleteButton.title = `Uninstall ${sanitizeText(extension.name)}`;
 
             actions.appendChild(toggleButton);
@@ -1334,11 +1451,15 @@ async function renderExtensionList(page = 1) {
         if(elements.extensionListHeader) elements.extensionListHeader.style.display = 'none';
         if(elements.emptyStateMessageContainer) {
             elements.emptyStateMessageContainer.style.display = 'block';
-            let emptyMsg = `<p>No extensions found matching your criteria.</p>`;
+            const p1 = document.createElement('p');
+            p1.textContent = 'No extensions found matching your criteria.';
+            elements.emptyStateMessageContainer.appendChild(p1);
+
              if (elements.searchInput?.value.trim() || elements.typeFilter?.value !== 'all' || elements.statusFilter?.value !== 'all' || elements.groupFilter?.value !== 'all') {
-                emptyMsg += `<p>Try clearing your search or adjusting filters.</p>`;
+                const p2 = document.createElement('p');
+                p2.textContent = 'Try clearing your search or adjusting filters.';
+                elements.emptyStateMessageContainer.appendChild(p2);
             }
-            elements.emptyStateMessageContainer.innerHTML = emptyMsg;
         }
     }
 
@@ -1418,7 +1539,15 @@ function toggleExtension(extensionId, enable, buttonElement) {
 
             if (item && button) {
                 button.dataset.currentState = enable ? 'enabled' : 'disabled';
-                button.innerHTML = `<img src="${enable ? ICON_PATHS.toggleOff : ICON_PATHS.toggleOn}" alt=""> ${enable ? 'Disable' : 'Enable'}`;
+                
+                // Clear and rebuild button content
+                button.textContent = ''; // Clear existing text nodes
+                const img = document.createElement('img');
+                img.src = enable ? ICON_PATHS.toggleOff : ICON_PATHS.toggleOn;
+                img.alt = "";
+                button.appendChild(img);
+                button.appendChild(document.createTextNode(` ${enable ? 'Disable' : 'Enable'}`));
+
                 button.title = `${enable ? 'Disable' : 'Enable'} ${sanitizeText(cachedExt.name)}`;
                 button.setAttribute('aria-pressed', String(enable));
                 button.classList.remove('button-success', 'button-danger');
@@ -2019,11 +2148,25 @@ async function displayProfileManagementListInModal() {
     if (orderedProfileIds.length > 0) {
         const header = document.createElement('div');
         header.className = 'modal-list-header';
-        header.innerHTML = `
-            <input type="checkbox" id="select-all-profiles-checkbox" title="Select/Deselect all profiles">
-            <label for="select-all-profiles-checkbox">Select All</label>
-            <button id="modal-bulk-delete-profiles-btn" class="button-small button-danger" style="display: none;">Delete Selected</button>
-        `;
+
+        const checkbox = document.createElement('input');
+        checkbox.type = 'checkbox';
+        checkbox.id = 'select-all-profiles-checkbox';
+        checkbox.title = 'Select/Deselect all profiles';
+
+        const label = document.createElement('label');
+        label.htmlFor = 'select-all-profiles-checkbox';
+        label.textContent = 'Select All';
+
+        const deleteBtn = document.createElement('button');
+        deleteBtn.id = 'modal-bulk-delete-profiles-btn';
+        deleteBtn.className = 'button-small button-danger';
+        deleteBtn.style.display = 'none';
+        deleteBtn.textContent = 'Delete Selected';
+
+        header.appendChild(checkbox);
+        header.appendChild(label);
+        header.appendChild(deleteBtn);
         listEl.before(header);
         
         header.querySelector('#select-all-profiles-checkbox').addEventListener('change', handleSelectAllProfilesChange);
@@ -2032,7 +2175,11 @@ async function displayProfileManagementListInModal() {
 
 
     if (orderedProfileIds.length === 0) {
-        listEl.innerHTML = '<li class="no-profiles-message" role="status">No profiles created yet.</li>';
+        const li = document.createElement('li');
+        li.className = 'no-profiles-message';
+        li.setAttribute('role', 'status');
+        li.textContent = 'No profiles created yet.';
+        listEl.appendChild(li);
         updateBulkDeleteProfilesUI();
         return;
     }
@@ -2050,21 +2197,66 @@ async function displayProfileManagementListInModal() {
         const isSelected = selectedProfileIds.has(profileId);
         if (isSelected) listItem.classList.add('selected');
         
-        const shortcutDisplay = profile.shortcut ? `<span class="profile-item-shortcut"><img src="${ICON_PATHS.shortcut}" alt="Shortcut"> ${sanitizeText(profile.shortcut)}</span>` : '';
+        const checkbox = document.createElement('input');
+        checkbox.type = 'checkbox';
+        checkbox.className = 'profile-select-checkbox';
+        checkbox.dataset.profileid = profileId;
+        checkbox.checked = isSelected;
+        checkbox.setAttribute('aria-label', `Select profile ${sanitizedProfileName}`);
 
-        listItem.innerHTML = `
-            <input type="checkbox" class="profile-select-checkbox" data-profileid="${profileId}" ${isSelected ? 'checked' : ''} aria-label="Select profile ${sanitizedProfileName}">
-            <div class="profile-item-details" title="${sanitizedProfileName}">
-                <span class="profile-item-name">${sanitizedProfileName}</span>
-                ${shortcutDisplay}
-            </div>
-            <div class="profile-item-actions">
-                <button class="apply-profile-btn button-small button-success" data-profileid="${profileId}" title="Apply Profile">Apply</button>
-                <button class="configure-profile-btn button-small" data-profileid="${profileId}" title="Configure Profile"><img src="${ICON_PATHS.configure}" alt="Configure"></button>
-                <button class="duplicate-profile-btn button-small icon-only" data-profileid="${profileId}" title="Duplicate Profile"><img src="${ICON_PATHS.duplicate}" alt="Duplicate"></button>
-                <button class="delete-profile-btn button-small button-danger icon-only" data-profileid="${profileId}" title="Delete Profile"><img src="${ICON_PATHS.deleteProfile}" alt="Delete"></button>
-            </div>
-        `;
+        const detailsDiv = document.createElement('div');
+        detailsDiv.className = 'profile-item-details';
+        detailsDiv.title = sanitizedProfileName;
+
+        const nameSpan = document.createElement('span');
+        nameSpan.className = 'profile-item-name';
+        nameSpan.textContent = sanitizedProfileName;
+        detailsDiv.appendChild(nameSpan);
+        
+        if (profile.shortcut) {
+            const shortcutSpan = document.createElement('span');
+            shortcutSpan.className = 'profile-item-shortcut';
+            const shortcutImg = document.createElement('img');
+            shortcutImg.src = ICON_PATHS.shortcut;
+            shortcutImg.alt = 'Shortcut';
+            shortcutSpan.appendChild(shortcutImg);
+            shortcutSpan.appendChild(document.createTextNode(` ${sanitizeText(profile.shortcut)}`));
+            detailsDiv.appendChild(shortcutSpan);
+        }
+
+        const actionsDiv = document.createElement('div');
+        actionsDiv.className = 'profile-item-actions';
+
+        const createButton = (className, title, text, iconSrc = null) => {
+            const button = document.createElement('button');
+            button.className = `button-small ${className}`;
+            button.dataset.profileid = profileId;
+            button.title = title;
+            if (iconSrc) {
+                const img = document.createElement('img');
+                img.src = iconSrc;
+                img.alt = '';
+                button.appendChild(img);
+            }
+            if(text) {
+                button.appendChild(document.createTextNode(text));
+            }
+            return button;
+        };
+
+        const applyBtn = createButton('button-success apply-profile-btn', 'Apply Profile', 'Apply');
+        const configureBtn = createButton('configure-profile-btn', 'Configure Profile', null, ICON_PATHS.configure);
+        const duplicateBtn = createButton('icon-only duplicate-profile-btn', 'Duplicate Profile', null, ICON_PATHS.duplicate);
+        const deleteBtn = createButton('button-danger icon-only delete-profile-btn', 'Delete Profile', null, ICON_PATHS.deleteProfile);
+        
+        actionsDiv.appendChild(applyBtn);
+        actionsDiv.appendChild(configureBtn);
+        actionsDiv.appendChild(duplicateBtn);
+        actionsDiv.appendChild(deleteBtn);
+        
+        listItem.appendChild(checkbox);
+        listItem.appendChild(detailsDiv);
+        listItem.appendChild(actionsDiv);
         fragment.appendChild(listItem);
     });
     listEl.appendChild(fragment);
@@ -2195,7 +2387,9 @@ async function renderExtensionsForProfileConfiguration(profileId) {
       .sort((a,b) => (a.name || "").localeCompare(b.name || ""));
 
     if (userControllableExtensions.length === 0) {
-        listEl.innerHTML = "<p>No user-controllable extensions available.</p>";
+        const p = document.createElement('p');
+        p.textContent = "No user-controllable extensions available.";
+        listEl.appendChild(p);
         return;
     }
 
@@ -2207,14 +2401,29 @@ async function renderExtensionsForProfileConfiguration(profileId) {
     userControllableExtensions.forEach(ext => {
         const itemDiv = document.createElement('div');
         itemDiv.className = 'profile-config-extension-item';
+        
         const isEnabledInProfile = profileExtensionStates[ext.id] ?? ext.enabled;                    
-        const checkboxId = `profile-cfg-ext-${ext.id}`; 
-        const iconUrl = ext.icons?.find(i => i.size >= 16)?.url || DEFAULT_ICON_PLACEHOLDER;
-        itemDiv.innerHTML = `
-            <input type="checkbox" id="${checkboxId}" class="profile-config-ext-checkbox" data-extension-id="${ext.id}" ${isEnabledInProfile ? 'checked' : ''}>
-            <img src="${iconUrl}" class="extension-icon-small" alt="">
-            <label for="${checkboxId}">${sanitizeText(ext.name)}</label>
-        `;
+        const checkboxId = `profile-cfg-ext-${ext.id}`;
+        
+        const checkbox = document.createElement('input');
+        checkbox.type = 'checkbox';
+        checkbox.id = checkboxId;
+        checkbox.className = 'profile-config-ext-checkbox';
+        checkbox.dataset.extensionId = ext.id;
+        checkbox.checked = isEnabledInProfile;
+
+        const img = document.createElement('img');
+        img.src = ext.icons?.find(i => i.size >= 16)?.url || DEFAULT_ICON_PLACEHOLDER;
+        img.className = 'extension-icon-small';
+        img.alt = '';
+
+        const label = document.createElement('label');
+        label.htmlFor = checkboxId;
+        label.textContent = sanitizeText(ext.name);
+
+        itemDiv.appendChild(checkbox);
+        itemDiv.appendChild(img);
+        itemDiv.appendChild(label);
         fragment.appendChild(itemDiv);
     });
     listEl.appendChild(fragment);
