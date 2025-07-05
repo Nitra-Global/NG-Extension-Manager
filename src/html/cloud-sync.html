@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cloud Sync Settings</title>
+    <link rel="stylesheet" href="../css/cloud-sync.css">
+    <link rel="stylesheet" href="../../public/fonts/fonts.css">
+</head>
+<body>
+
+    <div class="page-wrapper">
+        <div class="content-area">
+            <div class="container content-panel">
+                <h1>Cloud Sync Settings</h1>
+
+                <div class="dev-warning-box">
+                    <h3>⚠️ This feature is currently in development.</h3>
+                    <p>
+                        Functionality may be unstable, and unexpected data loss could occur.
+                        Please use manual backups for critical data.
+                    </p>
+                </div>
+
+                <div class="tab-bar">
+                    <div class="tab-link active" data-panel="status-panel">Status & Usage</div>
+                    <div class="tab-link" data-panel="options-panel">Sync Options</div>
+                    <div class="tab-link" data-panel="actions-panel">Manual Actions</div>
+                    <div class="tab-link" data-panel="log-panel">Sync Log</div>
+                </div>
+
+                <div class="panel-container">
+                    <div id="status-panel" class="panel active content-section">
+                        <div class="tip-box">
+                            <h3>What is Cloud Sync?</h3>
+                            <p>
+                                Cloud Sync backs up your extension's settings to your Google account, keeping them in sync across all your devices. This helps you avoid data loss and makes it easy to set up on a new computer.
+                            </p>
+                        </div>
+                        <div class="option-group">
+                            <h2>Overall Sync Status</h2>
+                            <p>
+                                **Chrome Sync Status:** <span id="chromeSyncStatus" class="status-indicator status-unknown">Checking...</span>
+                            </p>
+                            <p>
+                                **Extension Sync Enabled:** <span id="extensionSyncStatus" class="status-indicator status-unknown">Checking...</span>
+                            </p>
+                            <p>
+                                **Last Automatic Sync:** <span id="lastAutoSyncTimestamp">Never</span>
+                            </p>
+                            <hr class="divider">
+                            <h2>Current Sync Usage</h2>
+                            <p>This shows how much of your cloud storage quota is being used. A 100 KB limit applies to all your synced data.</p>
+                            <div id="syncProgressBarContainer">
+                                <div id="syncProgressBar">
+                                    <div id="syncProgress"></div>
+                                    <div id="syncProgressText"></div>
+                                </div>
+                                <div class="quota-info">
+                                    Total Quota: 100 KB
+                                </div>
+                            </div>
+                            <div id="statusMessage" class="status-message info">Checking sync status...</div>
+                        </div>
+                    </div>
+
+                    <div id="options-panel" class="panel content-section">
+                        <div class="option-group">
+                            <h2>Automatic Syncing</h2>
+                            <div class="option-item">
+                                <label for="enableAutoSync">
+                                    <input type="checkbox" id="enableAutoSync">
+                                    Enable Automatic Background Sync
+                                </label>
+                                <p>Automatically saves your data to the cloud periodically.</p>
+                            </div>
+                            <div class="option-item">
+                                <label for="syncOnStartup">
+                                    <input type="checkbox" id="syncOnStartup">
+                                    Sync on Browser Startup
+                                </label>
+                                <p>Trigger a sync every time your browser is launched.</p>
+                            </div>
+                            <div class="option-item">
+                                <label for="syncOnChange">
+                                    <input type="checkbox" id="syncOnChange">
+                                    Sync on Data Change
+                                </label>
+                                <p>Automatically syncs your data shortly after you make a change (e.g., saving a rule or group). This is highly recommended.</p>
+                            </div>
+                            <div class="option-item">
+                                <label for="syncInterval">
+                                    Automatic Sync Interval:
+                                    <select id="syncInterval" class="form-input">
+                                        <option value="60">Every 1 Hour</option>
+                                        <option value="180">Every 3 Hours</option>
+                                        <option value="360">Every 6 Hours</option>
+                                        <option value="720">Every 12 Hours</option>
+                                        <option value="1440">Every 24 Hours</option>
+                                    </select>
+                                </label>
+                                <p>Sets how often the automatic background sync alarm will run.</p>
+                            </div>
+                        </div>
+                        
+                        <div class="option-group">
+                            <h2>Device Naming</h2>
+                            <p>Choose how this device will be identified in the sync log.</p>
+                            <div class="option-item">
+                                <label>
+                                    <input type="radio" name="deviceNameOption" value="userAgent" checked>
+                                    Use Full User Agent
+                                </label>
+                                <p>Uses your browser's full technical identifier.</p>
+                            </div>
+                            <div class="option-item">
+                                <label>
+                                    <input type="radio" name="deviceNameOption" value="browser">
+                                    Use Browser Name
+                                </label>
+                                <p>Uses a simplified name like "Chrome on Windows".</p>
+                            </div>
+                            <div class="option-item">
+                                <label>
+                                    <input type="radio" name="deviceNameOption" value="custom">
+                                    Use a Custom Name:
+                                </label>
+                                <input type="text" id="customDeviceName" placeholder="e.g., My Desktop PC" class="form-input custom-name-input" disabled>
+                                <p class="muted-text">**Current Device ID:** <span id="currentDeviceId">Loading...</span></p>
+                            </div>
+                        </div>
+
+                        <div class="option-group">
+                            <h2>Deactivating Sync</h2>
+                            <p>To stop syncing or remove your data from the cloud, you have a few options:</p>
+                            <ul>
+                                <li>**Disable Auto Sync:** Just turn off the checkbox above.</li>
+                                <li>**Clear Cloud Data:** Go to the "Manual Actions" tab and use the "Clear" button. This is permanent.</li>
+                                <li>**Disable Chrome Sync:** You can also turn off sync for your entire browser in Chrome's settings.</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div id="actions-panel" class="panel content-section">
+                        <div class="warning-box">
+                            <h3>Warning: Use with Care!</h3>
+                            <p>These actions can overwrite or delete your data permanently. Make sure you know what you are doing.</p>
+                        </div>
+                        <div class="option-group">
+                            <h2>Manual Sync Actions</h2>
+                            <p>Sync your data on demand with these buttons.</p>
+                            <div class="button-group">
+                                <button id="syncNowBtn" class="btn primary">Sync Local Data to Cloud</button>
+                                <button id="restoreBtn" class="btn success">Restore from Cloud</button>
+                            </div>
+                            <p class="muted-text text-center top-margin-small">
+                                **Warning:** Restoring will **overwrite** your current local data.
+                            </p>
+                        </div>
+                        <div class="option-group">
+                            <h2>Clear Synced Data</h2>
+                            <p>This permanently deletes all your synced extension data from the cloud.</p>
+                            <div class="button-group text-center">
+                                <button id="clearSyncBtn" class="btn danger">Clear My Synced Data from Cloud</button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div id="log-panel" class="panel content-section">
+                        <div class="option-group">
+                            <h2>Sync Log & History</h2>
+                            <p>A history of all sync events, including manual actions and automatic backups. This can help you troubleshoot issues.</p>
+                            <div id="syncLog">
+                                <p class="text-center muted-text-log">No sync events recorded yet.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="../js/cloud-sync.js"></script>
+
+</body>
+</html>
