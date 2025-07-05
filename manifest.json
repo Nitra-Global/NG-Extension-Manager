@@ -1,30 +1,29 @@
 {
   "manifest_version": 3,
-  "name": "NG Extension Manager",
-  "version": "2.3.8",
-  "description": "Your browser’s new best friend. Manage your extensions with ease and say goodbye to clutter!",
-  "homepage_url": "https://github.com/Nitra-Global/NG-Extension-Manager",
-  "author": "UNBOUND LABEL",
+  "name": "modcore Extension Manager",
+  "short_name": "modcore EM",
+  "version": "2.3.81",
+  "description": "Effortlessly manage your browser extensions with advanced grouping, profiling, and control features.",
+  "homepage_url": "https://github.com/modcoretech/modcore-extension-manager",
+  "author": "modcore",
   "permissions": [
     "storage",
     "management",
-    "activeTab",
+    "commands",
     "alarms",
-    "downloads"
-    ],
-    "background": {
-    "service_worker": "src/js/background.js" 
+    "tabs"
+  ],
+  "background": {
+    "service_worker": "src/js/background.js"
   },
   "action": {
     "default_popup": "src/html/popup.html",
     "default_icon": {
-      "48": "public/icons/png/48x48.png",
-      "128": "public/icons/png/128x128.png"
+      "128": "public/icons/png/modcore-em.png"
     }
   },
   "icons": {
-    "48": "public/icons/png/48x48.png",
-    "128": "public/icons/png/128x128.png"
+    "128": "public/icons/png/modcore-em.png"
   },
   "content_scripts": [
     {
@@ -33,18 +32,18 @@
     }
   ],
   "options_ui": {
-    "page": "src/html/updates.html",
+    "page": "src/html/backup.html",
     "open_in_tab": true
   },
   "content_security_policy": {
     "extension_pages": "script-src 'self'; object-src 'self'"
   },
   "web_accessible_resources": [
-  {
-    "resources": ["src/json/permissions.json", "src/html/details.html"],
-    "matches": ["<all_urls>"]
-  }
-],
+    {
+      "resources": ["src/html/details.html"],
+      "matches": ["<all_urls>"]
+    }
+  ],
   "browser_specific_settings": {
     "gecko": {
       "id": "ngde@web.de",
